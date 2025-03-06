@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlimEasy - Track Your Food</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div class="container">
+        <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
+        <h1>SlimEasy - Track Your Food</h1>
+        
+        <!-- Summary -->
+        <section id="summary">
+            <h2>Your Plan</h2>
+            <p>BMR: <span id="bmr"></span> <span id="bmrUnits"></span></p>
+            <p>TDEE: <span id="tdee"></span> <span id="tdeeUnits"></span></p>
+            <p>Daily Deficit: <span id="dailyDeficit"></span> <span id="deficitUnits"></span></p>
+            <p>Daily Goal: <span id="dailyGoal"></span> <span id="goalUnits"></span></p>
+            <p class="note">Note: A deficit over 500 kcal (2092 kJ) is not recommended for long-term weight loss.</p>
+        </section>
+
+        <!-- Manual Food Input -->
+        <section id="manual">
+            <h2>Manual Food Entry</h2>
+            <form id="manualForm">
+                <label>Day: 
+                    <select id="manualDay">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </label>
+                <label>Meal Type: 
+                    <select id="manualMealType">
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </label>
+                <label>Food Name: <input type="text" id="manualFoodName" required></label>
+                <label>Amount: 
+                    <input type="number" id="manualAmount" min="1" required placeholder="e.g., 100">
+                    <select id="manualUnit">
+                        <option value="kcal">kcal</option>
+                        <option value="kJ">kJ</option>
+                    </select>
+                </label>
+                <button type="submit">Add to Planner</button>
+            </form>
+        </section>
+
+        <!-- Automatic Meal Builder -->
+        <section id="automatic">
+            <h2>Automatic Meal Builder</h2>
+            <input type="text" id="ingredientSearch" placeholder="Search ingredients...">
+            <form id="mealForm">
+                <label>Ingredient: 
+                    <select id="ingredient"></select>
+                </label>
+                <label>Quantity: 
+                    <input type="number" id="ingredientQty" min="1" value="1">
+                    <select id="ingredientUnit">
+                        <option value="g">Grams (g)</option>
+                        <option value="cup">Cups</option>
+                        <option value="oz">Ounces (oz)</option>
+                        <option value="tbsp">Tablespoons (tbsp)</option>
+                        <option value="tsp">Teaspoons (tsp)</option>
+                        <option value="unit">Units (e.g., 1 egg)</option>
+                    </select>
+                </label>
+                <button type="button" id="addIngredient">Add Ingredient</button>
+                <button type="button" id="removeIngredient">Remove Last Ingredient</button>
+            </form>
+            <ul id="mealIngredients"></ul>
+            <p>Total: <span id="mealCalories">0</span> kcal (<span id="mealKj">0</span> kJ)</p>
+            <form id="saveMealForm">
+                <label>Meal Name: <input type="text" id="mealName" required></label>
+                <label>Day: 
+                    <select id="mealDay">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </label>
+                <label>Meal Type: 
+                    <select id="mealType">
+                        <option value="breakfast">Breakfast</option>
+                        <option value="lunch">Lunch</option>
+                        <option value="dinner">Dinner</option>
+                        <option value="snack">Snack</option>
+                    </select>
+                </label>
+                <button type="submit">Add Meal to Planner</button>
+            </form>
+        </section>
+
+        <!-- Weekly Planner -->
+        <section id="planner">
+            <h2>Weekly Planner</h2>
+            <button id="exportPlan">Export Meal Plan</button>
+            <button id="addExercise">Add Exercise</button>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Breakfast</th>
+                        <th>Lunch</th>
+                        <th>Dinner</th>
+                        <th>Snack</th>
+                        <th>Exercises</th>
+                        <th>Total Intake</th>
+                        <th>Exercise Burn</th>
+                        <th>Net Calories</th>
+                        <th>Remaining (Goal: <span id="goalDisplay"></span>)</th>
+                    </tr>
+                </thead>
+                <tbody id="plannerBody">
+                    <tr><td>Monday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Tuesday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Wednesday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Thursday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Friday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Saturday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                    <tr><td>Sunday</td><td></td><td></td><td></td><td></td><td></td><td>0</td><td>0</td><td>0</td><td></td></tr>
+                </tbody>
+            </table>
+            <div id="weeklySummary">
+                <h3>Weekly Summary</h3>
+                <p>Total Weekly Intake: <span id="weeklyTotal">0</span> kcal (<span id="weeklyTotalKj">0</span> kJ)</p>
+                <p>Total Weekly Exercise Burn: <span id="weeklyExercise">0</span> kcal (<span id="weeklyExerciseKj">0</span> kJ)</p>
+                <p>Weekly Outcome: <span id="weeklyOutcome"></span></p>
+                <p>Estimated Weight Lost: <span id="weightLost"></span> kg (<span id="weightLostLb"></span> lb)</p>
+                <p>Estimated Time to Goal: <span id="timeToGoal"></span> weeks</p>
+            </div>
+        </section>
+    </div>
+    <script src="tracker.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker failed:', err));
+        });
+      }
+    </script>
+</body>
+</html>

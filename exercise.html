@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlimEasy - Add Exercise</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div class="container">
+        <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
+        <h1>SlimEasy - Add Exercise</h1>
+        
+        <section id="exercise">
+            <h2>Add Your Exercise</h2>
+            <form id="exerciseForm">
+                <label>Day: 
+                    <select id="exerciseDay">
+                        <option value="0">Monday</option>
+                        <option value="1">Tuesday</option>
+                        <option value="2">Wednesday</option>
+                        <option value="3">Thursday</option>
+                        <option value="4">Friday</option>
+                        <option value="5">Saturday</option>
+                        <option value="6">Sunday</option>
+                    </select>
+                </label>
+                <label>Exercise: 
+                    <select id="exerciseType">
+                        <option value="running_6mph">Running (6 mph)</option>
+                        <option value="cycling_12mph">Cycling (12-14 mph)</option>
+                        <option value="swimming_moderate">Swimming (moderate)</option>
+                        <option value="walking_4mph">Walking (4 mph)</option>
+                        <option value="weightlifting">Weightlifting</option>
+                    </select>
+                </label>
+                <label>Intensity: 
+                    <select id="intensity">
+                        <option value="low">Low</option>
+                        <option value="moderate">Moderate</option>
+                        <option value="high">High</option>
+                    </select>
+                </label>
+                <label>Duration (minutes): <input type="number" id="duration" min="1" required></label>
+                <button type="submit">Add to Planner</button>
+            </form>
+            <button id="backToTracker">Back to Tracker</button>
+        </section>
+    </div>
+    <script src="exercise.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker failed:', err));
+        });
+      }
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlimEasy - Weight Loss Made Simple</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div class="container">
+        <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
+        <h1>SlimEasy</h1>
+        
+        <!-- Profile Form -->
+        <section id="profile">
+            <h2>Your Profile</h2>
+            <form id="userForm">
+                <label>Age: <input type="number" id="age" required></label><br>
+                <label>Weight: 
+                    <input type="number" id="weight" step="any" required>
+                    <select id="weightUnit">
+                        <option value="kg">kg</option>
+                        <option value="lb">lb</option>
+                    </select>
+                </label><br>
+                <label>Height: 
+                    <input type="number" id="height" step="any" required>
+                    <select id="heightUnit">
+                        <option value="cm">cm</option>
+                        <option value="ft">ft/in</option>
+                    </select>
+                    <input type="number" id="heightInches" step="any" placeholder="inches" style="display: none;">
+                </label><br>
+                <label>Gender: 
+                    <select id="gender">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </label><br>
+                <label>Activity Level: 
+                    <select id="activity">
+                        <option value="1.2">Sedentary</option>
+                        <option value="1.375">Light</option>
+                        <option value="1.55">Moderate</option>
+                        <option value="1.725">Active</option>
+                    </select>
+                </label><br>
+                <label>Goal Weight: 
+                    <input type="number" id="goal" step="any" required>
+                    <select id="goalUnit">
+                        <option value="kg">kg</option>
+                        <option value="lb">lb</option>
+                    </select>
+                </label><br>
+                <label>Time to Goal: 
+                    <input type="number" id="time" min="1" required placeholder="e.g., 12">
+                    <select id="timeUnit">
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                    </select>
+                </label><br>
+                <button type="submit">Calculate</button>
+            </form>
+        </section>
+    </div>
+    <script src="script.js"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('Service Worker registered'))
+            .catch(err => console.log('Service Worker failed:', err));
+        });
+      }
+    </script>
+</body>
+</html>
