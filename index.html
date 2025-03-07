@@ -3,76 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SlimEasy - Weight Loss Made Simple</title>
+    <title>SlimEasy - Profile</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="/manifest.json">
+    <style>
+        .results-section {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            display: none; /* Hidden until form is submitted */
+        }
+        .results-section.visible {
+            display: block;
+        }
+        .btn-proceed {
+            margin-top: 10px;
+            padding: 10px 20px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-proceed:hover {
+            background-color: #218838;
+        }
+        .time-to-goal-group {
+            display: flex;
+            gap: 10px;
+        }
+        .unit-group {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
-        <h1>SlimEasy</h1>
+        <h1>SlimEasy - Profile</h1>
+        <p id="welcomeMessage" style="text-align: center; color: #333; margin: 10px 0;"></p>
         
-        <!-- Profile Form -->
         <section id="profile">
             <h2>Your Profile</h2>
-            <form id="userForm">
-                <label>Age: <input type="number" id="age" required></label><br>
-                <label>Weight: 
-                    <input type="number" id="weight" step="any" required>
-                    <select id="weightUnit">
+            <form id="profileForm">
+                <label>Age: <input type="number" id="age" required></label>
+                <div class="unit-group">
+                    <label>Weight: <input type="number" id="weight" required step="0.1"></label>
+                    <select id="weightUnit" required>
                         <option value="kg">kg</option>
                         <option value="lb">lb</option>
                     </select>
-                </label><br>
-                <label>Height: 
-                    <input type="number" id="height" step="any" required>
-                    <select id="heightUnit">
+                </div>
+                <div class="unit-group">
+                    <label>Height: <input type="number" id="height" required step="0.1"></label>
+                    <select id="heightUnit" required>
                         <option value="cm">cm</option>
-                        <option value="ft">ft/in</option>
+                        <option value="in">in</option>
                     </select>
-                    <input type="number" id="heightInches" step="any" placeholder="inches" style="display: none;">
-                </label><br>
+                </div>
                 <label>Gender: 
-                    <select id="gender">
+                    <select id="gender" required>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
                     </select>
-                </label><br>
+                </label>
                 <label>Activity Level: 
-                    <select id="activity">
+                    <select id="activity" required>
                         <option value="1.2">Sedentary</option>
-                        <option value="1.375">Light</option>
-                        <option value="1.55">Moderate</option>
-                        <option value="1.725">Active</option>
+                        <option value="1.375">Lightly Active</option>
+                        <option value="1.55">Moderately Active</option>
+                        <option value="1.725">Very Active</option>
+                        <option value="1.9">Super Active</option>
                     </select>
-                </label><br>
-                <label>Goal Weight: 
-                    <input type="number" id="goal" step="any" required>
-                    <select id="goalUnit">
+                </label>
+                <div class="unit-group">
+                    <label>Goal Weight: <input type="number" id="goalWeight" required step="0.1"></label>
+                    <select id="goalWeightUnit" required>
                         <option value="kg">kg</option>
                         <option value="lb">lb</option>
                     </select>
-                </label><br>
-                <label>Time to Goal: 
-                    <input type="number" id="time" min="1" required placeholder="e.g., 12">
-                    <select id="timeUnit">
+                </div>
+                <div class="time-to-goal-group">
+                    <label>Time to Goal: <input type="number" id="timeToGoal" required></label>
+                    <select id="timeUnit" required>
                         <option value="weeks">Weeks</option>
                         <option value="months">Months</option>
                     </select>
-                </label><br>
-                <button type="submit">Calculate</button>
+                </div>
+                <button type="submit">Save Profile</button>
             </form>
         </section>
+
+        <!-- Results Section -->
+        <section id="results" class="results-section">
+            <h2>Your Results</h2>
+            <p>BMR: <span id="bmrResult">N/A</span> kcal/day</p>
+            <p>TDEE: <span id="tdeeResult">N/A</span> kcal/day</p>
+            <p>Required Daily Deficit: <span id="dailyDeficitResult">N/A</span> kcal/day</p>
+            <p>Daily Caloric Goal: <span id="dailyGoalResult">N/A</span> kcal/day</p>
+            <button class="btn-proceed" id="proceedToPlanner">Go to Planner</button>
+        </section>
     </div>
-    <script src="script.js"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker failed:', err));
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        } else {
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name}`;
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            // Retrieve form inputs
+            const age = parseInt(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const weightUnit = document.getElementById('weightUnit').value;
+            const height = parseFloat(document.getElementById('height').value);
+            const heightUnit = document.getElementById('heightUnit').value;
+            const gender = document.getElementById('gender').value;
+            const activity = parseFloat(document.getElementById('activity').value);
+            const goalWeight = parseFloat(document.getElementById('goalWeight').value);
+            const goalWeightUnit = document.getElementById('goalWeightUnit').value;
+            const timeToGoal = parseFloat(document.getElementById('timeToGoal').value);
+            const timeUnit = document.getElementById('timeUnit').value;
+
+            // Validate inputs
+            if (isNaN(age) || isNaN(weight) || isNaN(height) || isNaN(activity) || isNaN(goalWeight) || isNaN(timeToGoal)) {
+                alert('Please fill in all fields with valid numbers.');
+                return;
+            }
+
+            // Convert imperial to metric for calculations
+            const weightKg = weightUnit === 'lb' ? weight / 2.20462 : weight;
+            const heightCm = heightUnit === 'in' ? height * 2.54 : height;
+            const goalWeightKg = goalWeightUnit === 'lb' ? goalWeight / 2.20462 : goalWeight;
+
+            // Calculate BMR (using metric units)
+            let bmr;
+            if (gender === 'male') {
+                bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+            } else {
+                bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+            }
+
+            // Calculate TDEE
+            const tdee = bmr * activity;
+
+            // Calculate required daily deficit and daily goal
+            const weightDifference = weightKg - goalWeightKg;
+            if (weightDifference <= 0 || timeToGoal <= 0) {
+                alert('Please ensure your goal weight is less than your current weight and time to goal is positive.');
+                return;
+            }
+            const totalDeficitNeeded = weightDifference * 7700; // 7700 kcal per kg
+            const timeToGoalDays = timeUnit === 'weeks' ? timeToGoal * 7 : timeToGoal * 30;
+            const dailyDeficit = totalDeficitNeeded / timeToGoalDays;
+            const dailyGoal = tdee - dailyDeficit;
+
+            // Save profile with both imperial and metric values
+            const profile = { 
+                age, 
+                weight, 
+                weightUnit, 
+                weightKg, 
+                height, 
+                heightUnit, 
+                heightCm, 
+                gender, 
+                activity, 
+                goalWeight, 
+                goalWeightUnit, 
+                goalWeightKg, 
+                timeToGoal, 
+                timeUnit, 
+                bmr, 
+                tdee, 
+                dailyDeficit, 
+                dailyGoal 
+            };
+            localStorage.setItem(`profile_${currentUser.email}`, JSON.stringify(profile));
+
+            // Update results section
+            document.getElementById('bmrResult').textContent = bmr.toFixed(0);
+            document.getElementById('tdeeResult').textContent = tdee.toFixed(0);
+            document.getElementById('dailyDeficitResult').textContent = dailyDeficit.toFixed(0);
+            document.getElementById('dailyGoalResult').textContent = dailyGoal.toFixed(0);
+
+            // Show results section
+            const resultsSection = document.getElementById('results');
+            resultsSection.classList.add('visible');
         });
-      }
+
+        // Proceed to planner page
+        document.getElementById('proceedToPlanner').addEventListener('click', function() {
+            const profile = JSON.parse(localStorage.getItem(`profile_${currentUser.email}`));
+            if (profile) {
+                const { bmr, tdee, weight, weightUnit, height, heightUnit, goalWeight, goalWeightUnit, dailyDeficit, dailyGoal, timeToGoal, timeUnit } = profile;
+                window.location.href = `tracker.html?bmr=${bmr}&tdee=${tdee}&weight=${weight}&weightUnit=${weightUnit}&height=${height}&heightUnit=${heightUnit}&goal=${goalWeight}&goalWeightUnit=${goalWeightUnit}&dailyDeficit=${dailyDeficit}&goalCalories=${dailyGoal}&timeToGoal=${timeToGoal}&timeUnit=${timeUnit}`;
+            } else {
+                alert('No profile data found. Please save your profile first.');
+            }
+        });
+
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
