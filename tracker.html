@@ -11,12 +11,24 @@
     <div class="container">
         <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
         <h1>SlimEasy - Track Your Food</h1>
+        <p id="welcomeMessage" style="text-align: center; color: #333; margin: 10px 0;"></p>
         
+        <!-- Back to Profile Button -->
+        <button id="backToProfile" style="background: #e74c3c; margin-bottom: 10px;">Back to Profile</button>
+
         <!-- Summary -->
         <section id="summary">
             <h2>Your Plan</h2>
-            <p>BMR: <span id="bmr"></span> <span id="bmrUnits"></span></p>
-            <p>TDEE: <span id="tdee"></span> <span id="tdeeUnits"></span></p>
+            <p>BMR: <span id="bmr"></span> <span id="bmrUnits"></span> 
+                <span class="info">? 
+                    <span class="tooltip">Basal Metabolic Rate (BMR) is the number of calories your body burns at rest to keep you alive—like breathing and keeping your heart beating. It’s your baseline energy need!</span>
+                </span>
+            </p>
+            <p>TDEE: <span id="tdee"></span> <span id="tdeeUnits"></span> 
+                <span class="info">? 
+                    <span class="tooltip">Total Daily Energy Expenditure (TDEE) is your BMR plus the calories you burn moving around and exercising. It’s how much energy you use in a day!</span>
+                </span>
+            </p>
             <p>Daily Deficit: <span id="dailyDeficit"></span> <span id="deficitUnits"></span></p>
             <p>Daily Goal: <span id="dailyGoal"></span> <span id="goalUnits"></span></p>
             <p class="note">Note: A deficit over 500 kcal (2092 kJ) is not recommended for long-term weight loss.</p>
@@ -148,13 +160,87 @@
     </div>
     <script src="tracker.js"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker failed:', err));
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if logged in and load profile
+            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name}`;
+            const profileKey = `profile_${currentUser.email}`;
+            const profile = JSON.parse(localStorage.getItem(profileKey));
+            if (!profile) {
+                window.location.href = 'index.html'; // Redirect to profile if no data
+                return;
+            }
+
+            // If no URL parameters, redirect with profile data
+            if (!window.location.search) {
+                window.location.href = `tracker.html?bmr=${profile.bmr}&tdee=${profile.tdee}&weight=${profile.weight}&goalWeight=${profile.goalWeight}&timeToGoal=${profile.timeToGoal}&dailyDeficit=${profile.dailyDeficit}&goalCalories=${profile.dailyGoal}&timeUnit=${profile.timeUnit}`;
+                return;
+            }
+
+            // Parse URL parameters
+            const urlParams = new URLSearchParams(window.location.search);
+            const bmr = parseFloat(urlParams.get('bmr')) || 0;
+            const tdee = parseFloat(urlParams.get('tdee')) || 0;
+            const dailyDeficitFromUrl = parseFloat(urlParams.get('dailyDeficit'));
+            const goalCaloriesFromUrl = parseFloat(urlParams.get('goalCalories'));
+
+            // Set dailyDeficit and dailyGoal from URL parameters with fallbacks
+            let dailyDeficit = !isNaN(dailyDeficitFromUrl) ? dailyDeficitFromUrl : 0;
+            let dailyGoal = !isNaN(goalCaloriesFromUrl) ? goalCaloriesFromUrl : tdee;
+
+            // Ensure valid numbers to prevent NaN issues
+            if (isNaN(dailyGoal) || dailyGoal < 0) {
+                dailyGoal = tdee > 0 ? tdee : 0;
+            }
+            if (isNaN(dailyDeficit) || dailyDeficit < 0) {
+                dailyDeficit = 0;
+            }
+
+            // Update summary section
+            document.getElementById('bmr').textContent = bmr.toFixed(0);
+            document.getElementById('bmrUnits').textContent = 'kcal';
+            document.getElementById('tdee').textContent = tdee.toFixed(0);
+            document.getElementById('tdeeUnits').textContent = 'kcal';
+            document.getElementById('dailyDeficit').textContent = dailyDeficit.toFixed(0);
+            document.getElementById('deficitUnits').textContent = 'kcal';
+            document.getElementById('dailyGoal').textContent = dailyGoal.toFixed(0);
+            document.getElementById('goalUnits').textContent = 'kcal';
+            document.getElementById('goalDisplay').textContent = dailyGoal.toFixed(0) + ' kcal';
+
+            // Add warning if deficit exceeds 500 kcal
+            if (dailyDeficit > 500) {
+                const note = document.querySelector('.note');
+                note.style.color = 'red';
+                note.textContent = 'Warning: A deficit over 500 kcal is not recommended for long-term weight loss.';
+            }
+
+            // Expose dailyGoal to tracker.js
+            window.dailyGoal = dailyGoal;
+
+            // Back to Profile button functionality
+            const backToProfileBtn = document.getElementById('backToProfile');
+            if (backToProfileBtn) {
+                backToProfileBtn.addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            } else {
+                console.error('Back to Profile button not found');
+            }
         });
-      }
+
+        // PWA Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
