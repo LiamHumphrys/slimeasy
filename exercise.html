@@ -28,35 +28,38 @@
                 </label>
                 <label>Exercise: 
                     <select id="exerciseType">
-                        <option value="running_6mph">Running (6 mph)</option>
-                        <option value="cycling_12mph">Cycling (12-14 mph)</option>
-                        <option value="swimming_moderate">Swimming (moderate)</option>
-                        <option value="walking_4mph">Walking (4 mph)</option>
-                        <option value="weightlifting">Weightlifting</option>
-                    </select>
-                </label>
-                <label>Intensity: 
-                    <select id="intensity">
-                        <option value="low">Low</option>
-                        <option value="moderate">Moderate</option>
-                        <option value="high">High</option>
+                        <option value="running_5mph">Running (5 mph - Low)</option>
+                        <option value="running_6mph">Running (6 mph - Moderate)</option>
+                        <option value="running_7mph">Running (7 mph - High)</option>
+                        <option value="walking_3mph">Walking (3 mph - Low)</option>
+                        <option value="walking_4mph">Walking (4 mph - Moderate)</option>
+                        <option value="walking_5mph">Walking (5 mph - High)</option>
+                        <option value="cycling_10mph">Cycling (10 mph - Low)</option>
+                        <option value="cycling_12mph">Cycling (12 mph - Moderate)</option>
+                        <option value="cycling_14mph">Cycling (14 mph - High)</option>
                     </select>
                 </label>
                 <label>Duration (minutes): <input type="number" id="duration" min="1" required></label>
-                <button type="submit">Add to Planner</button>
+                <button type="submit">Add Exercise</button>
             </form>
-            <button id="backToTracker">Back to Tracker</button>
+            <p id="exerciseSummary"></p>
+            <button onclick="window.location.href='tracker.html'">Back to Planner</button>
         </section>
     </div>
     <script src="exercise.js"></script>
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker failed:', err));
-        });
-      }
+        const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+        if (!currentUser) {
+            window.location.href = 'login.html';
+        }
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
     </script>
 </body>
 </html>
