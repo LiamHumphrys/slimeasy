@@ -154,3 +154,35 @@ li {
 .remove-btn:hover {
     background: #c0392b;
 }
+
+/* Tooltip Styling */
+.info {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+    color: #3498db;
+    font-weight: bold;
+    margin-left: 5px;
+}
+
+.info .tooltip {
+    visibility: hidden;
+    width: 200px;
+    background-color: #333;
+    color: white;
+    text-align: center;
+    border-radius: 5px;
+    padding: 5px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.info:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
