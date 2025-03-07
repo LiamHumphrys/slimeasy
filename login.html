@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SlimEasy - Login or Create Account</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="/manifest.json">
+</head>
+<body>
+    <div class="container">
+        <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo">
+        <h1>SlimEasy</h1>
+        
+        <!-- Create Account -->
+        <section id="createAccount">
+            <h2>Create Account</h2>
+            <form id="createForm">
+                <label>Name: <input type="text" id="createName" required placeholder="e.g., John Doe"></label><br>
+                <label>Email: <input type="email" id="createEmail" required placeholder="e.g., john@example.com"></label><br>
+                <label>Password: <input type="password" id="createPassword" required placeholder="Enter password"></label><br>
+                <button type="submit">Create Account</button>
+            </form>
+        </section>
+
+        <!-- Login -->
+        <section id="login">
+            <h2>Login</h2>
+            <form id="loginForm">
+                <label>Email: <input type="email" id="loginEmail" required placeholder="e.g., john@example.com"></label><br>
+                <label>Password: <input type="password" id="loginPassword" required placeholder="Enter password"></label><br>
+                <button type="submit">Login</button>
+            </form>
+            <p id="loginError" style="color: red; display: none;">Invalid email or password.</p>
+        </section>
+    </div>
+    <script>
+        // Handle account creation
+        document.getElementById('createForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('createName').value.trim();
+            const email = document.getElementById('createEmail').value.trim().toLowerCase();
+            const password = document.getElementById('createPassword').value;
+
+            const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+            if (accounts.some(acc => acc.email === email)) {
+                alert('Email already exists!');
+                return;
+            }
+            accounts.push({ name, email, password });
+            localStorage.setItem('accounts', JSON.stringify(accounts));
+            localStorage.setItem('currentUser', JSON.stringify({ name, email }));
+            window.location.href = 'index.html'; // New user goes to profile first
+        });
+
+        // Handle login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+            const password = document.getElementById('loginPassword').value;
+            const accounts = JSON.parse(localStorage.getItem('accounts') || '[]');
+            const account = accounts.find(acc => acc.email === email && acc.password === password);
+
+            if (account) {
+                localStorage.setItem('currentUser', JSON.stringify({ name: account.name, email }));
+                document.getElementById('loginError').style.display = 'none';
+                // Check if profile exists, redirect accordingly
+                const profileKey = `profile_${email}`;
+                const profile = JSON.parse(localStorage.getItem(profileKey));
+                window.location.href = profile ? 'tracker.html' : 'index.html';
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        });
+
+        // PWA Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('Service Worker registered'))
+                    .catch(err => console.log('Service Worker failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
