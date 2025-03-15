@@ -14,6 +14,10 @@
     <link rel="preload" href="utils.js" as="script">
     <link rel="preload" href="exercise.js" as="script">
     <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <link rel="stylesheet" href="footer.css">
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
 </head>
 <body>
     <!-- Main Navigation -->
@@ -39,6 +43,18 @@
                 <a href="exercise.html" class="nav-link active">
                     <i class="fas fa-running"></i> Exercise
                 </a>
+                <a href="calendar.html" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="wearable-settings.html" class="nav-link">
+                    <i class="fas fa-sync"></i> Wearables
+                </a>
+                <a href="community.html" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+                <a href="contact.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contact Us
+                </a>
             </div>
         </div>
     </nav>
@@ -52,38 +68,44 @@
             <form id="exerciseForm" class="card-form">
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="exerciseDay"><i class="fas fa-calendar-day"></i> Day</label>
-                        <select id="exerciseDay">
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
+                        <label for="exerciseDate"><i class="fas fa-calendar-alt"></i> Select Date</label>
+                        <div class="date-picker-container">
+                            <input type="date" id="exerciseDate" required>
+                            <div class="calendar-icon">
+                                <i class="fas fa-calendar-alt"></i>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="exerciseType"><i class="fas fa-dumbbell"></i> Exercise Type</label>
-                        <select id="exerciseType">
-                            <optgroup label="Running">
-                                <option value="running_5mph">Running (5 mph - Low Intensity)</option>
-                                <option value="running_6mph">Running (6 mph - Moderate Intensity)</option>
-                                <option value="running_7mph">Running (7 mph - High Intensity)</option>
-                            </optgroup>
-                            <optgroup label="Walking">
-                                <option value="walking_3mph">Walking (3 mph - Low Intensity)</option>
-                                <option value="walking_4mph">Walking (4 mph - Moderate Intensity)</option>
-                                <option value="walking_5mph">Walking (5 mph - High Intensity)</option>
-                            </optgroup>
-                            <optgroup label="Cycling">
-                                <option value="cycling_10mph">Cycling (10 mph - Low Intensity)</option>
-                                <option value="cycling_12mph">Cycling (12 mph - Moderate Intensity)</option>
-                                <option value="cycling_14mph">Cycling (14 mph - High Intensity)</option>
-                            </optgroup>
+                        <label for="exerciseTime"><i class="fas fa-clock"></i> Time of Day</label>
+                        <select id="exerciseTime">
+                            <option value="morning">Morning</option>
+                            <option value="afternoon">Afternoon</option>
+                            <option value="evening">Evening</option>
                         </select>
                     </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="exerciseType"><i class="fas fa-dumbbell"></i> Exercise Type</label>
+                    <select id="exerciseType">
+                        <optgroup label="Running">
+                            <option value="running_5mph">Running (5 mph - Low Intensity)</option>
+                            <option value="running_6mph">Running (6 mph - Moderate Intensity)</option>
+                            <option value="running_7mph">Running (7 mph - High Intensity)</option>
+                        </optgroup>
+                        <optgroup label="Walking">
+                            <option value="walking_3mph">Walking (3 mph - Low Intensity)</option>
+                            <option value="walking_4mph">Walking (4 mph - Moderate Intensity)</option>
+                            <option value="walking_5mph">Walking (5 mph - High Intensity)</option>
+                        </optgroup>
+                        <optgroup label="Cycling">
+                            <option value="cycling_10mph">Cycling (10 mph - Low Intensity)</option>
+                            <option value="cycling_12mph">Cycling (12 mph - Moderate Intensity)</option>
+                            <option value="cycling_14mph">Cycling (14 mph - High Intensity)</option>
+                        </optgroup>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -98,11 +120,28 @@
                     <button type="button" onclick="window.location.href='tracker.html'" class="secondary-button">
                         <i class="fas fa-arrow-left"></i> Back to Planner
                     </button>
+                    <button type="button" id="shareExerciseBtn" class="share-button">
+                        <i class="fas fa-share-alt"></i> Share to Community
+                    </button>
                 </div>
             </form>
             
             <div id="exerciseSummary" class="exercise-summary">
                 <!-- Will be filled by JavaScript -->
+            </div>
+            
+            <div class="import-device-section">
+                <h3><i class="fas fa-sync"></i> Import from Connected Devices</h3>
+                <p>Automatically sync your workouts from your fitness tracker or smartwatch.</p>
+                <div class="import-device-actions">
+                    <a href="wearable-settings.html" class="secondary-button">
+                        <i class="fas fa-link"></i> Connect Devices
+                    </a>
+                    <button id="importFromDevicesBtn" class="primary-button">
+                        <i class="fas fa-download"></i> Sync Activities
+                    </button>
+                </div>
+                <div id="wearableActivityContainer"></div>
             </div>
             
             <div class="info-card">
@@ -124,6 +163,13 @@
             </div>
         </section>
     </div>
+    
+    <!-- Footer with Privacy Policy -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 SlimEasy | <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
+        </div>
+    </footer>
     
     <script src="theme.js"></script>
     <script src="utils.js"></script>
@@ -168,13 +214,58 @@
                 });
             }
             
-            // Set current day by default
-            const today = new Date().getDay(); // 0 is Sunday
-            const dayIndex = today === 0 ? 6 : today - 1; // Convert to our 0-based index (Monday = 0)
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
             
-            const daySelect = document.getElementById('exerciseDay');
-            if (daySelect) {
-                daySelect.value = dayIndex;
+            // Set the date input default value to today
+            const dateInput = document.getElementById('exerciseDate');
+            if (dateInput) {
+                dateInput.value = formattedDate;
+            }
+            
+            // Set up share button
+            const shareBtn = document.getElementById('shareExerciseBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    // Create a title and message for the share
+                    const exerciseType = document.getElementById('exerciseType');
+                    let exerciseName = "Exercise";
+                    
+                    if (exerciseType && exerciseType.selectedIndex >= 0) {
+                        exerciseName = exerciseType.options[exerciseType.selectedIndex].text.split(' - ')[0];
+                    }
+                    
+                    const duration = document.getElementById('duration').value || "30";
+                    
+                    const title = `Completed ${exerciseName} workout!`;
+                    const message = `Just finished a ${duration}-minute ${exerciseName.toLowerCase()} session. Feeling great! #FitnessJourney`;
+                    
+                    // Redirect to community page with share parameters
+                    window.location.href = `community.html?share=true&type=exercise&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`;
+                });
+            }
+            
+            // Set up share button
+            const shareBtn = document.getElementById('shareExerciseBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    // Create a title and message for the share
+                    const exerciseType = document.getElementById('exerciseType');
+                    let exerciseName = "Exercise";
+                    
+                    if (exerciseType && exerciseType.selectedIndex >= 0) {
+                        exerciseName = exerciseType.options[exerciseType.selectedIndex].text.split(' - ')[0];
+                    }
+                    
+                    const duration = document.getElementById('duration').value || "30";
+                    
+                    const title = `Completed ${exerciseName} workout!`;
+                    const message = `Just finished a ${duration}-minute ${exerciseName.toLowerCase()} session. Feeling great! #FitnessJourney`;
+                    
+                    // Redirect to community page with share parameters
+                    window.location.href = `community.html?share=true&type=exercise&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`;
+                });
             }
         }
         
@@ -355,6 +446,68 @@
             color: var(--text-secondary);
         }
         
+        .share-button {
+            background-color: #3b5998;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: var(--input-border-radius);
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .share-button:hover {
+            background-color: #344e86;
+        }
+        
+        /* Date picker styles */
+        .date-picker-container {
+            position: relative;
+        }
+        
+        .calendar-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            pointer-events: none;
+        }
+        
+        input[type="date"] {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            background-color: var(--background-main);
+            color: var(--text-primary);
+            font-family: inherit;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+        
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+        
+        input[type="date"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
         @media (max-width: 768px) {
             .button-group {
                 flex-direction: column;
@@ -365,5 +518,44 @@
             }
         }
     </style>
+    
+    <script src="utils.js"></script>
+    <script src="theme.js"></script>
+    <script src="exercise.js"></script>
+    <script src="wearable-integration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is logged in
+            const currentUser = getFromStorage('currentUser');
+            if (!currentUser) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Initialize wearable widget
+            initializeWearableWidget('wearableActivityContainer');
+            
+            // Set up sync button
+            const syncButton = document.getElementById('importFromDevicesBtn');
+            if (syncButton) {
+                syncButton.addEventListener('click', function() {
+                    // Check if any devices are connected
+                    const userKey = `wearable_connections_${currentUser.email}`;
+                    const connections = getFromStorage(userKey, []);
+                    
+                    if (connections.length === 0) {
+                        showNotification('No devices connected. Connect a device first.', 'warning');
+                        return;
+                    }
+                    
+                    // Sync all connected devices
+                    syncAllConnectedPlatforms();
+                    
+                    // Show loading indicator
+                    showNotification('Syncing activities from your devices...', 'info');
+                });
+            }
+        });
+    </script>
 </body>
 </html>
