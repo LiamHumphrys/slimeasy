@@ -9,11 +9,16 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
     <!-- Preload critical assets -->
     <link rel="preload" href="theme.js" as="script">
     <link rel="preload" href="utils.js" as="script">
     <link rel="preload" href="tracker.js" as="script">
     <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <link rel="stylesheet" href="footer.css">
 </head>
 <body>
     <!-- Main Navigation -->
@@ -39,6 +44,18 @@
                 <a href="exercise.html" class="nav-link">
                     <i class="fas fa-running"></i> Exercise
                 </a>
+                <a href="calendar.html" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="wearable-settings.html" class="nav-link">
+                    <i class="fas fa-sync"></i> Wearables
+                </a>
+                <a href="community.html" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+                <a href="contact.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contact Us
+                </a>
             </div>
         </div>
     </nav>
@@ -47,13 +64,35 @@
         <h1>Food Tracker</h1>
         <p id="welcomeMessage"></p>
         
+        <!-- Streak Display -->
+        <div class="streak-display">
+            <div class="streak-counter">
+                <i class="fas fa-calendar-check streak-icon"></i>
+                <div>
+                    <div>Current Streak</div>
+                    <div class="streak-value" id="currentStreak">0 days</div>
+                </div>
+            </div>
+            <div class="streak-counter">
+                <i class="fas fa-trophy streak-icon"></i>
+                <div>
+                    <div>Longest Streak</div>
+                    <div class="streak-value" id="longestStreak">0 days</div>
+                </div>
+            </div>
+            <div class="streak-counter">
+                <i class="fas fa-star streak-icon"></i>
+                <div>
+                    <div>Points</div>
+                    <div class="streak-value" id="achievementPoints">0</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Tracker Navigation Bar -->
         <div class="nav-bar">
             <button id="viewSummary" class="nav-button active">
                 <i class="fas fa-chart-pie"></i> Summary
-            </button>
-            <button id="viewManual" class="nav-button">
-                <i class="fas fa-utensils"></i> Add Food
             </button>
             <button id="viewMealBuilder" class="nav-button">
                 <i class="fas fa-hamburger"></i> Meal Builder
@@ -61,11 +100,23 @@
             <button id="viewPlanner" class="nav-button">
                 <i class="fas fa-calendar-alt"></i> Weekly Plan
             </button>
+            <button id="viewAchievements" class="nav-button">
+                <i class="fas fa-medal"></i> Achievements
+            </button>
         </div>
 
         <!-- Summary -->
         <section id="summary" class="tab-content active">
             <h2><i class="fas fa-chart-line"></i> Your Plan Summary</h2>
+            <div class="connected-device-data">
+                <h3><i class="fas fa-sync"></i> Activity from Connected Devices</h3>
+                <div id="wearableTrackingWidget"></div>
+                <div class="device-actions">
+                    <a href="wearable-settings.html" class="action-button">
+                        <i class="fas fa-cog"></i> Manage Devices
+                    </a>
+                </div>
+            </div>
             <div class="summary-cards">
                 <div class="summary-card">
                     <div class="summary-icon">
@@ -143,12 +194,32 @@
                         <div class="progress-bar progress-bar-water" id="waterProgress" style="width: 0%"></div>
                     </div>
                     <p id="waterStatus">0/8 glasses</p>
+                    
+                    <!-- Hydration reminder toggle -->
+                    <div class="reminder-toggle">
+                        <div class="toggle-switch">
+                            <input type="checkbox" id="enableReminders" />
+                            <label for="enableReminders" class="toggle-label"></label>
+                        </div>
+                        <div class="reminder-text">
+                            <span>Enable hydration reminders</span>
+                            <select id="reminderInterval" class="reminder-interval">
+                                <option value="60">Every 1 hour</option>
+                                <option value="120" selected>Every 2 hours</option>
+                                <option value="180">Every 3 hours</option>
+                                <option value="240">Every 4 hours</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="action-buttons">
                 <button id="goToManual" class="action-button">
                     <i class="fas fa-plus-circle"></i> Add Food
+                </button>
+                <button onclick="window.location.href='scanner.html'" class="action-button">
+                    <i class="fas fa-barcode"></i> Scan Barcode
                 </button>
                 <button id="goToExercise" class="action-button">
                     <i class="fas fa-running"></i> Add Exercise
@@ -162,100 +233,248 @@
             </div>
         </section>
 
-        <!-- Manual Food Input -->
-        <section id="manual" class="tab-content">
-            <h2><i class="fas fa-utensils"></i> Manual Food Entry</h2>
-            <form id="manualForm" class="card-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="manualDay"><i class="fas fa-calendar-day"></i> Day</label>
-                        <select id="manualDay">
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="manualMealType"><i class="fas fa-clock"></i> Meal Type</label>
-                        <select id="manualMealType">
-                            <option value="breakfast">Breakfast</option>
-                            <option value="lunch">Lunch</option>
-                            <option value="dinner">Dinner</option>
-                            <option value="snack">Snack</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="manualFoodName"><i class="fas fa-apple-alt"></i> Food Name</label>
-                    <input type="text" id="manualFoodName" required placeholder="e.g., Grilled Chicken Breast">
-                </div>
-                
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="manualAmount"><i class="fas fa-fire"></i> Amount</label>
-                        <input type="number" id="manualAmount" min="1" required placeholder="e.g., 100">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="manualUnit">Unit</label>
-                        <select id="manualUnit">
-                            <option value="kcal">kcal</option>
-                            <option value="kJ">kJ</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit"><i class="fas fa-plus"></i> Add to Planner</button>
-            </form>
-        </section>
 
         <!-- Automatic Meal Builder -->
         <section id="automatic" class="tab-content">
             <h2><i class="fas fa-hamburger"></i> Meal Builder</h2>
             
-            <div class="search-box">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="ingredientSearch" placeholder="Search ingredients...">
+            <div class="tab-toggle">
+                <button id="dbFoodTab" class="tab-button active">Database Food</button>
+                <button id="manualFoodTab" class="tab-button">Manual Entry</button>
             </div>
             
-            <form id="mealForm" class="card-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ingredient"><i class="fas fa-carrot"></i> Ingredient</label>
-                        <select id="ingredient"></select>
+            <!-- Database Food Form -->
+            <div id="dbFoodForm" class="food-tab-content active">
+                <div class="search-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" id="ingredientSearch" placeholder="Search foods in database...">
+                        <div class="search-info">🌐 = Food from online database</div>
                     </div>
+                    <a href="scanner.html" class="barcode-button">
+                        <i class="fas fa-barcode"></i> Scan Barcode
+                    </a>
                 </div>
                 
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="ingredientQty"><i class="fas fa-balance-scale"></i> Quantity</label>
-                        <input type="number" id="ingredientQty" min="1" value="1">
+                <form id="mealForm" class="card-form">
+                    <div class="date-meal-selection">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dbMealDate"><i class="fas fa-calendar-day"></i> Date</label>
+                                <input type="date" id="dbMealDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="dbMealType"><i class="fas fa-clock"></i> Meal Type</label>
+                                <select id="dbMealType">
+                                    <option value="breakfast">Breakfast</option>
+                                    <option value="lunch">Lunch</option>
+                                    <option value="dinner">Dinner</option>
+                                    <option value="snack">Snack</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ingredient"><i class="fas fa-carrot"></i> Food Item</label>
+                            <select id="ingredient"></select>
+                            <button type="button" id="viewNutritionDetails" class="nutrition-button">
+                                <i class="fas fa-info-circle"></i> View Complete Nutrition
+                            </button>
+                        </div>
                     </div>
                     
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ingredientQty"><i class="fas fa-balance-scale"></i> Quantity</label>
+                            <input type="number" id="ingredientQty" min="1" value="1">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="ingredientUnit">Unit</label>
+                            <select id="ingredientUnit">
+                                <option value="g">Grams (g)</option>
+                                <option value="cup">Cups</option>
+                                <option value="oz">Ounces (oz)</option>
+                                <option value="tbsp">Tablespoons (tbsp)</option>
+                                <option value="tsp">Teaspoons (tsp)</option>
+                                <option value="unit">Units (e.g., 1 egg)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="nutrient-info-card">
+                        <h4><i class="fas fa-chart-pie"></i> Nutrition Facts <span id="perServingText">(per serving)</span></h4>
+                        <div id="nutrientInfo" class="nutrient-info">
+                            <div class="nutrient-item"><span>Calories:</span> <span id="nutrientCalories">0</span> kcal</div>
+                            <div class="nutrient-item"><span>Protein:</span> <span id="nutrientProtein">0</span>g</div>
+                            <div class="nutrient-item"><span>Carbs:</span> <span id="nutrientCarbs">0</span>g</div>
+                            <div class="nutrient-item"><span>Fat:</span> <span id="nutrientFat">0</span>g</div>
+                        </div>
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="button" id="addIngredient" class="action-button"><i class="fas fa-plus"></i> Add</button>
+                        <button type="button" id="removeIngredient" class="action-button remove"><i class="fas fa-minus"></i> Remove Last</button>
+                    </div>
+                </form>
+            </div>
+            
+            <!-- Manual Food Entry Form -->
+            <div id="manualFoodForm" class="food-tab-content">
+                <form id="customFoodForm" class="card-form">
+                    <div class="date-meal-selection">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customMealDate"><i class="fas fa-calendar-day"></i> Date</label>
+                                <input type="date" id="customMealDate">
+                            </div>
+                            <div class="form-group">
+                                <label for="customMealType"><i class="fas fa-clock"></i> Meal Type</label>
+                                <select id="customMealType">
+                                    <option value="breakfast">Breakfast</option>
+                                    <option value="lunch">Lunch</option>
+                                    <option value="dinner">Dinner</option>
+                                    <option value="snack">Snack</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                     <div class="form-group">
-                        <label for="ingredientUnit">Unit</label>
-                        <select id="ingredientUnit">
-                            <option value="g">Grams (g)</option>
-                            <option value="cup">Cups</option>
-                            <option value="oz">Ounces (oz)</option>
-                            <option value="tbsp">Tablespoons (tbsp)</option>
-                            <option value="tsp">Teaspoons (tsp)</option>
-                            <option value="unit">Units (e.g., 1 egg)</option>
-                        </select>
+                        <label for="customFoodName"><i class="fas fa-apple-alt"></i> Food Name</label>
+                        <input type="text" id="customFoodName" required placeholder="e.g., Grilled Chicken Breast">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customCalories"><i class="fas fa-fire"></i> Calories</label>
+                            <input type="number" id="customCalories" min="0" required placeholder="e.g., 200">
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customProtein"><i class="fas fa-drumstick-bite"></i> Protein (g)</label>
+                            <input type="number" id="customProtein" min="0" step="0.1" value="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="customCarbs"><i class="fas fa-bread-slice"></i> Carbs (g)</label>
+                            <input type="number" id="customCarbs" min="0" step="0.1" value="0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="customFat"><i class="fas fa-cheese"></i> Fat (g)</label>
+                            <input type="number" id="customFat" min="0" step="0.1" value="0">
+                        </div>
+                        
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="button-group full-width">
+                            <button type="button" id="helpEstimateMacros" class="nutrition-button">
+                                <i class="fas fa-calculator"></i> Auto-Calculate Macros
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <button type="button" id="addCustomFood" class="action-button"><i class="fas fa-plus"></i> Add to Meal</button>
+                </form>
+            </div>
+            
+            <!-- Nutrition Details Modal -->
+            <div id="nutritionModal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2 id="modalFoodName">Food Nutrition Details</h2>
+                        <span class="close">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="nutrition-label">
+                            <h3>Nutrition Facts</h3>
+                            <div id="servingInfo">Serving size: 100g</div>
+                            <div class="nutrition-divider thick"></div>
+                            <div class="calories-row">
+                                <div class="label">Calories</div>
+                                <div id="modalCalories" class="value">100</div>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Total Fat</div>
+                                <div id="modalFat" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row sub">
+                                <div class="label">Saturated Fat</div>
+                                <div id="modalSatFat" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row sub">
+                                <div class="label">Trans Fat</div>
+                                <div id="modalTransFat" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Cholesterol</div>
+                                <div id="modalCholesterol" class="value">0mg</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Sodium</div>
+                                <div id="modalSodium" class="value">0mg</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Total Carbohydrate</div>
+                                <div id="modalCarbs" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row sub">
+                                <div class="label">Dietary Fiber</div>
+                                <div id="modalFiber" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row sub">
+                                <div class="label">Total Sugars</div>
+                                <div id="modalSugars" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Protein</div>
+                                <div id="modalProtein" class="value">0g</div>
+                            </div>
+                            <div class="nutrition-divider thick"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Vitamin D</div>
+                                <div id="modalVitaminD" class="value">0mcg</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Calcium</div>
+                                <div id="modalCalcium" class="value">0mg</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Iron</div>
+                                <div id="modalIron" class="value">0mg</div>
+                            </div>
+                            <div class="nutrition-divider"></div>
+                            <div class="nutrient-row">
+                                <div class="label">Potassium</div>
+                                <div id="modalPotassium" class="value">0mg</div>
+                            </div>
+                        </div>
+                        <div class="modal-source" id="modalSource">Source: Local Database</div>
+                    </div>
+                    <div class="modal-footer">
+                        <button id="closeNutritionModal" class="action-button">Close</button>
+                        <button id="addFromModal" class="action-button primary">Add to Meal</button>
                     </div>
                 </div>
-                
-                <div class="button-group">
-                    <button type="button" id="addIngredient" class="action-button"><i class="fas fa-plus"></i> Add</button>
-                    <button type="button" id="removeIngredient" class="action-button remove"><i class="fas fa-minus"></i> Remove Last</button>
-                </div>
-            </form>
+            </div>
             
             <div class="meal-preview">
                 <h3><i class="fas fa-list"></i> Meal Ingredients</h3>
@@ -275,16 +494,8 @@
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="mealDay"><i class="fas fa-calendar-day"></i> Day</label>
-                        <select id="mealDay">
-                            <option value="0">Monday</option>
-                            <option value="1">Tuesday</option>
-                            <option value="2">Wednesday</option>
-                            <option value="3">Thursday</option>
-                            <option value="4">Friday</option>
-                            <option value="5">Saturday</option>
-                            <option value="6">Sunday</option>
-                        </select>
+                        <label for="saveMealDate"><i class="fas fa-calendar-day"></i> Date</label>
+                        <input type="date" id="saveMealDate">
                     </div>
                     
                     <div class="form-group">
@@ -395,10 +606,28 @@
                 </div>
             </div>
         </section>
+
+        <!-- Achievements Tab -->
+        <section id="achievements" class="tab-content">
+            <h2><i class="fas fa-medal"></i> Your Achievements</h2>
+            <div id="achievementsContainer">
+                <!-- Achievements will be rendered here -->
+            </div>
+        </section>
     </div>
+    
+    <!-- Footer with Privacy Policy -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 SlimEasy | <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
+        </div>
+    </footer>
     
     <script src="theme.js"></script>
     <script src="utils.js"></script>
+    <script src="export-utils.js"></script>
+    <script src="charts.js"></script>
+    <script src="gamification.js"></script>
     <script src="tracker.js"></script>
     <script>
         // Initialize on document load
@@ -453,10 +682,113 @@
         }
         
         document.getElementById('viewSummary').addEventListener('click', () => showTab('summary'));
-        document.getElementById('viewManual').addEventListener('click', () => showTab('manual'));
         document.getElementById('viewMealBuilder').addEventListener('click', () => showTab('automatic'));
         document.getElementById('viewPlanner').addEventListener('click', () => showTab('planner'));
-        document.getElementById('goToManual').addEventListener('click', () => showTab('manual'));
+        document.getElementById('viewAchievements').addEventListener('click', () => showTab('achievements'));
+        document.getElementById('goToManual').addEventListener('click', () => {
+            showTab('automatic');
+            // Show manual food entry tab
+            document.getElementById('manualFoodTab').click();
+        });
+        
+        // Set today's date for all date inputs on page load
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dbMealDate').value = today;
+        document.getElementById('customMealDate').value = today;
+        document.getElementById('saveMealDate').value = today;
+        
+        // Set up food entry tabs
+        document.getElementById('dbFoodTab').addEventListener('click', function() {
+            document.getElementById('dbFoodForm').classList.add('active');
+            document.getElementById('manualFoodForm').classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('manualFoodTab').classList.remove('active');
+        });
+        
+        document.getElementById('manualFoodTab').addEventListener('click', function() {
+            document.getElementById('manualFoodForm').classList.add('active');
+            document.getElementById('dbFoodForm').classList.remove('active');
+            this.classList.add('active');
+            document.getElementById('dbFoodTab').classList.remove('active');
+        });
+        
+        // Auto calculate macros button
+        document.getElementById('helpEstimateMacros').addEventListener('click', function() {
+            const calories = parseFloat(document.getElementById('customCalories').value) || 0;
+            if (calories <= 0) {
+                showNotification('Please enter calories first', 'warning');
+                return;
+            }
+            
+            // Standard macro distribution: 25% protein, 50% carbs, 25% fat
+            const protein = Math.round(calories * 0.25 / 4); // 4 cal per gram protein
+            const carbs = Math.round(calories * 0.5 / 4);     // 4 cal per gram carbs
+            const fat = Math.round(calories * 0.25 / 9);      // 9 cal per gram fat
+            
+            document.getElementById('customProtein').value = protein;
+            document.getElementById('customCarbs').value = carbs;
+            document.getElementById('customFat').value = fat;
+            
+            showNotification('Macros calculated based on calories', 'info');
+        });
+        
+        // Add custom food to meal
+        document.getElementById('addCustomFood').addEventListener('click', function() {
+            const foodName = document.getElementById('customFoodName').value;
+            const calories = parseFloat(document.getElementById('customCalories').value) || 0;
+            const protein = parseFloat(document.getElementById('customProtein').value) || 0;
+            const carbs = parseFloat(document.getElementById('customCarbs').value) || 0;
+            const fat = parseFloat(document.getElementById('customFat').value) || 0;
+            const mealDate = document.getElementById('customMealDate').value || new Date().toISOString().split('T')[0];
+            const mealType = document.getElementById('customMealType').value;
+            
+            if (!foodName || calories <= 0) {
+                showNotification('Please enter food name and calories', 'warning');
+                return;
+            }
+            
+            // Create meal item
+            const mealItem = {
+                name: `${foodName} (custom)`,
+                calories: calories,
+                source: 'custom',
+                type: mealType,
+                nutrients: {
+                    protein: protein,
+                    carbs: carbs,
+                    fat: fat
+                }
+            };
+            
+            // Add to meal ingredients
+            mealIngredients.push(mealItem);
+            mealTotalCalories += calories;
+            updateMealDisplay();
+            
+            // Save directly to calendar with date as well
+            const calendarItem = {
+                text: foodName,
+                calories: calories,
+                type: mealType,
+                protein: protein,
+                carbs: carbs,
+                fat: fat
+            };
+            // Use the saveToCalendarWithDate function from tracker.js
+            if (window.saveToCalendarWithDate) {
+                window.saveToCalendarWithDate(mealDate, calendarItem);
+            }
+            
+            // Show success notification
+            showNotification(`Added ${foodName} to meal`, 'success');
+            
+            // Reset the form
+            document.getElementById('customFoodName').value = '';
+            document.getElementById('customCalories').value = '';
+            document.getElementById('customProtein').value = '0';
+            document.getElementById('customCarbs').value = '0';
+            document.getElementById('customFat').value = '0';
+        });
         
         // Initialize water tracker
         function initializeWaterTracker() {
@@ -545,7 +877,14 @@
                     
                     // Update display
                     updateWaterDisplay(newCount);
-                    showNotification(`Water intake updated to ${newCount} glasses`);
+                    showNotification(`Water intake updated to ${newCount} glasses`, 'success');
+                    
+                    // Check if reminders should be adjusted
+                    if (newCount === 8 && window.hydrationReminderInterval) {
+                        // Clear current reminder since goal is reached
+                        clearInterval(window.hydrationReminderInterval);
+                        showNotification('Great job! You reached your water goal for today!', 'success', 5000);
+                    }
                 });
             }
             
@@ -553,6 +892,13 @@
             const percent = (count / 8) * 100;
             document.getElementById('waterProgress').style.width = `${percent}%`;
             document.getElementById('waterStatus').textContent = `${count}/8 glasses`;
+            
+            // Celebration animation if goal reached
+            if (count === 8) {
+                const progressBar = document.getElementById('waterProgress');
+                progressBar.classList.add('goal-complete');
+                setTimeout(() => progressBar.classList.remove('goal-complete'), 3000);
+            }
         }
         
         // Show notification
@@ -688,21 +1034,368 @@
                 window.location.href = `exercise.html?bmr=${bmr}&dailyGoal=${dailyGoal}&weight=${profile.weight}&goal=${profile.goalWeight}&tdee=${tdee}&time=${profile.timeToGoal}`;
             });
             
-            // Initialize water tracker
+            // Initialize water tracker and hydration reminders
             initializeWaterTracker();
+            
+            // Set up hydration reminder toggle
+            setupHydrationReminders();
         });
+        
+        /**
+         * Set up hydration reminder toggles and listeners
+         */
+        function setupHydrationReminders() {
+            const reminderToggle = document.getElementById('enableReminders');
+            const intervalSelect = document.getElementById('reminderInterval');
+            
+            if (!reminderToggle || !intervalSelect) return;
+            
+            // Load saved preferences
+            const currentUser = getFromStorage('currentUser');
+            if (currentUser && currentUser.email) {
+                const preferences = getFromStorage(`hydration_reminders_${currentUser.email}`, { enabled: false, interval: 120 });
+                
+                // Set toggle state
+                reminderToggle.checked = preferences.enabled;
+                
+                // Set interval selection
+                if (preferences.interval) {
+                    intervalSelect.value = preferences.interval.toString();
+                }
+                
+                // Initialize reminders if enabled
+                if (preferences.enabled) {
+                    initializeHydrationReminders(parseInt(intervalSelect.value));
+                }
+            }
+            
+            // Add event listeners
+            reminderToggle.addEventListener('change', function() {
+                if (this.checked) {
+                    // Request notification permission and initialize reminders
+                    requestNotificationPermission().then(permission => {
+                        if (permission === 'granted') {
+                            const interval = parseInt(intervalSelect.value);
+                            initializeHydrationReminders(interval);
+                            showNotification('Hydration reminders enabled!', 'info');
+                        } else {
+                            // If permission denied, uncheck toggle
+                            this.checked = false;
+                            showNotification('Notification permission denied', 'error');
+                        }
+                    });
+                } else {
+                    // Turn off reminders
+                    if (window.hydrationReminderInterval) {
+                        clearInterval(window.hydrationReminderInterval);
+                        window.hydrationReminderInterval = null;
+                        
+                        // Update user preferences
+                        const currentUser = getFromStorage('currentUser');
+                        if (currentUser && currentUser.email) {
+                            saveToStorage(`hydration_reminders_${currentUser.email}`, { 
+                                enabled: false, 
+                                interval: parseInt(intervalSelect.value) 
+                            });
+                        }
+                        
+                        showNotification('Hydration reminders disabled', 'info');
+                    }
+                }
+            });
+            
+            // Update interval when changed
+            intervalSelect.addEventListener('change', function() {
+                const interval = parseInt(this.value);
+                
+                // Only update if reminders are enabled
+                if (reminderToggle.checked) {
+                    initializeHydrationReminders(interval);
+                    showNotification(`Reminder interval updated to ${interval} minutes`, 'info');
+                }
+                
+                // Update user preferences regardless
+                const currentUser = getFromStorage('currentUser');
+                if (currentUser && currentUser.email) {
+                    const preferences = getFromStorage(`hydration_reminders_${currentUser.email}`, { enabled: reminderToggle.checked });
+                    
+                    saveToStorage(`hydration_reminders_${currentUser.email}`, { 
+                        enabled: preferences.enabled, 
+                        interval: interval 
+                    });
+                }
+            });
+            
+            // Listen for service worker messages
+            navigator.serviceWorker.addEventListener('message', event => {
+                if (event.data && event.data.type === 'ADD_WATER') {
+                    const data = getWaterCount();
+                    const newCount = Math.min((data.count || 0) + 1, 8);
+                    
+                    if (data.key) {
+                        localStorage.setItem(data.key, newCount);
+                        updateWaterDisplay(newCount);
+                        showNotification('Water intake updated!', 'success');
+                    }
+                }
+            });
+            
+            // Check URL parameters for actions
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('action') === 'add-water') {
+                // Update water count
+                const data = getWaterCount();
+                if (data.key) {
+                    const newCount = Math.min(data.count + 1, 8);
+                    localStorage.setItem(data.key, newCount);
+                    updateWaterDisplay(newCount);
+                    showNotification('Water intake updated!', 'success');
+                }
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
 
         // PWA Service Worker Registration
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
+                    .then(reg => {
+                        console.log('Service Worker registered');
+                        
+                        // Check if notification permission is already granted
+                        if (Notification.permission === 'granted') {
+                            const reminderToggle = document.getElementById('enableReminders');
+                            if (reminderToggle) {
+                                // Load preferences
+                                const currentUser = getFromStorage('currentUser');
+                                if (currentUser && currentUser.email) {
+                                    const prefs = getFromStorage(
+                                        `hydration_reminders_${currentUser.email}`, 
+                                        { enabled: false, interval: 120 }
+                                    );
+                                    
+                                    // Auto-enable reminders if previously enabled
+                                    if (prefs.enabled) {
+                                        setTimeout(() => {
+                                            initializeHydrationReminders(parseInt(prefs.interval));
+                                        }, 5000);
+                                    }
+                                }
+                            }
+                        }
+                    })
                     .catch(err => console.log('Service Worker failed:', err));
             });
         }
     </script>
     
     <style>
+        /* Food Database & Nutrition Styles */
+        .search-info {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            font-style: italic;
+        }
+        
+        .search-loading {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+        }
+        
+        .nutrition-button {
+            background-color: transparent;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+            border-radius: var(--input-border-radius);
+            padding: 6px 10px;
+            margin-top: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all var(--transition-speed);
+        }
+        
+        .nutrition-button:hover {
+            background-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+        
+        .nutrient-info-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .nutrient-info-card h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nutrient-info-card h4 i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+        
+        #perServingText {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: normal;
+            margin-left: 5px;
+        }
+        
+        .nutrient-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        
+        .nutrient-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .nutrient-item span:first-child {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow: auto;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            border-radius: var(--border-radius);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            animation: modalFadeIn 0.3s;
+            overflow: hidden;
+        }
+        
+        @keyframes modalFadeIn {
+            from {opacity: 0; transform: translateY(-20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--divider-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close {
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid var(--divider-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        .modal-source {
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-align: center;
+            font-style: italic;
+        }
+        
+        /* Nutrition Label Styles */
+        .nutrition-label {
+            font-family: 'Arial', sans-serif;
+            max-width: 300px;
+            margin: 0 auto;
+            border: 1px solid #000;
+            padding: 10px;
+        }
+        
+        .nutrition-label h3 {
+            font-size: 24px;
+            font-weight: 900;
+            margin: 0 0 5px 0;
+        }
+        
+        #servingInfo {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .nutrition-divider {
+            height: 1px;
+            background-color: #000;
+            margin: 5px 0;
+        }
+        
+        .nutrition-divider.thick {
+            height: 5px;
+        }
+        
+        .calories-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            font-weight: bold;
+            padding: 5px 0;
+        }
+        
+        .nutrient-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 14px;
+            padding: 3px 0;
+        }
+        
+        .nutrient-row.sub {
+            padding-left: 20px;
+        }
+        
+        .action-button.primary {
+            background-color: var(--primary-color);
+        }
+        
         /* Tab Navigation */
         .nav-bar {
             display: flex;
@@ -834,10 +1527,17 @@
             min-width: 200px;
         }
         
-        /* Search Box */
+        /* Search Box and Barcode */
+        .search-actions {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
         .search-box {
             position: relative;
-            margin-bottom: 20px;
+            flex-grow: 1;
         }
         
         .search-icon {
@@ -850,6 +1550,36 @@
         
         #ingredientSearch {
             padding-left: 35px;
+            width: 100%;
+        }
+        
+        .barcode-button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: var(--input-border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        
+        .barcode-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        @media (max-width: 600px) {
+            .search-actions {
+                flex-direction: column;
+            }
+            
+            .barcode-button {
+                width: 100%;
+                justify-content: center;
+            }
         }
         
         /* Meal Preview */
@@ -867,6 +1597,127 @@
             padding: 0;
             max-height: 300px;
             overflow-y: auto;
+            list-style-type: none;
+        }
+        
+        .ingredients-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            margin-bottom: 8px;
+            background-color: rgba(0,0,0,0.03);
+            border-radius: var(--input-border-radius);
+            border-left: 3px solid var(--primary-color);
+            transition: all var(--transition-speed);
+        }
+        
+        .ingredients-list li:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .item-text {
+            flex: 1;
+            font-weight: 500;
+        }
+        
+        .item-details {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-right: 10px;
+        }
+        
+        .calories-info {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+        
+        .nutrient-info-inline {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        
+        .remove-ingredient-btn {
+            background-color: transparent;
+            color: var(--error-color);
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all var(--transition-speed);
+        }
+        
+        .remove-ingredient-btn:hover {
+            background-color: rgba(244, 67, 54, 0.1);
+        }
+        
+        .meal-nutrition-summary {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--divider-color);
+        }
+        
+        .summary-macros {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        
+        .macro {
+            font-size: 13px;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .macro.protein {
+            background-color: rgba(233, 30, 99, 0.1);
+            color: #E91E63;
+        }
+        
+        .macro.carbs {
+            background-color: rgba(33, 150, 243, 0.1);
+            color: #2196F3;
+        }
+        
+        .macro.fat {
+            background-color: rgba(255, 152, 0, 0.1);
+            color: #FF9800;
+        }
+        
+        .macro.fiber {
+            background-color: rgba(76, 175, 80, 0.1);
+            color: #4CAF50;
+        }
+        
+        .macro-bar {
+            height: 8px;
+            width: 100%;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+        }
+        
+        .protein-bar {
+            height: 100%;
+            background-color: #E91E63;
+        }
+        
+        .carbs-bar {
+            height: 100%;
+            background-color: #2196F3;
+        }
+        
+        .fat-bar {
+            height: 100%;
+            background-color: #FF9800;
         }
         
         .meal-total {
@@ -1234,6 +2085,76 @@
             margin-top: 5px;
         }
         
+        /* Reminder Toggle Switch */
+        .reminder-toggle {
+            display: flex;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--divider-color);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 24px;
+            margin-right: 15px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-label {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-label {
+            background-color: var(--progress-water);
+        }
+        
+        input:checked + .toggle-label:before {
+            transform: translateX(26px);
+        }
+        
+        .reminder-text {
+            display: flex;
+            flex-direction: column;
+            font-size: 14px;
+        }
+        
+        .reminder-interval {
+            margin-top: 5px;
+            padding: 5px;
+            font-size: 13px;
+            border-radius: var(--input-border-radius);
+            border: 1px solid var(--divider-color);
+            width: auto;
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .summary-cards,
@@ -1274,7 +2195,112 @@
                 flex-basis: 100%;
                 margin-bottom: 10px;
             }
+            
+            .reminder-toggle {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .reminder-text {
+                margin-top: 10px;
+            }
+        }
+        
+        /* Goal completion celebration */
+        .progress-bar-water.goal-complete {
+            animation: celebrate 3s ease-in-out;
+        }
+        
+        @keyframes celebrate {
+            0%, 100% { background-color: var(--progress-water); }
+            25% { background-color: #4CAF50; }
+            50% { background-color: #E91E63; }
+            75% { background-color: #FFC107; }
+        }
+        
+        /* Food Entry Tab Styles */
+        .tab-toggle {
+            display: flex;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            border: 1px solid var(--divider-color);
+        }
+        
+        .tab-button {
+            flex: 1;
+            padding: 12px 15px;
+            background-color: var(--background-main);
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .food-tab-content {
+            display: none;
+        }
+        
+        .food-tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+        }
+        
+        .input-with-unit input {
+            flex: 3;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+        
+        .input-with-unit select {
+            flex: 1;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+            border-left: none;
+        }
+        
+        .full-width {
+            width: 100%;
+            justify-content: center;
+        }
+        
+        /* Date-meal selection section */
+        .date-meal-selection {
+            background-color: var(--primary-light);
+            padding: 10px;
+            border-radius: var(--border-radius);
+            margin-bottom: 15px;
+        }
+        
+        input[type="date"] {
+            height: 40px;
+            padding: 0 10px;
+            border-radius: var(--input-border-radius);
+            border: 1px solid var(--input-border-color);
+            background-color: var(--input-bg);
+            color: var(--text-primary);
         }
     </style>
+
+    <script src="utils.js"></script>
+    <script src="theme.js"></script>
+    <script src="tracker.js"></script>
+    <script src="wearable-integration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize wearable widget
+            initializeWearableWidget('wearableTrackingWidget');
+        });
+    </script>
 </body>
 </html>
