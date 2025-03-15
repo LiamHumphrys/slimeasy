@@ -20,6 +20,28 @@ function getFromStorage(key, defaultValue = null) {
 }
 
 /**
+ * Get the user's daily water count
+ * @returns {Object} Water count data and key
+ */
+function getWaterCount() {
+    try {
+        const currentUser = getFromStorage('currentUser');
+        if (!currentUser || !currentUser.email) return { count: 0 };
+        
+        // Format date for storage key - YYYY-MM-DD
+        const today = new Date().toISOString().split('T')[0];
+        const waterKey = `water_${currentUser.email}_${today}`;
+        
+        // Get existing water count from storage
+        const waterCount = parseInt(localStorage.getItem(waterKey) || '0');
+        return { count: waterCount, key: waterKey };
+    } catch (error) {
+        console.error('Error getting water count:', error);
+        return { count: 0 };
+    }
+}
+
+/**
  * Safely save JSON to localStorage with error handling
  * @param {string} key - localStorage key to set
  * @param {*} value - Value to stringify and store
@@ -184,7 +206,14 @@ function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js')
-                .then(reg => console.log('Service Worker registered'))
+                .then(reg => {
+                    console.log('Service Worker registered');
+                    
+                    // Add push notification support in future versions
+                    if (reg.pushManager) {
+                        console.log('Push notification support available');
+                    }
+                })
                 .catch(err => console.log('Service Worker failed:', err));
         });
     }
@@ -255,6 +284,133 @@ window.formatNumber = formatNumber;
 window.createElement = createElement;
 window.debounce = debounce;
 window.showNotification = showNotification;
+/**
+ * Request notification permission
+ * @returns {Promise} Promise that resolves with the permission status
+ */
+async function requestNotificationPermission() {
+    if (!('Notification' in window)) {
+        console.log('This browser does not support notifications');
+        return 'denied';
+    }
+    
+    if (Notification.permission === 'granted') {
+        return 'granted';
+    }
+    
+    if (Notification.permission !== 'denied') {
+        const permission = await Notification.requestPermission();
+        return permission;
+    }
+    
+    return Notification.permission;
+}
+
+/**
+ * Send a hydration reminder notification
+ * @param {number} waterCount - Current water count
+ */
+function sendHydrationReminder(waterCount) {
+    if (Notification.permission !== 'granted') return;
+    
+    const remainingGlasses = 8 - waterCount;
+    
+    if (remainingGlasses <= 0) return;
+    
+    const options = {
+        body: `You've had ${waterCount} glasses of water today. Remember to drink ${remainingGlasses} more to reach your goal!`,
+        icon: 'slimeasylogo.jpg',
+        badge: 'slimeasylogo.jpg',
+        tag: 'hydration-reminder',
+        renotify: true,
+        requireInteraction: true,
+        actions: [
+            { action: 'add-water', title: 'Record a Glass' },
+            { action: 'dismiss', title: 'Dismiss' }
+        ],
+        data: { waterCount }
+    };
+    
+    const notification = new Notification('Hydration Reminder', options);
+    
+    notification.onclick = function(event) {
+        if (event.action === 'add-water') {
+            // Update water count
+            const data = getWaterCount();
+            if (data.key) {
+                const newCount = Math.min(data.count + 1, 8);
+                localStorage.setItem(data.key, newCount);
+                
+                // Update UI if on the tracker page
+                const waterContainer = document.getElementById('waterGlasses');
+                if (waterContainer) {
+                    updateWaterDisplay(newCount);
+                    showNotification('Water intake updated!', 'success');
+                }
+            }
+        }
+        
+        // Focus on window if clicked
+        window.focus();
+        notification.close();
+    };
+}
+
+/**
+ * Initialize hydration reminders
+ * @param {number} intervalMinutes - Reminder interval in minutes
+ */
+function initializeHydrationReminders(intervalMinutes = 120) {
+    // Check if reminders are already running (avoid duplicates)
+    if (window.hydrationReminderInterval) {
+        clearInterval(window.hydrationReminderInterval);
+    }
+    
+    // Request notification permission
+    requestNotificationPermission()
+        .then(permission => {
+            if (permission === 'granted') {
+                // Initial check when page loads
+                setTimeout(checkHydrationStatus, 60000); // Check after 1 minute
+                
+                // Set interval for periodic checks
+                window.hydrationReminderInterval = setInterval(checkHydrationStatus, intervalMinutes * 60000);
+                
+                console.log(`Hydration reminders initialized (${intervalMinutes} minute intervals)`);
+            }
+        });
+    
+    // Store user preference
+    const currentUser = getFromStorage('currentUser');
+    if (currentUser && currentUser.email) {
+        saveToStorage(`hydration_reminders_${currentUser.email}`, { 
+            enabled: true, 
+            interval: intervalMinutes 
+        });
+    }
+}
+
+/**
+ * Check hydration status and send reminder if needed
+ */
+function checkHydrationStatus() {
+    const { count } = getWaterCount();
+    
+    // Only send reminder if less than 8 glasses
+    if (count < 8) {
+        // Check time of day (only send between 8 AM and 10 PM)
+        const currentHour = new Date().getHours();
+        if (currentHour >= 8 && currentHour < 22) {
+            sendHydrationReminder(count);
+        }
+    }
+}
+
+window.getWaterCount = getWaterCount;
+window.requestNotificationPermission = requestNotificationPermission;
+window.sendHydrationReminder = sendHydrationReminder;
+window.initializeHydrationReminders = initializeHydrationReminders;
+window.checkHydrationStatus = checkHydrationStatus;
 window.registerServiceWorker = registerServiceWorker;
 window.setupMobileMenu = setupMobileMenu;
 window.checkUserLogin = checkUserLogin;
