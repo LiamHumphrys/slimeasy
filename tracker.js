@@ -79,46 +79,46 @@ if (!Array.isArray(weeklyFoods) || weeklyFoods.length !== 7) {
     localStorage.setItem(`${userKey}_foods`, JSON.stringify(weeklyFoods));
 }
 
-// 300 Common Ingredients (full list)
+// 300 Common Ingredients (full list) with macronutrients
 const ingredients = [
     // Meats (25)
-    { name: "Chicken Breast (100g)", calories: 165, defaultUnit: "100g" },
-    { name: "Chicken Thigh (100g)", calories: 209, defaultUnit: "100g" },
-    { name: "Chicken Drumstick (100g)", calories: 172, defaultUnit: "100g" },
-    { name: "Turkey Breast (100g)", calories: 135, defaultUnit: "100g" },
-    { name: "Turkey Leg (100g)", calories: 208, defaultUnit: "100g" },
-    { name: "Beef Steak (100g)", calories: 271, defaultUnit: "100g" },
-    { name: "Ground Beef 80/20 (100g)", calories: 254, defaultUnit: "100g" },
-    { name: "Beef Ribeye (100g)", calories: 291, defaultUnit: "100g" },
-    { name: "Pork Chop (100g)", calories: 231, defaultUnit: "100g" },
-    { name: "Pork Belly (100g)", calories: 518, defaultUnit: "100g" },
-    { name: "Bacon (1 slice)", calories: 43, defaultUnit: "unit" },
-    { name: "Ham (100g)", calories: 145, defaultUnit: "100g" },
-    { name: "Lamb Chop (100g)", calories: 294, defaultUnit: "100g" },
-    { name: "Sausage (1 link)", calories: 85, defaultUnit: "unit" },
-    { name: "Pepperoni (1 oz)", calories: 138, defaultUnit: "oz" },
-    { name: "Salmon (100g)", calories: 206, defaultUnit: "100g" },
-    { name: "Tuna (100g)", calories: 144, defaultUnit: "100g" },
-    { name: "Cod (100g)", calories: 82, defaultUnit: "100g" },
-    { name: "Tilapia (100g)", calories: 96, defaultUnit: "100g" },
-    { name: "Shrimp (100g)", calories: 99, defaultUnit: "100g" },
-    { name: "Crab (100g)", calories: 83, defaultUnit: "100g" },
-    { name: "Lobster (100g)", calories: 77, defaultUnit: "100g" },
-    { name: "Duck Breast (100g)", calories: 337, defaultUnit: "100g" },
-    { name: "Venison (100g)", calories: 158, defaultUnit: "100g" },
-    { name: "Bison (100g)", calories: 143, defaultUnit: "100g" },
+    { name: "Chicken Breast (100g)", calories: 165, defaultUnit: "100g", nutrients: { protein: 31, carbs: 0, fat: 3.6, fiber: 0 } },
+    { name: "Chicken Thigh (100g)", calories: 209, defaultUnit: "100g", nutrients: { protein: 26, carbs: 0, fat: 10.9, fiber: 0 } },
+    { name: "Chicken Drumstick (100g)", calories: 172, defaultUnit: "100g", nutrients: { protein: 24.3, carbs: 0, fat: 7.8, fiber: 0 } },
+    { name: "Turkey Breast (100g)", calories: 135, defaultUnit: "100g", nutrients: { protein: 29.9, carbs: 0, fat: 1.2, fiber: 0 } },
+    { name: "Turkey Leg (100g)", calories: 208, defaultUnit: "100g", nutrients: { protein: 28.6, carbs: 0, fat: 9.7, fiber: 0 } },
+    { name: "Beef Steak (100g)", calories: 271, defaultUnit: "100g", nutrients: { protein: 26.2, carbs: 0, fat: 17.6, fiber: 0 } },
+    { name: "Ground Beef 80/20 (100g)", calories: 254, defaultUnit: "100g", nutrients: { protein: 17.2, carbs: 0, fat: 20, fiber: 0 } },
+    { name: "Beef Ribeye (100g)", calories: 291, defaultUnit: "100g", nutrients: { protein: 21.6, carbs: 0, fat: 22.6, fiber: 0 } },
+    { name: "Pork Chop (100g)", calories: 231, defaultUnit: "100g", nutrients: { protein: 25.7, carbs: 0, fat: 14.0, fiber: 0 } },
+    { name: "Pork Belly (100g)", calories: 518, defaultUnit: "100g", nutrients: { protein: 9.3, carbs: 0, fat: 53.0, fiber: 0 } },
+    { name: "Bacon (1 slice)", calories: 43, defaultUnit: "unit", nutrients: { protein: 3.0, carbs: 0.1, fat: 3.3, fiber: 0 } },
+    { name: "Ham (100g)", calories: 145, defaultUnit: "100g", nutrients: { protein: 21.8, carbs: 0.5, fat: 6.0, fiber: 0 } },
+    { name: "Lamb Chop (100g)", calories: 294, defaultUnit: "100g", nutrients: { protein: 24.7, carbs: 0, fat: 21.2, fiber: 0 } },
+    { name: "Sausage (1 link)", calories: 85, defaultUnit: "unit", nutrients: { protein: 5.0, carbs: 0.8, fat: 7.0, fiber: 0 } },
+    { name: "Pepperoni (1 oz)", calories: 138, defaultUnit: "oz", nutrients: { protein: 6.1, carbs: 0.9, fat: 12.1, fiber: 0 } },
+    { name: "Salmon (100g)", calories: 206, defaultUnit: "100g", nutrients: { protein: 22.1, carbs: 0, fat: 12.4, fiber: 0 } },
+    { name: "Tuna (100g)", calories: 144, defaultUnit: "100g", nutrients: { protein: 30.0, carbs: 0, fat: 1.0, fiber: 0 } },
+    { name: "Cod (100g)", calories: 82, defaultUnit: "100g", nutrients: { protein: 18.0, carbs: 0, fat: 0.7, fiber: 0 } },
+    { name: "Tilapia (100g)", calories: 96, defaultUnit: "100g", nutrients: { protein: 20.1, carbs: 0, fat: 1.7, fiber: 0 } },
+    { name: "Shrimp (100g)", calories: 99, defaultUnit: "100g", nutrients: { protein: 24.0, carbs: 0.2, fat: 0.3, fiber: 0 } },
+    { name: "Crab (100g)", calories: 83, defaultUnit: "100g", nutrients: { protein: 18, carbs: 0, fat: 1.1, fiber: 0 } },
+    { name: "Lobster (100g)", calories: 77, defaultUnit: "100g", nutrients: { protein: 16.5, carbs: 0.5, fat: 0.6, fiber: 0 } },
+    { name: "Duck Breast (100g)", calories: 337, defaultUnit: "100g", nutrients: { protein: 18.3, carbs: 0, fat: 28.4, fiber: 0 } },
+    { name: "Venison (100g)", calories: 158, defaultUnit: "100g", nutrients: { protein: 30.2, carbs: 0, fat: 3.2, fiber: 0 } },
+    { name: "Bison (100g)", calories: 143, defaultUnit: "100g", nutrients: { protein: 28.4, carbs: 0, fat: 2.4, fiber: 0 } },
 
     // Fruits (25)
-    { name: "Apple (1 medium)", calories: 95, defaultUnit: "unit" },
-    { name: "Banana (1 medium)", calories: 105, defaultUnit: "unit" },
-    { name: "Orange (1 medium)", calories: 62, defaultUnit: "unit" },
-    { name: "Strawberries (1 cup)", calories: 49, defaultUnit: "cup" },
-    { name: "Blueberries (1 cup)", calories: 83, defaultUnit: "cup" },
-    { name: "Raspberries (1 cup)", calories: 64, defaultUnit: "cup" },
-    { name: "Blackberries (1 cup)", calories: 62, defaultUnit: "cup" },
-    { name: "Grapes (1 cup)", calories: 104, defaultUnit: "cup" },
-    { name: "Pineapple (1 cup)", calories: 82, defaultUnit: "cup" },
-    { name: "Mango (1 cup)", calories: 99, defaultUnit: "cup" },
+    { name: "Apple (1 medium)", calories: 95, defaultUnit: "unit", nutrients: { protein: 0.5, carbs: 25, fat: 0.3, fiber: 4.4 } },
+    { name: "Banana (1 medium)", calories: 105, defaultUnit: "unit", nutrients: { protein: 1.3, carbs: 27, fat: 0.4, fiber: 3.1 } },
+    { name: "Orange (1 medium)", calories: 62, defaultUnit: "unit", nutrients: { protein: 1.2, carbs: 15.4, fat: 0.2, fiber: 3.1 } },
+    { name: "Strawberries (1 cup)", calories: 49, defaultUnit: "cup", nutrients: { protein: 1, carbs: 11.7, fat: 0.5, fiber: 3 } },
+    { name: "Blueberries (1 cup)", calories: 83, defaultUnit: "cup", nutrients: { protein: 1.1, carbs: 21.2, fat: 0.5, fiber: 3.6 } },
+    { name: "Raspberries (1 cup)", calories: 64, defaultUnit: "cup", nutrients: { protein: 1.5, carbs: 14.7, fat: 0.8, fiber: 8 } },
+    { name: "Blackberries (1 cup)", calories: 62, defaultUnit: "cup", nutrients: { protein: 2, carbs: 14.5, fat: 0.7, fiber: 7.6 } },
+    { name: "Grapes (1 cup)", calories: 104, defaultUnit: "cup", nutrients: { protein: 1.1, carbs: 27.3, fat: 0.2, fiber: 1.4 } },
+    { name: "Pineapple (1 cup)", calories: 82, defaultUnit: "cup", nutrients: { protein: 0.9, carbs: 21.7, fat: 0.2, fiber: 2.3 } },
+    { name: "Mango (1 cup)", calories: 99, defaultUnit: "cup", nutrients: { protein: 1.4, carbs: 24.7, fat: 0.6, fiber: 2.6 } },
     { name: "Peach (1 medium)", calories: 59, defaultUnit: "unit" },
     { name: "Pear (1 medium)", calories: 101, defaultUnit: "unit" },
     { name: "Watermelon (1 cup)", calories: 46, defaultUnit: "cup" },
@@ -136,16 +136,16 @@ const ingredients = [
     { name: "Lemon (1 medium)", calories: 17, defaultUnit: "unit" },
 
     // Vegetables (25)
-    { name: "Broccoli (1 cup)", calories: 55, defaultUnit: "cup" },
-    { name: "Carrots (1 cup)", calories: 52, defaultUnit: "cup" },
-    { name: "Spinach (1 cup)", calories: 7, defaultUnit: "cup" },
-    { name: "Kale (1 cup)", calories: 33, defaultUnit: "cup" },
-    { name: "Potato (1 medium)", calories: 130, defaultUnit: "unit" },
-    { name: "Sweet Potato (1 medium)", calories: 103, defaultUnit: "unit" },
-    { name: "Tomato (1 medium)", calories: 22, defaultUnit: "unit" },
-    { name: "Cucumber (1 cup)", calories: 16, defaultUnit: "cup" },
-    { name: "Bell Pepper (1 medium)", calories: 25, defaultUnit: "unit" },
-    { name: "Zucchini (1 cup)", calories: 33, defaultUnit: "cup" },
+    { name: "Broccoli (1 cup)", calories: 55, defaultUnit: "cup", nutrients: { protein: 3.7, carbs: 11.2, fat: 0.6, fiber: 5.1 } },
+    { name: "Carrots (1 cup)", calories: 52, defaultUnit: "cup", nutrients: { protein: 1.2, carbs: 12.3, fat: 0.3, fiber: 3.6 } },
+    { name: "Spinach (1 cup)", calories: 7, defaultUnit: "cup", nutrients: { protein: 0.9, carbs: 1.1, fat: 0.1, fiber: 0.7 } },
+    { name: "Kale (1 cup)", calories: 33, defaultUnit: "cup", nutrients: { protein: 2.9, carbs: 6.7, fat: 0.5, fiber: 1.3 } },
+    { name: "Potato (1 medium)", calories: 130, defaultUnit: "unit", nutrients: { protein: 3.2, carbs: 29.6, fat: 0.1, fiber: 2.9 } },
+    { name: "Sweet Potato (1 medium)", calories: 103, defaultUnit: "unit", nutrients: { protein: 2, carbs: 23.6, fat: 0.2, fiber: 3.8 } },
+    { name: "Tomato (1 medium)", calories: 22, defaultUnit: "unit", nutrients: { protein: 1.1, carbs: 4.8, fat: 0.2, fiber: 1.5 } },
+    { name: "Cucumber (1 cup)", calories: 16, defaultUnit: "cup", nutrients: { protein: 0.8, carbs: 3.1, fat: 0.2, fiber: 1 } },
+    { name: "Bell Pepper (1 medium)", calories: 25, defaultUnit: "unit", nutrients: { protein: 1, carbs: 6, fat: 0.2, fiber: 2 } },
+    { name: "Zucchini (1 cup)", calories: 33, defaultUnit: "cup", nutrients: { protein: 2.4, carbs: 6.6, fat: 0.6, fiber: 2 } },
     { name: "Cauliflower (1 cup)", calories: 25, defaultUnit: "cup" },
     { name: "Brussels Sprouts (1 cup)", calories: 56, defaultUnit: "cup" },
     { name: "Asparagus (1 cup)", calories: 27, defaultUnit: "cup" },
@@ -379,23 +379,462 @@ const ingredients = [
     { name: "Beef Stew (1 cup)", calories: 235, defaultUnit: "cup" }
 ];
 
-// Populate Ingredient Dropdown
+// Edamam API credentials
+const EDAMAM_APP_ID = 'b047d111';
+const EDAMAM_APP_KEY = 'cf3bf39de00d2b05fe3215fbdcf3d773';
+const EDAMAM_API_URL = 'https://api.edamam.com/api/food-database/v2/parser';
+
+// Populate Ingredient Dropdown from both API and local data
 const ingredientSelect = document.getElementById('ingredient');
+let searchTimeout;
+let lastSearchQuery = '';
+let apiResults = [];
+
+// Function to perform API search for foods
+async function searchFoodAPI(query) {
+    if (!query || query.length < 2) return [];
+    
+    try {
+        const url = `${EDAMAM_API_URL}?app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_APP_KEY}&ingr=${encodeURIComponent(query)}&nutrition-type=logging`;
+        
+        // Show loading indicator
+        const searchBox = document.getElementById('ingredientSearch').parentNode;
+        let loadingEl = searchBox.querySelector('.search-loading');
+        if (!loadingEl) {
+            loadingEl = document.createElement('div');
+            loadingEl.className = 'search-loading';
+            loadingEl.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            searchBox.appendChild(loadingEl);
+        }
+        
+        const response = await fetch(url);
+        
+        // Remove loading indicator
+        if (loadingEl) {
+            searchBox.removeChild(loadingEl);
+        }
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        // Transform API results to match our format
+        return data.hints.map(item => {
+            const food = item.food;
+            const measure = item.measures[0] || { label: 'g', weight: 100 };
+            const nutrients = food.nutrients || {};
+            
+            return {
+                name: `${food.label} (API)`,
+                calories: Math.round(nutrients.ENERC_KCAL || 0),
+                defaultUnit: measure.label.toLowerCase(),
+                weight: measure.weight,
+                nutrientData: {
+                    protein: nutrients.PROCNT || 0,
+                    fat: nutrients.FAT || 0,
+                    carbs: nutrients.CHOCDF || 0,
+                    fiber: nutrients.FIBTG || 0
+                },
+                source: 'api',
+                foodId: food.foodId
+            };
+        });
+    } catch (error) {
+        console.error('Food API search error:', error);
+        showNotification('Error searching food database', 'error');
+        return [];
+    }
+}
+
 function populateIngredients(filter = '') {
     ingredientSelect.innerHTML = '';
-    const filtered = ingredients.filter(ing => ing.name.toLowerCase().includes(filter.toLowerCase()));
-    filtered.forEach(ing => {
+    
+    // Always include local database results
+    const localFiltered = ingredients.filter(ing => ing.name.toLowerCase().includes(filter.toLowerCase()));
+    
+    // Combine local and API results
+    const allResults = [...apiResults, ...localFiltered];
+    
+    if (allResults.length === 0) {
         const option = document.createElement('option');
-        option.value = JSON.stringify({ calories: ing.calories, unit: ing.defaultUnit });
-        option.textContent = `${ing.name} (${ing.calories} kcal / ${Math.round(ing.calories * kcalToKj)} kJ per ${ing.defaultUnit})`;
+        option.value = '';
+        option.textContent = filter ? 'No matches found - try another search' : 'Start typing to search foods';
+        option.disabled = true;
         ingredientSelect.appendChild(option);
-    });
+    } else {
+        allResults.forEach(ing => {
+            const option = document.createElement('option');
+            // For API items, include complete nutrient data
+            const valueData = {
+                calories: ing.calories,
+                unit: ing.defaultUnit, 
+                weight: ing.weight || 100,
+                source: ing.source || 'local'
+            };
+            
+            if (ing.nutrientData) {
+                valueData.nutrients = ing.nutrientData;
+            }
+            
+            option.value = JSON.stringify(valueData);
+            
+            // Show API or local source in the option text
+            const sourceIndicator = ing.source === 'api' ? ' 🌐' : '';
+            option.textContent = `${ing.name}${sourceIndicator} (${ing.calories} kcal / ${Math.round(ing.calories * kcalToKj)} kJ per ${ing.defaultUnit})`;
+            ingredientSelect.appendChild(option);
+        });
+    }
+    
+    // Add nutrient info display to the dropdown
+    updateNutrientInfoDisplay();
 }
+
+// Add function to update nutrient info when selecting an item
+function updateNutrientInfoDisplay() {
+    const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+    if (!selectedOption || !selectedOption.value) return;
+    
+    try {
+        const itemData = JSON.parse(selectedOption.value);
+        const calories = itemData.calories || 0;
+        
+        // Update the nutrient info display with selected item data
+        document.getElementById('nutrientCalories').textContent = calories;
+        
+        if (itemData.nutrients) {
+            // Use actual nutrient data when available
+            const protein = parseFloat(itemData.nutrients.protein) || 0;
+            const carbs = parseFloat(itemData.nutrients.carbs) || 0;
+            const fat = parseFloat(itemData.nutrients.fat) || 0;
+            
+            document.getElementById('nutrientProtein').textContent = protein.toFixed(1);
+            document.getElementById('nutrientCarbs').textContent = carbs.toFixed(1);
+            document.getElementById('nutrientFat').textContent = fat.toFixed(1);
+            
+            // Update data in itemData to ensure macros are captured
+            itemData.nutrients = {
+                protein: protein,
+                carbs: carbs,
+                fat: fat
+            };
+            
+            // Update the selected option value to include nutrients
+            selectedOption.value = JSON.stringify(itemData);
+        } else {
+            // For items without detailed nutrients, generate estimated macros based on calories
+            const estimatedProtein = Math.round(calories * 0.25 / 4); // 25% of calories from protein (4 cal per gram)
+            const estimatedCarbs = Math.round(calories * 0.5 / 4);    // 50% of calories from carbs (4 cal per gram)
+            const estimatedFat = Math.round(calories * 0.25 / 9);     // 25% of calories from fat (9 cal per gram)
+            
+            document.getElementById('nutrientProtein').textContent = estimatedProtein.toFixed(1);
+            document.getElementById('nutrientCarbs').textContent = estimatedCarbs.toFixed(1);
+            document.getElementById('nutrientFat').textContent = estimatedFat.toFixed(1);
+            
+            // Add estimated nutrients to item data to ensure they're captured
+            itemData.nutrients = {
+                protein: estimatedProtein,
+                carbs: estimatedCarbs,
+                fat: estimatedFat
+            };
+            
+            // Update the selected option value to include the nutrients
+            selectedOption.value = JSON.stringify(itemData);
+            
+            // Add note that these are estimated values
+            const nutrientInfoEl = document.getElementById('nutrientInfo');
+            if (nutrientInfoEl) {
+                // Check if note already exists
+                let noteEl = nutrientInfoEl.querySelector('.nutrient-note');
+                if (!noteEl) {
+                    noteEl = document.createElement('div');
+                    noteEl.className = 'nutrient-note';
+                    noteEl.textContent = '* Estimated values based on calories';
+                    noteEl.style.fontSize = '11px';
+                    noteEl.style.color = 'var(--text-secondary)';
+                    noteEl.style.fontStyle = 'italic';
+                    noteEl.style.marginTop = '5px';
+                    nutrientInfoEl.appendChild(noteEl);
+                }
+            }
+        }
+        
+        // Make the card visible
+        const nutrientCard = document.querySelector('.nutrient-info-card');
+        if (nutrientCard) {
+            nutrientCard.style.display = 'block';
+        }
+        
+        // Update serving text
+        document.getElementById('perServingText').textContent = `(per ${itemData.unit || 'serving'})`;
+        
+        // Enable nutrition details button if it's API data with full nutrients
+        const viewDetailsBtn = document.getElementById('viewNutritionDetails');
+        if (viewDetailsBtn) {
+            viewDetailsBtn.disabled = itemData.source !== 'api';
+            viewDetailsBtn.title = itemData.source === 'api' ? 
+                'View complete nutrition information' : 
+                'Complete nutrition details only available for database items';
+        }
+    } catch (e) {
+        console.error('Error updating nutrient info:', e);
+    }
+}
+
+// Function to get detailed nutrition data from API for a specific food
+async function getFoodDetails(foodId) {
+    if (!foodId) return null;
+    
+    try {
+        const url = `https://api.edamam.com/api/food-database/v2/nutrients?app_id=${EDAMAM_APP_ID}&app_key=${EDAMAM_APP_KEY}`;
+        
+        // Show loading modal or indicator
+        showNotification('Loading nutrition details...', 'info');
+        
+        // Create request body as per Edamam API documentation
+        const requestBody = {
+            ingredients: [
+                {
+                    quantity: 1,
+                    measureURI: 'http://www.edamam.com/ontologies/edamam.owl#Measure_gram',
+                    foodId: foodId
+                }
+            ]
+        };
+        
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(requestBody)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error fetching food details:', error);
+        showNotification('Error loading nutrition details', 'error');
+        return null;
+    }
+}
+
+// Functions for nutrition modal
+function openNutritionModal(foodData, detailedNutrients = null) {
+    const modal = document.getElementById('nutritionModal');
+    if (!modal) return;
+    
+    try {
+        // Set basic info
+        document.getElementById('modalFoodName').textContent = 
+            foodData.name || 'Food Nutrition Details';
+        document.getElementById('servingInfo').textContent = 
+            `Serving size: ${foodData.weight || 100}${foodData.unit || 'g'}`;
+        document.getElementById('modalCalories').textContent = 
+            `${foodData.calories || 0}`;
+        
+        // Source info
+        document.getElementById('modalSource').textContent = 
+            foodData.source === 'api' ? 'Source: Edamam Food Database' : 'Source: Local Database';
+        
+        // If we have detailed nutrients from the API, use them
+        if (detailedNutrients) {
+            const nutrients = detailedNutrients.totalNutrients || {};
+            
+            // Set nutrient values with proper units
+            if (nutrients.FAT) document.getElementById('modalFat').textContent = 
+                `${nutrients.FAT.quantity.toFixed(1)}${nutrients.FAT.unit}`;
+            if (nutrients.FASAT) document.getElementById('modalSatFat').textContent = 
+                `${nutrients.FASAT.quantity.toFixed(1)}${nutrients.FASAT.unit}`;
+            if (nutrients.FATRN) document.getElementById('modalTransFat').textContent = 
+                `${nutrients.FATRN.quantity.toFixed(1)}${nutrients.FATRN.unit}`;
+            if (nutrients.CHOLE) document.getElementById('modalCholesterol').textContent = 
+                `${nutrients.CHOLE.quantity.toFixed(1)}${nutrients.CHOLE.unit}`;
+            if (nutrients.NA) document.getElementById('modalSodium').textContent = 
+                `${nutrients.NA.quantity.toFixed(1)}${nutrients.NA.unit}`;
+            if (nutrients.CHOCDF) document.getElementById('modalCarbs').textContent = 
+                `${nutrients.CHOCDF.quantity.toFixed(1)}${nutrients.CHOCDF.unit}`;
+            if (nutrients.FIBTG) document.getElementById('modalFiber').textContent = 
+                `${nutrients.FIBTG.quantity.toFixed(1)}${nutrients.FIBTG.unit}`;
+            if (nutrients.SUGAR) document.getElementById('modalSugars').textContent = 
+                `${nutrients.SUGAR.quantity.toFixed(1)}${nutrients.SUGAR.unit}`;
+            if (nutrients.PROCNT) document.getElementById('modalProtein').textContent = 
+                `${nutrients.PROCNT.quantity.toFixed(1)}${nutrients.PROCNT.unit}`;
+            if (nutrients.VITD) document.getElementById('modalVitaminD').textContent = 
+                `${nutrients.VITD.quantity.toFixed(1)}${nutrients.VITD.unit}`;
+            if (nutrients.CA) document.getElementById('modalCalcium').textContent = 
+                `${nutrients.CA.quantity.toFixed(1)}${nutrients.CA.unit}`;
+            if (nutrients.FE) document.getElementById('modalIron').textContent = 
+                `${nutrients.FE.quantity.toFixed(1)}${nutrients.FE.unit}`;
+            if (nutrients.K) document.getElementById('modalPotassium').textContent = 
+                `${nutrients.K.quantity.toFixed(1)}${nutrients.K.unit}`;
+        } else if (foodData.nutrients) {
+            // Use basic nutrient data if detailed not available
+            document.getElementById('modalFat').textContent = `${parseFloat(foodData.nutrients.fat || 0).toFixed(1)}g`;
+            document.getElementById('modalCarbs').textContent = `${parseFloat(foodData.nutrients.carbs || 0).toFixed(1)}g`;
+            document.getElementById('modalFiber').textContent = `0g`;
+            document.getElementById('modalProtein').textContent = `${parseFloat(foodData.nutrients.protein || 0).toFixed(1)}g`;
+            
+            // Set default 0 values for other nutrients
+            document.getElementById('modalSatFat').textContent = '0g';
+            document.getElementById('modalTransFat').textContent = '0g';
+            document.getElementById('modalCholesterol').textContent = '0mg';
+            document.getElementById('modalSodium').textContent = '0mg';
+            document.getElementById('modalSugars').textContent = '0g';
+            document.getElementById('modalVitaminD').textContent = '0mcg';
+            document.getElementById('modalCalcium').textContent = '0mg';
+            document.getElementById('modalIron').textContent = '0mg';
+            document.getElementById('modalPotassium').textContent = '0mg';
+        } else {
+            // Just show calories if that's all we have
+            // Set default 0 values for nutrients
+            document.getElementById('modalFat').textContent = '0g';
+            document.getElementById('modalSatFat').textContent = '0g';
+            document.getElementById('modalTransFat').textContent = '0g';
+            document.getElementById('modalCholesterol').textContent = '0mg';
+            document.getElementById('modalSodium').textContent = '0mg';
+            document.getElementById('modalCarbs').textContent = '0g';
+            document.getElementById('modalFiber').textContent = '0g';
+            document.getElementById('modalSugars').textContent = '0g';
+            document.getElementById('modalProtein').textContent = '0g';
+            document.getElementById('modalVitaminD').textContent = '0mcg';
+            document.getElementById('modalCalcium').textContent = '0mg';
+            document.getElementById('modalIron').textContent = '0mg';
+            document.getElementById('modalPotassium').textContent = '0mg';
+        }
+        
+        // Store current food data for "Add to Meal" button
+        modal.dataset.currentFood = JSON.stringify(foodData);
+        
+        // Show the modal
+        modal.style.display = 'block';
+        
+    } catch (error) {
+        console.error('Error displaying nutrition modal:', error);
+        showNotification('Error displaying nutrition information', 'error');
+    }
+}
+
+function closeNutritionModal() {
+    const modal = document.getElementById('nutritionModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// Initialize with local data first
 populateIngredients();
 
 // Event Listeners
 document.getElementById('ingredientSearch').addEventListener('input', function(e) {
-    populateIngredients(e.target.value);
+    const query = e.target.value.trim();
+    
+    // Immediately show local results
+    populateIngredients(query);
+    
+    // Debounce API search to prevent too many requests
+    clearTimeout(searchTimeout);
+    
+    // Only search API if query has changed and is substantial
+    if (query.length >= 2 && query !== lastSearchQuery) {
+        searchTimeout = setTimeout(async () => {
+            lastSearchQuery = query;
+            apiResults = await searchFoodAPI(query);
+            populateIngredients(query);
+        }, 500); // 500ms delay
+    }
+});
+
+// Add change event to ingredient select to update nutrient info
+ingredientSelect.addEventListener('change', updateNutrientInfoDisplay);
+
+// Nutrition modal event listeners
+document.addEventListener('DOMContentLoaded', function() {
+    // View nutrition details button
+    const viewNutritionBtn = document.getElementById('viewNutritionDetails');
+    if (viewNutritionBtn) {
+        viewNutritionBtn.addEventListener('click', async function() {
+            const selectedOption = ingredientSelect.options[ingredientSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
+            
+            try {
+                const itemData = JSON.parse(selectedOption.value);
+                const foodName = selectedOption.textContent.split('(')[0].trim();
+                
+                // Create a food data object with all the info we have
+                const foodData = {
+                    name: foodName,
+                    calories: itemData.calories,
+                    unit: itemData.unit,
+                    weight: itemData.weight,
+                    nutrients: itemData.nutrients,
+                    source: itemData.source,
+                    foodId: itemData.foodId
+                };
+                
+                // For API items, fetch detailed nutrition
+                let detailedNutrition = null;
+                if (itemData.source === 'api' && itemData.foodId) {
+                    detailedNutrition = await getFoodDetails(itemData.foodId);
+                }
+                
+                // Open the modal
+                openNutritionModal(foodData, detailedNutrition);
+            } catch (e) {
+                console.error('Error opening nutrition modal:', e);
+                showNotification('Error showing nutrition details', 'error');
+            }
+        });
+    }
+    
+    // Close modal button and X icon
+    document.getElementById('closeNutritionModal').addEventListener('click', closeNutritionModal);
+    const closeBtn = document.querySelector('.modal-header .close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeNutritionModal);
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('nutritionModal');
+        if (event.target === modal) {
+            closeNutritionModal();
+        }
+    });
+    
+    // Add from modal button
+    document.getElementById('addFromModal').addEventListener('click', function() {
+        const modal = document.getElementById('nutritionModal');
+        if (!modal || !modal.dataset.currentFood) return;
+        
+        // Get selected date for database food
+        const mealDate = document.getElementById('dbMealDate').value || new Date().toISOString().split('T')[0];
+        
+        try {
+            const foodData = JSON.parse(modal.dataset.currentFood);
+            const qty = 1; // Default quantity
+            const foodName = foodData.name;
+            const calories = foodData.calories;
+            
+            // Add to meal ingredients list
+            mealIngredients.push({ 
+                name: `${qty} ${foodData.unit || 'serving'} ${foodName}`, 
+                calories: calories 
+            });
+            mealTotalCalories += calories;
+            updateMealDisplay();
+            
+            // Close modal and show notification
+            closeNutritionModal();
+            showNotification(`Added ${foodName} to meal`, 'success');
+        } catch (e) {
+            console.error('Error adding from modal:', e);
+        }
+    });
 });
 
 // Quick add common foods
@@ -538,7 +977,16 @@ document.getElementById('manualForm').addEventListener('submit', function(e) {
     const amount = parseFloat(document.getElementById('manualAmount').value) || 0;
     const unit = document.getElementById('manualUnit').value;
     const calories = unit === 'kcal' ? amount : Math.round(amount / kcalToKj);
-    addToPlanner(dayIndex, `${foodName} (${amount} ${unit})`, calories, true, mealType);
+    
+    // Estimate macros based on calories (rough estimate)
+    const macros = {
+        protein: Math.round(calories * 0.25 / 4), // 25% of calories from protein (4 cal per gram)
+        carbs: Math.round(calories * 0.5 / 4),    // 50% of calories from carbs (4 cal per gram)
+        fat: Math.round(calories * 0.25 / 9),     // 25% of calories from fat (9 cal per gram)
+        fiber: Math.round(calories * 0.05 / 2)     // ~5% of calories (estimate)
+    };
+    
+    addToPlanner(dayIndex, `${foodName} (${amount} ${unit})`, calories, true, mealType, macros);
     
     // Show notification
     showQuickAddNotification(foodName, calories);
@@ -548,19 +996,98 @@ document.getElementById('manualForm').addEventListener('submit', function(e) {
 
 let mealIngredients = [];
 let mealTotalCalories = 0;
+let inCustomMeal = false; // Flag to know if we're building a meal or adding directly
 
 document.getElementById('addIngredient').addEventListener('click', function() {
-    const { calories, unit } = JSON.parse(document.getElementById('ingredient').value);
-    const qty = parseFloat(document.getElementById('ingredientQty').value) || 0;
-    const selectedUnit = document.getElementById('ingredientUnit').value;
-    const baseMultiplier = unit === "100g" ? 100 : (unit === "cup" ? 1 : (unit === "oz" ? 1 : (unit === "tbsp" ? 1 : (unit === "tsp" ? 1 : 1))));
-    const caloriesPerUnit = calories / (unit === "100g" ? 100 : baseMultiplier);
-    const multiplier = unitMultipliers[selectedUnit] * (unit === "100g" ? 100 : 1);
-    const adjustedCalories = Math.round(caloriesPerUnit * qty * multiplier);
-    const foodText = document.getElementById('ingredient').options[document.getElementById('ingredient').selectedIndex].text;
-    mealIngredients.push({ name: `${qty} ${selectedUnit} ${foodText}`, calories: adjustedCalories });
-    mealTotalCalories += adjustedCalories;
-    updateMealDisplay();
+    try {
+        // Get selected food data and quantity
+        const selectedValue = document.getElementById('ingredient').value;
+        if (!selectedValue) {
+            showNotification('Please select a food item first', 'warning');
+            return;
+        }
+        
+        // Get date and meal type
+        const mealDate = document.getElementById('dbMealDate').value || new Date().toISOString().split('T')[0];
+        const mealType = document.getElementById('dbMealType').value;
+        
+        const itemData = JSON.parse(selectedValue);
+        const qty = parseFloat(document.getElementById('ingredientQty').value) || 0;
+        if (qty <= 0) {
+            showNotification('Please enter a valid quantity', 'warning');
+            return;
+        }
+        
+        const selectedUnit = document.getElementById('ingredientUnit').value;
+        const foodText = document.getElementById('ingredient').options[document.getElementById('ingredient').selectedIndex].text;
+        const foodName = foodText.split('(')[0].trim();
+        
+        // Calculate adjusted calories based on unit conversion
+        const baseUnit = itemData.unit || '100g';
+        const baseMultiplier = baseUnit === "100g" ? 100 : 
+                              (baseUnit === "cup" ? 1 : 
+                              (baseUnit === "oz" ? 1 : 
+                              (baseUnit === "tbsp" ? 1 : 
+                              (baseUnit === "tsp" ? 1 : 1))));
+        
+        const caloriesPerUnit = itemData.calories / baseMultiplier;
+        const multiplier = unitMultipliers[selectedUnit] * (baseUnit === "100g" ? 100 : 1);
+        const adjustedCalories = Math.round(caloriesPerUnit * qty * multiplier);
+        
+        // Create a descriptive item with source indicator
+        const sourceIndicator = itemData.source === 'api' ? ' 🌐' : '';
+        const itemName = `${qty} ${selectedUnit} ${foodName}${sourceIndicator}`;
+        
+        // Add to meal with full nutrition data if available
+        const mealItem = { 
+            name: itemName, 
+            calories: adjustedCalories,
+            source: itemData.source,
+            type: mealType
+        };
+        
+        // If we have nutrition data, include it
+        if (itemData.nutrients) {
+            const nutrientMultiplier = qty * multiplier / baseMultiplier;
+            mealItem.nutrients = {
+                protein: Math.round(itemData.nutrients.protein * nutrientMultiplier * 10) / 10,
+                carbs: Math.round(itemData.nutrients.carbs * nutrientMultiplier * 10) / 10,
+                fat: Math.round(itemData.nutrients.fat * nutrientMultiplier * 10) / 10,
+                fiber: Math.round(itemData.nutrients.fiber * nutrientMultiplier * 10) / 10
+            };
+        }
+        
+        mealIngredients.push(mealItem);
+        mealTotalCalories += adjustedCalories;
+        updateMealDisplay();
+        
+        // Save directly to calendar if we're not batch adding to a meal
+        if (!inCustomMeal) {
+            // Create calendar item that includes all nutritional data
+            const calendarItem = {
+                text: itemName,
+                calories: adjustedCalories,
+                type: mealType
+            };
+            
+            // Add nutrient data if available
+            if (mealItem.nutrients) {
+                calendarItem.protein = mealItem.nutrients.protein;
+                calendarItem.carbs = mealItem.nutrients.carbs;
+                calendarItem.fat = mealItem.nutrients.fat;
+            }
+            
+            // Use existing calendar functions to save the food directly
+            saveToCalendarWithDate(mealDate, calendarItem);
+            showNotification(`Added to ${mealType} on ${mealDate}`, 'success');
+        }
+        
+        // Show success notification
+        showNotification(`Added ${foodName} to meal`, 'success');
+    } catch (error) {
+        console.error('Error adding ingredient:', error);
+        showNotification('Error adding ingredient', 'error');
+    }
 });
 
 document.getElementById('removeIngredient').addEventListener('click', function() {
@@ -571,14 +1098,70 @@ document.getElementById('removeIngredient').addEventListener('click', function()
     }
 });
 
+// Set inCustomMeal flag when user starts building a meal
+document.getElementById('mealName').addEventListener('focus', function() {
+    inCustomMeal = true;
+});
+
 document.getElementById('saveMealForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    const dayIndex = parseInt(document.getElementById('mealDay').value);
+    const mealDate = document.getElementById('saveMealDate').value || new Date().toISOString().split('T')[0]; // Default to today if not selected
     const mealType = document.getElementById('mealType').value;
     const mealName = document.getElementById('mealName').value;
-    addToPlanner(dayIndex, `${mealName} (${mealIngredients.map(i => i.name).join(', ')})`, mealTotalCalories, true, mealType);
+    
+    // Use the macros calculated in updateMealDisplay if available
+    const macros = window.currentMealMacros || {
+        protein: 0,
+        carbs: 0,
+        fat: 0,
+        fiber: 0
+    };
+    
+    // If we don't have macros from updateMealDisplay, calculate them
+    if (!window.currentMealMacros) {
+        // Sum up macros from all ingredients
+        mealIngredients.forEach(ingredient => {
+            if (ingredient.nutrients) {
+                macros.protein += parseFloat(ingredient.nutrients.protein) || 0;
+                macros.carbs += parseFloat(ingredient.nutrients.carbs) || 0;
+                macros.fat += parseFloat(ingredient.nutrients.fat) || 0;
+                macros.fiber += parseFloat(ingredient.nutrients.fiber) || 0;
+            }
+        });
+        
+        // Round the values for display
+        Object.keys(macros).forEach(key => {
+            macros[key] = Math.round(macros[key]);
+        });
+    }
+    
+    // Create a meal description that's not too long
+    let mealDescription;
+    if (mealIngredients.length <= 3) {
+        mealDescription = `${mealName} (${mealIngredients.map(i => i.name.split(' ')[0]).join(', ')})`;
+    } else {
+        const firstThree = mealIngredients.slice(0, 3).map(i => i.name.split(' ')[0]).join(', ');
+        mealDescription = `${mealName} (${firstThree} & ${mealIngredients.length - 3} more)`;
+    }
+    
+    // Add to planner using date
+    addToPlanner(
+        mealDate, 
+        mealDescription, 
+        mealTotalCalories, 
+        true, 
+        mealType,
+        macros
+    );
+    
+    // Show success notification
+    showNotification(`Added ${mealName} to ${mealType}`, 'success');
+    
+    // Reset the meal builder
     mealIngredients = [];
     mealTotalCalories = 0;
+    window.currentMealMacros = null;
+    inCustomMeal = false; // Reset flag
     updateMealDisplay();
     this.reset();
 });
@@ -589,15 +1172,74 @@ document.getElementById('addExercise').addEventListener('click', function() {
 });
 
 // Helper Functions
-function addToPlanner(dayIndex, itemText, calories, isFood = true, mealType = null) {
+function addToPlanner(dateOrDayIndex, itemText, calories, isFood = true, mealType = null, macros = null) {
     calories = parseFloat(calories) || 0;
+    
+    // Check if we're using a date string or day index
+    let dayIndex = 0;
+    let dateStr = null;
+    
+    if (typeof dateOrDayIndex === 'string' && dateOrDayIndex.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        // It's a date string in YYYY-MM-DD format
+        dateStr = dateOrDayIndex;
+        
+        // Get day of week (0-6) for weekly display
+        const date = new Date(dateStr);
+        // Convert from Sunday (0) to Monday (0) based system
+        dayIndex = date.getDay();
+        dayIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+    } else {
+        // It's a day index (0-6)
+        dayIndex = parseInt(dateOrDayIndex) || 0;
+        if (dayIndex < 0 || dayIndex > 6) dayIndex = 0;
+    }
+    
     if (isFood) {
         weeklyCalories[dayIndex] = (parseFloat(weeklyCalories[dayIndex]) || 0) + calories;
-        weeklyFoods[dayIndex].push({ text: itemText, cal: calories, type: mealType });
+        
+        // Add more nutrition data if available
+        const foodItem = { 
+            text: itemText, 
+            cal: calories, 
+            calories: calories, // Add explicit calories property for calendar view
+            type: mealType 
+        };
+        
+        // Add macros if available
+        if (macros) {
+            foodItem.protein = macros.protein || 0;
+            foodItem.carbs = macros.carbs || 0;
+            foodItem.fat = macros.fat || 0;
+        }
+        
+        weeklyFoods[dayIndex].push(foodItem);
+        
+        // Save to calendar data format as well (YYYY-MM-DD)
+        if (dateStr) {
+            // Save directly using the date string
+            saveToCalendarWithDate(dateStr, foodItem);
+        } else {
+            // Convert day index to date
+            saveToCalendar(dayIndex, foodItem);
+        }
     } else {
         weeklyExercise[dayIndex] = (parseFloat(weeklyExercise[dayIndex]) || 0) + calories;
-        weeklyFoods[dayIndex].push({ text: itemText, cal: -calories, type: 'exercise' });
+        const exerciseItem = { 
+            text: itemText, 
+            cal: -calories, 
+            calories: calories, // For calendar view
+            type: 'exercise' 
+        };
+        weeklyFoods[dayIndex].push(exerciseItem);
+        
+        // Save exercise to calendar data
+        if (dateStr) {
+            saveExerciseToCalendarWithDate(dateStr, exerciseItem);
+        } else {
+            saveExerciseToCalendar(dayIndex, exerciseItem);
+        }
     }
+    
     console.log('After addToPlanner:', { dayIndex, itemText, calories, weeklyCalories, weeklyExercise });
     updatePlanner();
     saveToStorage();
@@ -605,9 +1247,159 @@ function addToPlanner(dayIndex, itemText, calories, isFood = true, mealType = nu
 
 function updateMealDisplay() {
     const list = document.getElementById('mealIngredients');
-    list.innerHTML = mealIngredients.map(i => `<li>${i.name}</li>`).join('');
+    if (!list) return;
+    
+    // Clear the list
+    list.innerHTML = '';
+    
+    // Calculate total nutrition values
+    let totalProtein = 0;
+    let totalCarbs = 0;
+    let totalFat = 0;
+    let totalFiber = 0;
+    
+    // Add each ingredient with expanded details
+    mealIngredients.forEach((item, index) => {
+        const listItem = document.createElement('li');
+        
+        // Create main text
+        const itemText = document.createElement('div');
+        itemText.className = 'item-text';
+        itemText.textContent = item.name;
+        
+        // Create details section
+        const itemDetails = document.createElement('div');
+        itemDetails.className = 'item-details';
+        
+        // Add calories
+        const caloriesInfo = document.createElement('span');
+        caloriesInfo.className = 'calories-info';
+        caloriesInfo.textContent = `${item.calories} kcal`;
+        itemDetails.appendChild(caloriesInfo);
+        
+        // Add nutrition info if available
+        if (item.nutrients) {
+            // Make sure values are valid numbers
+            const protein = parseFloat(item.nutrients.protein) || 0;
+            const carbs = parseFloat(item.nutrients.carbs) || 0;
+            const fat = parseFloat(item.nutrients.fat) || 0;
+            const fiber = parseFloat(item.nutrients.fiber) || 0;
+            
+            totalProtein += protein;
+            totalCarbs += carbs;
+            totalFat += fat;
+            totalFiber += fiber;
+            
+            const nutrientInfo = document.createElement('span');
+            nutrientInfo.className = 'nutrient-info-inline';
+            nutrientInfo.textContent = `(P: ${protein.toFixed(1)}g · C: ${carbs.toFixed(1)}g · F: ${fat.toFixed(1)}g)`;
+            itemDetails.appendChild(nutrientInfo);
+        } else {
+            // If no nutrients data, estimate based on calories
+            const estimatedProtein = Math.round(item.calories * 0.25 / 4); // 25% of calories from protein
+            const estimatedCarbs = Math.round(item.calories * 0.5 / 4);    // 50% of calories from carbs
+            const estimatedFat = Math.round(item.calories * 0.25 / 9);     // 25% of calories from fat
+            const estimatedFiber = Math.round(item.calories * 0.05 / 2);   // ~5% estimate
+            
+            // Create nutrient data if it doesn't exist
+            item.nutrients = {
+                protein: estimatedProtein,
+                carbs: estimatedCarbs,
+                fat: estimatedFat,
+                fiber: estimatedFiber
+            };
+            
+            totalProtein += estimatedProtein;
+            totalCarbs += estimatedCarbs;
+            totalFat += estimatedFat;
+            totalFiber += estimatedFiber;
+            
+            const nutrientInfo = document.createElement('span');
+            nutrientInfo.className = 'nutrient-info-inline';
+            nutrientInfo.textContent = `(P: ${estimatedProtein}g · C: ${estimatedCarbs}g · F: ${estimatedFat}g)`;
+            nutrientInfo.title = 'Estimated macros based on calories';
+            itemDetails.appendChild(nutrientInfo);
+        }
+        
+        // Create remove button
+        const removeBtn = document.createElement('button');
+        removeBtn.className = 'remove-ingredient-btn';
+        removeBtn.innerHTML = '<i class="fas fa-times"></i>';
+        removeBtn.addEventListener('click', function() {
+            mealTotalCalories -= item.calories;
+            mealIngredients.splice(index, 1);
+            updateMealDisplay();
+        });
+        
+        // Assemble item
+        listItem.appendChild(itemText);
+        listItem.appendChild(itemDetails);
+        listItem.appendChild(removeBtn);
+        list.appendChild(listItem);
+    });
+    
+    // Update totals display
     document.getElementById('mealCalories').textContent = mealTotalCalories;
     document.getElementById('mealKj').textContent = Math.round(mealTotalCalories * kcalToKj);
+    
+    // Create global variable to track macros for the meal
+    window.currentMealMacros = {
+        protein: Math.round(totalProtein),
+        carbs: Math.round(totalCarbs),
+        fat: Math.round(totalFat),
+        fiber: Math.round(totalFiber)
+    };
+    
+    // If we have nutrition summaries, show them
+    if (totalProtein > 0 || totalCarbs > 0 || totalFat > 0) {
+        let nutritionSummary = document.getElementById('mealNutritionSummary');
+        if (!nutritionSummary) {
+            nutritionSummary = document.createElement('div');
+            nutritionSummary.id = 'mealNutritionSummary';
+            nutritionSummary.className = 'meal-nutrition-summary';
+            const totalContainer = document.querySelector('.meal-total');
+            if (totalContainer) {
+                totalContainer.appendChild(nutritionSummary);
+            }
+        }
+        
+        nutritionSummary.innerHTML = `
+            <div class="summary-macros">
+                <span class="macro protein">Protein: ${totalProtein.toFixed(1)}g</span>
+                <span class="macro carbs">Carbs: ${totalCarbs.toFixed(1)}g</span>
+                <span class="macro fat">Fat: ${totalFat.toFixed(1)}g</span>
+                <span class="macro fiber">Fiber: ${totalFiber.toFixed(1)}g</span>
+            </div>
+            <div class="macro-percentages">
+                <div class="macro-bar">
+                    <div class="protein-bar" style="width: ${calculateMacroPercentage(totalProtein, totalCarbs, totalFat, 'protein')}%"></div>
+                    <div class="carbs-bar" style="width: ${calculateMacroPercentage(totalProtein, totalCarbs, totalFat, 'carbs')}%"></div>
+                    <div class="fat-bar" style="width: ${calculateMacroPercentage(totalProtein, totalCarbs, totalFat, 'fat')}%"></div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Calculate macro percentages for the progress bar
+function calculateMacroPercentage(protein, carbs, fat, macroType) {
+    const proteinCalories = protein * 4;
+    const carbsCalories = carbs * 4;
+    const fatCalories = fat * 9;
+    const totalCalories = proteinCalories + carbsCalories + fatCalories;
+    
+    if (totalCalories === 0) return 0;
+    
+    switch (macroType) {
+        case 'protein':
+            return Math.round((proteinCalories / totalCalories) * 100);
+        case 'carbs':
+            return Math.round((carbsCalories / totalCalories) * 100);
+        case 'fat':
+            return Math.round((fatCalories / totalCalories) * 100);
+        default:
+            return 0;
+    }
 }
 
 function updatePlanner() {
@@ -692,6 +1484,136 @@ function saveToStorage() {
     localStorage.setItem(`${userKey}_calories`, JSON.stringify(weeklyCalories));
     localStorage.setItem(`${userKey}_exercise`, JSON.stringify(weeklyExercise));
     localStorage.setItem(`${userKey}_foods`, JSON.stringify(weeklyFoods));
+}
+
+/**
+ * Save food data to calendar format (by day of month)
+ * @param {number} dayIndex - Day index (0-6 for Monday-Sunday)
+ * @param {Object} foodItem - Food item data with calories and nutrition
+ */
+function saveToCalendarWithDate(dateStr, foodItem) {
+    try {
+        // Parse the date string to get year-month and day
+        const [yearMonth, day] = [dateStr.substring(0, 7), dateStr.substring(8, 10)];
+        
+        // Create storage key for this month's foods
+        const foodsKey = `foods_${currentUser.email}_${yearMonth}`;
+        
+        // Get existing foods for this month or initialize
+        const monthFoods = getFromStorage(foodsKey, {});
+        
+        // Get foods for this day or initialize
+        if (!monthFoods[day]) {
+            monthFoods[day] = {};
+        }
+        
+        // Get meals for this type or initialize
+        const mealType = foodItem.type || 'other';
+        if (!monthFoods[day][mealType]) {
+            monthFoods[day][mealType] = [];
+        }
+        
+        // Add the food to the appropriate meal list
+        const foodEntry = {
+            name: foodItem.text,
+            calories: foodItem.calories || foodItem.cal,
+            protein: foodItem.protein || 0,
+            carbs: foodItem.carbs || 0,
+            fat: foodItem.fat || 0
+        };
+        
+        monthFoods[day][mealType].push(foodEntry);
+        
+        // Save back to localStorage
+        saveToStorage(foodsKey, monthFoods);
+        
+        console.log(`Food saved to calendar: ${yearMonth}-${day}, ${mealType}`, foodEntry);
+    } catch (error) {
+        console.error('Error saving food to calendar:', error);
+    }
+}
+
+function saveToCalendar(dayIndex, foodItem) {
+    try {
+        // Get the date for the specified day index relative to the current week
+        const currentDate = new Date();
+        const today = currentDate.getDay(); // 0-6 (Sunday-Saturday)
+        
+        // Convert from Monday-Sunday (0-6) to Sunday-Saturday (0-6) indexing
+        const dayDiff = dayIndex + 1 - (today === 0 ? 7 : today);
+        
+        // Create date for the target day
+        const targetDate = new Date(currentDate);
+        targetDate.setDate(currentDate.getDate() + dayDiff);
+        
+        // Get date string in YYYY-MM-DD format
+        const dateStr = targetDate.toISOString().split('T')[0];
+        
+        // Use the direct date function
+        saveToCalendarWithDate(dateStr, foodItem);
+    } catch (error) {
+        console.error('Error saving food to calendar:', error);
+    }
+}
+
+/**
+ * Save exercise data to calendar format
+ * @param {number} dayIndex - Day index (0-6 for Monday-Sunday)
+ * @param {Object} exerciseItem - Exercise item data
+ */
+function saveExerciseToCalendarWithDate(dateStr, exerciseItem) {
+    try {
+        // Parse the date string to get year-month and day
+        const [yearMonth, day] = [dateStr.substring(0, 7), dateStr.substring(8, 10)];
+        
+        // Create storage key for this month's exercises
+        const exerciseKey = `exercise_${currentUser.email}_${yearMonth}`;
+        
+        // Get existing exercises for this month or initialize
+        const monthExercise = getFromStorage(exerciseKey, {});
+        
+        // Get exercises for this day or initialize
+        if (!monthExercise[day]) {
+            monthExercise[day] = [];
+        }
+        
+        // Create exercise entry
+        const exerciseName = exerciseItem.text.replace(' (calories burned)', '').trim();
+        const exerciseEntry = {
+            name: exerciseName,
+            calories: exerciseItem.calories || Math.abs(exerciseItem.cal) || 0,
+            duration: parseInt(exerciseItem.duration) || 30 // Default duration if not specified
+        };
+        
+        // Add to day's exercises
+        monthExercise[day].push(exerciseEntry);
+        
+        // Save back to localStorage
+        saveToStorage(exerciseKey, monthExercise);
+        
+        console.log(`Exercise saved to calendar: ${yearMonth}-${day}`, exerciseEntry);
+    } catch (error) {
+        console.error('Error saving exercise to calendar:', error);
+    }
+}
+
+function saveExerciseToCalendar(dayIndex, exerciseItem) {
+    try {
+        // Similar date calculation as saveToCalendar
+        const currentDate = new Date();
+        const today = currentDate.getDay(); // 0-6 (Sunday-Saturday)
+        const dayDiff = dayIndex + 1 - (today === 0 ? 7 : today);
+        const targetDate = new Date(currentDate);
+        targetDate.setDate(currentDate.getDate() + dayDiff);
+        
+        // Get date string in YYYY-MM-DD format
+        const dateStr = targetDate.toISOString().split('T')[0];
+        
+        // Use the direct date function
+        saveExerciseToCalendarWithDate(dateStr, exerciseItem);
+    } catch (error) {
+        console.error('Error saving exercise to calendar:', error);
+    }
 }
 
 function removeItem(dayIndex, itemIndex, type) {
@@ -1085,6 +2007,23 @@ function loadUserProfile(currentUser) {
     
     // Initialize components
     initializeComponents();
+    
+    // Initialize gamification features
+    updateStreakDisplay();
+    
+    // Check for profile completion achievement
+    checkProfileAchievement(profile);
+    
+    // Update weight loss achievements
+    if (profile.startWeight && profile.weight) {
+        const weightLoss = profile.startWeight - profile.weight;
+        if (weightLoss > 0) {
+            checkWeightLossAchievements(weightLoss);
+        }
+    }
+    
+    // Render achievements in the achievements tab
+    renderAchievements('achievementsContainer');
 }
 
 /**
@@ -1105,6 +2044,256 @@ function initializeComponents() {
     
     // Update planner
     updatePlanner();
+    
+    // Update streak display and gamification elements
+    updateStreakDisplay();
+}
+
+/**
+ * Initialize water tracking functionality with gamification
+ */
+function initializeWaterTracker() {
+    // Get current water count
+    const { count, key } = getWaterCount();
+    
+    // Update the display
+    updateWaterDisplay(count);
+    
+    // Set up add water button
+    const addWaterBtn = document.getElementById('addWater');
+    if (addWaterBtn) {
+        addWaterBtn.addEventListener('click', function() {
+            const { count, key } = getWaterCount();
+            const newCount = Math.min(count + 1, 8); // Cap at 8 glasses
+            localStorage.setItem(key, newCount);
+            updateWaterDisplay(newCount);
+            
+            // Check achievements when user reaches 8 glasses
+            if (newCount === 8) {
+                checkHydrationAchievements(8, 1); // We'll implement streak tracking later
+            }
+        });
+    }
+    
+    // Set up remove water button
+    const removeWaterBtn = document.getElementById('removeWater');
+    if (removeWaterBtn) {
+        removeWaterBtn.addEventListener('click', function() {
+            const { count, key } = getWaterCount();
+            const newCount = Math.max(count - 1, 0); // Don't go below 0
+            localStorage.setItem(key, newCount);
+            updateWaterDisplay(newCount);
+        });
+    }
+}
+
+/**
+ * Update water glasses display and progress bar
+ * @param {number} count - Number of water glasses consumed
+ */
+function updateWaterDisplay(count) {
+    // Get DOM elements
+    const waterGlasses = document.getElementById('waterGlasses');
+    const waterProgress = document.getElementById('waterProgress');
+    const waterStatus = document.getElementById('waterStatus');
+    
+    if (!waterGlasses || !waterProgress || !waterStatus) return;
+    
+    // Clear glasses container
+    waterGlasses.innerHTML = '';
+    
+    // Create 8 glass elements
+    for (let i = 0; i < 8; i++) {
+        const glass = document.createElement('div');
+        glass.className = `water-glass${i < count ? ' filled' : ''}`;
+        glass.addEventListener('click', function() {
+            // Toggle this specific glass
+            const { count: currentCount, key } = getWaterCount();
+            const newCount = i < currentCount ? i : i + 1;
+            localStorage.setItem(key, newCount);
+            updateWaterDisplay(newCount);
+            
+            // Check achievements when user reaches 8 glasses
+            if (newCount === 8) {
+                checkHydrationAchievements(8, 1);
+            }
+        });
+        waterGlasses.appendChild(glass);
+    }
+    
+    // Update progress bar
+    const progressPercent = Math.min(count / 8 * 100, 100);
+    waterProgress.style.width = `${progressPercent}%`;
+    
+    // Add animation class if goal reached
+    if (count === 8) {
+        waterProgress.classList.add('goal-complete');
+        
+        // Show achievement celebration if first time today
+        const celebrationKey = `water_celebration_${new Date().toISOString().split('T')[0]}`;
+        if (!localStorage.getItem(celebrationKey)) {
+            localStorage.setItem(celebrationKey, 'true');
+            showNotification('Daily hydration goal achieved! 💧', 'success');
+        }
+    } else {
+        waterProgress.classList.remove('goal-complete');
+    }
+    
+    // Update status text
+    waterStatus.textContent = `${count}/8 glasses`;
+}
+
+/**
+ * Create quick add buttons for common food items
+ */
+function createQuickAddButtons() {
+    const quickAddContainer = document.querySelector('.quick-add');
+    if (!quickAddContainer) return;
+    
+    // Common quick add food items
+    const quickItems = [
+        { name: 'Apple', calories: 95, icon: 'fa-apple-alt' },
+        { name: 'Banana', calories: 105, icon: 'fa-banana' },
+        { name: 'Coffee', calories: 5, icon: 'fa-coffee' },
+        { name: 'Egg', calories: 70, icon: 'fa-egg' },
+        { name: 'Water', calories: 0, icon: 'fa-tint' },
+        { name: 'Salad', calories: 25, icon: 'fa-leaf' }
+    ];
+    
+    // Clear container
+    quickAddContainer.innerHTML = '';
+    
+    // Create buttons
+    quickItems.forEach(item => {
+        const button = document.createElement('button');
+        button.className = 'quick-add-btn';
+        button.innerHTML = `<i class="fas ${item.icon}"></i> ${item.name}`;
+        button.addEventListener('click', function() {
+            // Create food item
+            const foodItem = {
+                text: `${item.name} (Quick Add)`,
+                calories: item.calories,
+                type: 'snack'
+            };
+            
+            // Get today's date
+            const today = new Date().toISOString().split('T')[0];
+            
+            // Add to food log and planner
+            updateFoodLog(foodItem);
+            addToPlanner(today, foodItem.text, foodItem.calories, true, foodItem.type);
+            
+            // Show notification
+            showNotification(`Added ${item.name} (${item.calories} kcal)`, 'success');
+        });
+        
+        quickAddContainer.appendChild(button);
+    });
+}
+
+/**
+ * Update the streak display on the tracker page
+ */
+function updateStreakDisplay() {
+    // Get streak data
+    const streak = updateStreak('weight');
+    
+    // Update streak display
+    const currentStreakEl = document.getElementById('currentStreak');
+    const longestStreakEl = document.getElementById('longestStreak');
+    const pointsEl = document.getElementById('achievementPoints');
+    
+    if (currentStreakEl) {
+        currentStreakEl.textContent = `${streak.current} day${streak.current !== 1 ? 's' : ''}`;
+    }
+    
+    if (longestStreakEl) {
+        longestStreakEl.textContent = `${streak.longest} day${streak.longest !== 1 ? 's' : ''}`;
+    }
+    
+    // Update achievement points
+    const achievements = getUserAchievements();
+    if (pointsEl) {
+        pointsEl.textContent = achievements.points;
+    }
+}
+
+/**
+ * Update food log and check for streak and achievement updates
+ * @param {Object} foodItem - Food item being added
+ */
+function updateFoodLog(foodItem) {
+    // Add food item to log
+    const today = new Date().toISOString().split('T')[0];
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser || !currentUser.email) return;
+    
+    // Get or create food log for today
+    const foodLogKey = `food_log_${currentUser.email}_${today}`;
+    const foodLog = getFromStorage(foodLogKey, []);
+    
+    // Add new food item to log
+    foodLog.push(foodItem);
+    
+    // Save updated log
+    saveToStorage(foodLogKey, foodLog);
+    
+    // Update streak and check achievements
+    updateStreakDisplay();
+    
+    // Check hydration achievements if all 8 glasses are consumed
+    const { count } = getWaterCount();
+    if (count >= 8) {
+        checkHydrationAchievements(count, 1); // We don't track streak days yet
+    }
+}
+
+/**
+ * Load a daily tip for the user
+ */
+function loadDailyTip() {
+    const tipContainer = document.querySelector('.daily-tip p');
+    if (!tipContainer) return;
+    
+    // Array of health and wellness tips
+    const tips = [
+        "Aim to drink water before each meal to help with portion control.",
+        "Try to include protein in every meal to keep you feeling full longer.",
+        "Not all calories are created equal - focus on nutrient-dense foods.",
+        "Smaller plates can help control portion sizes and reduce calorie intake.",
+        "Get at least 30 minutes of moderate activity most days of the week.",
+        "The most successful diet is one you can maintain as a lifestyle.",
+        "Aim for 7-9 hours of quality sleep to support weight management.",
+        "Keep a food journal to become more aware of your eating habits.",
+        "Choose whole foods over processed foods whenever possible.",
+        "Don't skip meals - it often leads to overeating later.",
+        "Adding more vegetables is an easy way to increase nutrition without many calories.",
+        "Mindful eating helps you recognize hunger and fullness cues better.",
+        "Balancing your plate with proteins, healthy fats, and complex carbs aids weight management.",
+        "Regular weightlifting can boost your metabolism even when you're not exercising.",
+        "Remember that sustainable progress is better than quick fixes.",
+        "Plan your meals ahead of time to avoid unhealthy impulse eating.",
+        "Find physical activities you enjoy - exercise shouldn't feel like punishment!",
+        "Keep healthy snacks on hand to avoid reaching for processed options.",
+        "Celebrate non-scale victories like improved energy and better sleep.",
+        "Your weight can fluctuate 2-4 pounds daily due to water, food, and hormones."
+    ];
+    
+    // Seed the random number generator with today's date
+    const today = new Date().toISOString().split('T')[0];
+    const seed = today.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    
+    // Simple seeded random number generator
+    const seededRandom = function() {
+        const x = Math.sin(seed++) * 10000;
+        return x - Math.floor(x);
+    };
+    
+    // Select a tip based on the day
+    const tipIndex = Math.floor(seededRandom() * tips.length);
+    tipContainer.textContent = tips[tipIndex];
+    
+    // Add achievement for reading tips - implement later if needed
 }
 
 /**
