@@ -13,6 +13,9 @@
     <link rel="preload" href="theme.js" as="script">
     <link rel="preload" href="utils.js" as="script">
     <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
 </head>
 <body>
     <div class="container">
@@ -36,6 +39,10 @@
                     <div class="form-group">
                         <label for="createPassword">Password</label>
                         <input type="password" id="createPassword" required placeholder="Enter password">
+                    </div>
+                    <div class="form-group privacy-consent">
+                        <input type="checkbox" id="privacyConsent" required>
+                        <label for="privacyConsent">I agree to the <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></label>
                     </div>
                     <button type="submit">Create Account</button>
                 </form>
@@ -63,9 +70,43 @@
         
         <div style="text-align: center; margin-top: 30px; color: var(--text-secondary);">
             <p>SlimEasy helps you manage your weight by tracking calories and planning meals.</p>
-            <p>All data is stored locally in your browser.</p>
+            <p>All data is stored locally in your browser. <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
         </div>
     </div>
+    <style>
+        .privacy-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        
+        .privacy-link:hover {
+            background-color: rgba(76, 175, 80, 0.1);
+            text-decoration: underline;
+        }
+        
+        .privacy-consent {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .privacy-consent input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+        
+        .privacy-consent label {
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+    </style>
     <script src="theme.js"></script>
     <script src="utils.js"></script>
     <script>
