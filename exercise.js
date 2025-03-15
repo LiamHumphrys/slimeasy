@@ -29,9 +29,16 @@ document.getElementById('exerciseForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     // Get form values
-    const dayIndex = parseInt(document.getElementById('exerciseDay').value);
+    const exerciseDate = document.getElementById('exerciseDate').value;
     const exerciseType = document.getElementById('exerciseType').value;
     const duration = parseInt(document.getElementById('duration').value);
+    const timeOfDay = document.getElementById('exerciseTime').value; // Get time of day
+
+    // Validate date
+    if (!exerciseDate) {
+        showNotification('Please select a date', 'error');
+        return;
+    }
 
     // Calculate calories burned using MET formula
     const met = exercises[exerciseType];
@@ -44,6 +51,11 @@ document.getElementById('exerciseForm').addEventListener('submit', function(e) {
     if (exerciseTypeSelect && exerciseTypeSelect.selectedIndex >= 0) {
         exerciseName = exerciseTypeSelect.options[exerciseTypeSelect.selectedIndex].text.split(' - ')[0];
     }
+    
+    // Convert date to day of the week (0-6, Monday-Sunday) for weekly planner
+    const selectedDate = new Date(exerciseDate);
+    let dayIndex = selectedDate.getDay() - 1; // Convert from 0-6 (Sunday-Saturday) to 0-6 (Monday-Sunday)
+    if (dayIndex === -1) dayIndex = 6; // Sunday becomes 6 in our system
     
     // Save to localStorage with validation
     const userKey = currentUser && currentUser.email ? `planner_${currentUser.email}` : 'planner_guest';
@@ -87,12 +99,13 @@ document.getElementById('exerciseForm').addEventListener('submit', function(e) {
         weeklyFoods = [[],[],[],[],[],[],[]];
     }
 
-    // Update storage
+    // Update storage for weekly planner (using day of week)
     weeklyExercise[dayIndex] += caloriesBurned;
     weeklyFoods[dayIndex].push({
         text: `${exerciseName} (${duration} min, ${caloriesBurned} kcal)`,
         cal: caloriesBurned,
-        type: 'exercise'
+        type: 'exercise',
+        timeOfDay: timeOfDay // Add time of day
     });
 
     localStorage.setItem(`${userKey}_calories`, JSON.stringify(weeklyCalories));
@@ -100,11 +113,32 @@ document.getElementById('exerciseForm').addEventListener('submit', function(e) {
     localStorage.setItem(`${userKey}_foods`, JSON.stringify(weeklyFoods));
 
     // Track this exercise for the session
+    const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
     sessionExercises.push({
         name: exerciseName,
         duration: duration,
         calories: caloriesBurned,
-        day: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'][dayIndex]
+        timeOfDay: timeOfDay,
+        day: days[dayIndex],
+        date: exerciseDate
+    });
+    
+    // Format date for display
+    const dateObj = new Date(exerciseDate);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+    });
+    
+    // Save exercise with time of day to calendar
+    saveExerciseToCalendarWithTimeOfDay(exerciseDate, {
+        name: exerciseName,
+        duration: duration,
+        calories: caloriesBurned,
+        timeOfDay: timeOfDay,
+        formattedDate: formattedDate
     });
 
     // Update summary display
@@ -129,9 +163,19 @@ function updateExerciseSummary() {
     
     const lastExercise = sessionExercises[sessionExercises.length - 1];
     
+    // Format time of day with first letter capitalized
+    const timeFormatted = lastExercise.timeOfDay.charAt(0).toUpperCase() + lastExercise.timeOfDay.slice(1);
+    
+    // Format date for display
+    const dateObj = new Date(lastExercise.date);
+    const formattedDate = dateObj.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric'
+    });
+    
     // Show the most recently added exercise
     summary.innerHTML = `
-        <strong>Added:</strong> ${lastExercise.name} for ${lastExercise.duration} min on ${lastExercise.day} 
+        <strong>Added:</strong> ${lastExercise.name} for ${lastExercise.duration} min on ${formattedDate} (${timeFormatted})
         (${lastExercise.calories} kcal / ${Math.round(lastExercise.calories * kcalToKj)} kJ burned)
     `;
     
@@ -188,6 +232,52 @@ function showNotification(message) {
             notificationContainer.removeChild(notification);
         }, 300);
     }, 3000);
+}
+
+/**
+ * Save exercise to calendar with time of day
+ * @param {string} dateStr - Date string in YYYY-MM-DD format
+ * @param {Object} exerciseData - Exercise data including time of day
+ */
+function saveExerciseToCalendarWithTimeOfDay(dateStr, exerciseData) {
+    try {
+        // Parse the date string to get year-month and day
+        const [yearMonth, day] = [dateStr.substring(0, 7), dateStr.substring(8, 10)];
+        
+        // Create storage key for this month's exercises
+        const exerciseKey = `exercise_${currentUser.email}_${yearMonth}`;
+        
+        // Get existing exercises for this month or initialize
+        const monthExercise = JSON.parse(localStorage.getItem(exerciseKey) || '{}');
+        
+        // Get exercises for this day or initialize
+        if (!monthExercise[day]) {
+            monthExercise[day] = {};
+        }
+        
+        // Get time of day specific exercises or initialize
+        const timeOfDay = exerciseData.timeOfDay || 'morning';
+        if (!monthExercise[day][timeOfDay]) {
+            monthExercise[day][timeOfDay] = [];
+        }
+        
+        // Create exercise entry
+        const exerciseEntry = {
+            name: exerciseData.name,
+            calories: exerciseData.calories,
+            duration: exerciseData.duration
+        };
+        
+        // Add to day's exercises for this time of day
+        monthExercise[day][timeOfDay].push(exerciseEntry);
+        
+        // Save back to localStorage
+        localStorage.setItem(exerciseKey, JSON.stringify(monthExercise));
+        
+        console.log(`Exercise saved to calendar: ${yearMonth}-${day}, ${timeOfDay}`, exerciseEntry);
+    } catch (error) {
+        console.error('Error saving exercise to calendar with time of day:', error);
+    }
 }
 
 // Initialize based on URL parameters if available
