@@ -14,12 +14,25 @@ const unitMultipliers = {
     g: 0.01, cup: 2.4, oz: 0.2835, tbsp: 0.15, tsp: 0.05, unit: 1
 };
 
-// Use goalCalories from URL if provided, otherwise calculate
-let dailyGoal = goalCalories > 0 ? goalCalories : (tdee - ((currentWeight - goalWeight) * 7700 / (timeWeeks * 7)));
-dailyGoal = isNaN(dailyGoal) || !isFinite(dailyGoal) ? tdee : Math.round(dailyGoal); // 1730.7222222222222 → 1731 kcal
+// Use goalCalories from URL if provided, otherwise calculate with validation
+let dailyGoal;
 
-// Calculate daily deficit for display
-const dailyDeficit = tdee - dailyGoal; // Reflects the actual deficit used
+// Check if we have all necessary values for calculation
+if (goalCalories > 0) {
+    dailyGoal = goalCalories;
+} else if (tdee > 0 && currentWeight > goalWeight && timeWeeks > 0) {
+    // Calculate from weight loss target
+    dailyGoal = tdee - ((currentWeight - goalWeight) * 7700 / (timeWeeks * 7));
+} else {
+    // Fallback to TDEE or a reasonable default
+    dailyGoal = tdee > 0 ? tdee : 2000;
+}
+
+// Round and ensure a reasonable value
+dailyGoal = isNaN(dailyGoal) || !isFinite(dailyGoal) || dailyGoal < 1200 ? tdee : Math.round(dailyGoal);
+
+// Calculate daily deficit for display (with fallback to avoid NaN)
+const dailyDeficit = !isNaN(tdee) && !isNaN(dailyGoal) ? tdee - dailyGoal : 0; // Reflects the actual deficit used
 
 // Display initial values with units
 document.getElementById('bmr').textContent = bmr.toFixed(0);
@@ -385,6 +398,138 @@ document.getElementById('ingredientSearch').addEventListener('input', function(e
     populateIngredients(e.target.value);
 });
 
+// Quick add common foods
+const quickAddFoods = [
+    { name: "Banana", calories: 105, type: "snack" },
+    { name: "Apple", calories: 95, type: "snack" },
+    { name: "Greek Yogurt", calories: 150, type: "breakfast" },
+    { name: "Oatmeal", calories: 158, type: "breakfast" },
+    { name: "Scrambled Eggs", calories: 140, type: "breakfast" },
+    { name: "Chicken Breast", calories: 165, type: "lunch" },
+    { name: "Turkey Sandwich", calories: 330, type: "lunch" },
+    { name: "Tuna Salad", calories: 180, type: "lunch" },
+    { name: "Green Salad", calories: 50, type: "dinner" },
+    { name: "Salmon Fillet", calories: 175, type: "dinner" },
+    { name: "Brown Rice", calories: 215, type: "dinner" },
+    { name: "Coffee with Milk", calories: 30, type: "breakfast" }
+];
+
+// Create quick add buttons
+function createQuickAddButtons() {
+    // Find or create the quick add container
+    let quickAddContainer = document.getElementById('quickAddContainer');
+    if (!quickAddContainer) {
+        // Only add if in manual food section
+        const manualSection = document.getElementById('manual');
+        if (!manualSection) return;
+        
+        // Create container
+        quickAddContainer = document.createElement('div');
+        quickAddContainer.id = 'quickAddContainer';
+        quickAddContainer.className = 'card';
+        
+        // Create header
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        header.innerHTML = '<i class="fas fa-bolt"></i><h3 class="card-title">Quick Add Common Foods</h3>';
+        
+        // Create content
+        const content = document.createElement('div');
+        content.className = 'card-body';
+        content.innerHTML = '<p>Click to quickly add common foods to your daily log:</p>';
+        
+        // Create buttons container
+        const buttonsContainer = document.createElement('div');
+        buttonsContainer.className = 'quick-add';
+        
+        // Add quick add food buttons
+        quickAddFoods.forEach(food => {
+            const button = document.createElement('button');
+            button.className = 'quick-add-btn';
+            button.setAttribute('data-calories', food.calories);
+            button.setAttribute('data-name', food.name);
+            button.setAttribute('data-type', food.type);
+            button.innerHTML = `<i class="fas fa-utensils"></i> ${food.name}`;
+            
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                // Get current day selection
+                const dayIndex = parseInt(document.getElementById('manualDay').value);
+                const calories = parseInt(this.getAttribute('data-calories'));
+                const foodName = this.getAttribute('data-name');
+                const mealType = this.getAttribute('data-type');
+                
+                // Add to planner
+                addToPlanner(dayIndex, `${foodName} (${calories} kcal)`, calories, true, mealType);
+                
+                // Show feedback
+                showQuickAddNotification(foodName, calories);
+            });
+            
+            buttonsContainer.appendChild(button);
+        });
+        
+        // Assemble and add to DOM
+        content.appendChild(buttonsContainer);
+        quickAddContainer.appendChild(header);
+        quickAddContainer.appendChild(content);
+        
+        // Insert before the manual form
+        const manualForm = document.getElementById('manualForm');
+        manualSection.insertBefore(quickAddContainer, manualForm);
+    }
+}
+
+// Show notification for quick add
+function showQuickAddNotification(foodName, calories) {
+    // Create notification container if it doesn't exist
+    let notificationContainer = document.getElementById('notification-container');
+    if (!notificationContainer) {
+        notificationContainer = document.createElement('div');
+        notificationContainer.id = 'notification-container';
+        notificationContainer.style.position = 'fixed';
+        notificationContainer.style.bottom = '20px';
+        notificationContainer.style.right = '20px';
+        notificationContainer.style.zIndex = '1000';
+        document.body.appendChild(notificationContainer);
+    }
+    
+    // Create notification
+    const notification = document.createElement('div');
+    notification.style.backgroundColor = 'var(--success-color)';
+    notification.style.color = 'white';
+    notification.style.padding = '15px';
+    notification.style.margin = '10px';
+    notification.style.borderRadius = 'var(--border-radius)';
+    notification.style.boxShadow = 'var(--card-shadow)';
+    notification.style.display = 'flex';
+    notification.style.alignItems = 'center';
+    notification.style.transition = 'all 0.3s';
+    notification.style.transform = 'translateX(100%)';
+    notification.style.opacity = '0';
+    
+    notification.innerHTML = `<i class="fas fa-check-circle" style="margin-right: 10px;"></i> Added ${foodName} (${calories} kcal)`;
+    
+    // Add to container
+    notificationContainer.appendChild(notification);
+    
+    // Trigger animation
+    setTimeout(() => {
+        notification.style.transform = 'translateX(0)';
+        notification.style.opacity = '1';
+    }, 50);
+    
+    // Remove after 3 seconds
+    setTimeout(() => {
+        notification.style.transform = 'translateX(100%)';
+        notification.style.opacity = '0';
+        setTimeout(() => {
+            notificationContainer.removeChild(notification);
+        }, 300);
+    }, 3000);
+}
+
+// Event listener for manual food form
 document.getElementById('manualForm').addEventListener('submit', function(e) {
     e.preventDefault();
     const dayIndex = parseInt(document.getElementById('manualDay').value);
@@ -394,6 +539,10 @@ document.getElementById('manualForm').addEventListener('submit', function(e) {
     const unit = document.getElementById('manualUnit').value;
     const calories = unit === 'kcal' ? amount : Math.round(amount / kcalToKj);
     addToPlanner(dayIndex, `${foodName} (${amount} ${unit})`, calories, true, mealType);
+    
+    // Show notification
+    showQuickAddNotification(foodName, calories);
+    
     this.reset();
 });
 
@@ -463,10 +612,21 @@ function updateMealDisplay() {
 
 function updatePlanner() {
     try {
-        const rows = document.getElementById('plannerBody').getElementsByTagName('tr');
+        const plannerBody = document.getElementById('plannerBody');
+        if (!plannerBody) {
+            console.error('Planner body element not found');
+            return;
+        }
+        
+        const rows = plannerBody.getElementsByTagName('tr');
+        if (!rows || rows.length !== 7) {
+            console.error('Expected 7 rows in planner, found', rows ? rows.length : 0);
+            return;
+        }
+        
         let weeklyTotal = 0;
         let weeklyExerciseTotal = 0;
-        const dailyGoalValue = dailyGoal; // Use the pre-rounded dailyGoal directly
+        const dailyGoalValue = parseFloat(dailyGoal) || 2000; // Use dailyGoal with fallback
 
         for (let i = 0; i < 7; i++) {
             const totalIntake = parseFloat(weeklyCalories[i]) || 0;
@@ -513,10 +673,15 @@ function updatePlanner() {
             : `Surplus: ${Math.abs(Math.round(weeklyOutcome))} kcal (${Math.abs(Math.round(weeklyOutcome * kcalToKj))} kJ)`;
         document.getElementById('weeklyOutcome').className = weeklyOutcome >= 0 ? 'green' : 'red';
         const weeklyDeficit = weeklyExerciseTotal + (tdee * 7 - weeklyTotal);
-        const weightLostKg = weeklyDeficit / 7700;
+        const weightLostKg = weeklyDeficit > 0 ? weeklyDeficit / 7700 : 0;
         document.getElementById('weightLost').textContent = weightLostKg.toFixed(2);
         document.getElementById('weightLostLb').textContent = (weightLostKg * kgToLb).toFixed(2);
-        const weeksToGoal = weightLostKg > 0 ? ((currentWeight - goalWeight) / weightLostKg).toFixed(1) : "N/A";
+        let weeksToGoal = "N/A";
+        if (weightLostKg > 0 && currentWeight > goalWeight) {
+            weeksToGoal = ((currentWeight - goalWeight) / weightLostKg).toFixed(1);
+            // Sanity check for ridiculous numbers
+            if (weeksToGoal > 1000 || weeksToGoal < 0) weeksToGoal = "N/A";
+        }
         document.getElementById('timeToGoal').textContent = weeksToGoal;
     } catch (error) {
         console.error('Error in updatePlanner:', error);
@@ -610,7 +775,422 @@ document.getElementById('exportPlan').addEventListener('click', function() {
     exportWindow.document.close();
 });
 
-// Initial update and debug log
-console.log('Initial state:', { dailyGoal, weeklyCalories, weeklyExercise });
-updatePlanner();
+// Initialize daily tips
+function loadDailyTip() {
+    const tips = [
+        "Stay consistent with your tracking. Research shows that people who log their food regularly lose more weight and keep it off longer.",
+        "Don't forget to drink water! Often thirst can be mistaken for hunger.",
+        "Focus on progress, not perfection. Small, consistent changes lead to lasting results.",
+        "Include protein with each meal to help you feel fuller longer.",
+        "Plan your meals ahead of time to avoid last-minute unhealthy choices.",
+        "Get enough sleep! Poor sleep is linked to increased appetite and cravings.",
+        "A 10-minute walk after meals can help digestion and stabilize blood sugar.",
+        "Eating slowly and mindfully helps you recognize when you're full.",
+        "Focus on nutrient-dense foods rather than just calorie counting.",
+        "Celebrate non-scale victories like increased energy and better-fitting clothes.",
+        "Incorporate strength training to boost your metabolism.",
+        "Remember that weight fluctuates naturally day to day.",
+        "Prepping healthy snacks can help you avoid vending machines and drive-thrus.",
+        "Find physical activities you enjoy rather than exercises you dread."
+    ];
+    
+    // Get date-based index to keep the tip consistent for the whole day
+    const today = new Date();
+    const dayOfYear = Math.floor((today - new Date(today.getFullYear(), 0, 0)) / (24 * 60 * 60 * 1000));
+    const tipIndex = dayOfYear % tips.length;
+    
+    const dailyTipElement = document.getElementById('dailyTip');
+    if (dailyTipElement) {
+        dailyTipElement.textContent = tips[tipIndex];
+    }
+}
+
+// Initialize week selector
+let currentWeekStart = getStartOfWeek(new Date());
+let copiedWeekData = null;
+
+function getStartOfWeek(date) {
+    const day = date.getDay(); // 0 = Sunday, 1 = Monday, etc.
+    const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Adjust to get Monday
+    return new Date(date.setDate(diff));
+}
+
+function formatWeekRange(startDate) {
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 6);
+    
+    const options = { month: 'short', day: 'numeric' };
+    const startFormatted = startDate.toLocaleDateString('en-US', options);
+    const endFormatted = endDate.toLocaleDateString('en-US', options);
+    const yearFormatted = startDate.getFullYear();
+    
+    return `${startFormatted} - ${endFormatted}, ${yearFormatted}`;
+}
+
+function initializeWeekSelector() {
+    const datePicker = document.getElementById('weekStartDate');
+    const weekLabel = document.getElementById('weekLabel');
+    const prevWeekBtn = document.getElementById('prevWeek');
+    const nextWeekBtn = document.getElementById('nextWeek');
+    const copyWeekBtn = document.getElementById('copyWeek');
+    const pasteWeekBtn = document.getElementById('pasteWeek');
+    
+    if (!datePicker || !weekLabel) return;
+    
+    // Set initial date and label
+    const formattedDate = currentWeekStart.toISOString().split('T')[0];
+    datePicker.value = formattedDate;
+    weekLabel.textContent = formatWeekRange(currentWeekStart);
+    
+    // Previous week button
+    if (prevWeekBtn) {
+        prevWeekBtn.addEventListener('click', function() {
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() - 7);
+            changeWeek(newDate);
+        });
+    }
+    
+    // Next week button
+    if (nextWeekBtn) {
+        nextWeekBtn.addEventListener('click', function() {
+            const newDate = new Date(currentWeekStart);
+            newDate.setDate(newDate.getDate() + 7);
+            changeWeek(newDate);
+        });
+    }
+    
+    // Date picker change
+    datePicker.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        changeWeek(getStartOfWeek(selectedDate));
+    });
+    
+    // Copy week functionality
+    if (copyWeekBtn) {
+        copyWeekBtn.addEventListener('click', function() {
+            copyCurrentWeek();
+        });
+    }
+    
+    // Paste week functionality
+    if (pasteWeekBtn) {
+        pasteWeekBtn.addEventListener('click', function() {
+            pasteWeekToCurrentWeek();
+        });
+    }
+}
+
+function changeWeek(newStartDate) {
+    // Update global current week
+    currentWeekStart = newStartDate;
+    
+    // Update UI
+    const datePicker = document.getElementById('weekStartDate');
+    const weekLabel = document.getElementById('weekLabel');
+    
+    if (datePicker) {
+        datePicker.value = currentWeekStart.toISOString().split('T')[0];
+    }
+    
+    if (weekLabel) {
+        weekLabel.textContent = formatWeekRange(currentWeekStart);
+    }
+    
+    // Load data for the selected week
+    loadWeekData(currentWeekStart);
+}
+
+function getWeekKey(date) {
+    return date.toISOString().split('T')[0].substring(0, 10); // YYYY-MM-DD format
+}
+
+function loadWeekData(weekStart) {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return;
+    
+    const weekKey = getWeekKey(weekStart);
+    const userKey = `planner_${currentUser.email}`;
+    const weekStorageKey = `${userKey}_week_${weekKey}`;
+    
+    // Try to load saved data for this specific week
+    let weekData = getFromStorage(weekStorageKey);
+    
+    if (weekData) {
+        // We have data for this week, use it
+        weeklyCalories = weekData.calories || [0, 0, 0, 0, 0, 0, 0];
+        weeklyExercise = weekData.exercise || [0, 0, 0, 0, 0, 0, 0];
+        weeklyFoods = weekData.foods || [[], [], [], [], [], [], []];
+    } else {
+        // For current week, use current data
+        const today = new Date();
+        const todayWeekStart = getStartOfWeek(today);
+        
+        if (weekStart.getTime() === todayWeekStart.getTime()) {
+            // This is the current week, use regular keys
+            weeklyCalories = getFromStorage(`${userKey}_calories`) || [0, 0, 0, 0, 0, 0, 0];
+            weeklyExercise = getFromStorage(`${userKey}_exercise`) || [0, 0, 0, 0, 0, 0, 0];
+            weeklyFoods = getFromStorage(`${userKey}_foods`) || [[], [], [], [], [], [], []];
+        } else {
+            // This is a different week, initialize with empty data
+            weeklyCalories = [0, 0, 0, 0, 0, 0, 0];
+            weeklyExercise = [0, 0, 0, 0, 0, 0, 0];
+            weeklyFoods = [[], [], [], [], [], [], []];
+        }
+    }
+    
+    // Update the planner display
+    updatePlanner();
+}
+
+function saveWeekData() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return;
+    
+    const weekKey = getWeekKey(currentWeekStart);
+    const userKey = `planner_${currentUser.email}`;
+    const weekStorageKey = `${userKey}_week_${weekKey}`;
+    
+    // Create week data object
+    const weekData = {
+        calories: weeklyCalories,
+        exercise: weeklyExercise,
+        foods: weeklyFoods,
+        lastUpdated: new Date().toISOString()
+    };
+    
+    // Save to localStorage
+    saveToStorage(weekStorageKey, weekData);
+    
+    // If this is the current week, update regular keys too
+    const today = new Date();
+    const todayWeekStart = getStartOfWeek(today);
+    
+    if (currentWeekStart.getTime() === todayWeekStart.getTime()) {
+        saveToStorage(`${userKey}_calories`, weeklyCalories);
+        saveToStorage(`${userKey}_exercise`, weeklyExercise);
+        saveToStorage(`${userKey}_foods`, weeklyFoods);
+    }
+}
+
+function copyCurrentWeek() {
+    // Store the current week's data in our variable
+    copiedWeekData = {
+        calories: [...weeklyCalories],
+        exercise: [...weeklyExercise],
+        foods: JSON.parse(JSON.stringify(weeklyFoods)) // Deep copy
+    };
+    
+    // Show paste button
+    const pasteWeekBtn = document.getElementById('pasteWeek');
+    if (pasteWeekBtn) {
+        pasteWeekBtn.style.display = 'inline-block';
+    }
+    
+    // Show notification
+    showNotification('Week copied! Select another week to paste.', 'success');
+}
+
+function pasteWeekToCurrentWeek() {
+    if (!copiedWeekData) {
+        showNotification('No week data to paste!', 'error');
+        return;
+    }
+    
+    // Confirm before overwriting
+    if (!confirm('This will overwrite the current week\'s data. Continue?')) {
+        return;
+    }
+    
+    // Copy data from our stored week
+    weeklyCalories = [...copiedWeekData.calories];
+    weeklyExercise = [...copiedWeekData.exercise];
+    weeklyFoods = JSON.parse(JSON.stringify(copiedWeekData.foods)); // Deep copy
+    
+    // Update display
+    updatePlanner();
+    
+    // Save changes
+    saveWeekData();
+    
+    // Show notification
+    showNotification('Week data pasted successfully!', 'success');
+}
+
+// Extended saveToStorage function to save current week data
+function saveToStorage() {
+    // Save regular keys
+    localStorage.setItem(`${userKey}_calories`, JSON.stringify(weeklyCalories));
+    localStorage.setItem(`${userKey}_exercise`, JSON.stringify(weeklyExercise));
+    localStorage.setItem(`${userKey}_foods`, JSON.stringify(weeklyFoods));
+    
+    // Also save to week-specific storage
+    saveWeekData();
+}
+
+// Initialize on document load
+document.addEventListener('DOMContentLoaded', function() {
+    // Create quick add buttons
+    createQuickAddButtons();
+    
+    // Load daily tip
+    loadDailyTip();
+    
+    // Initialize week selector
+    initializeWeekSelector();
+    
+    // Update planner with initial week
+    loadWeekData(currentWeekStart);
+});
+
+// Make functions accessible to window
 window.removeItem = removeItem;
+window.loadDailyTip = loadDailyTip;
+window.changeWeek = changeWeek;
+window.copyCurrentWeek = copyCurrentWeek;
+window.pasteWeekToCurrentWeek = pasteWeekToCurrentWeek;
+
+/**
+ * Load user profile data and initialize tracker
+ * @param {Object} currentUser - Current user data
+ */
+function loadUserProfile(currentUser) {
+    // Get profile data
+    const profileKey = `profile_${currentUser.email}`;
+    const profile = getFromStorage(profileKey);
+    
+    if (!profile) {
+        window.location.href = 'index.html'; // Redirect to profile if no data
+        return;
+    }
+    
+    // Get or parse URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    // If no URL parameters, redirect with profile data
+    if (urlParams.toString() === '') {
+        const params = new URLSearchParams({
+            bmr: profile.bmr || 0,
+            tdee: profile.tdee || 0,
+            weight: profile.weight || 0,
+            goalWeight: profile.goalWeight || 0,
+            timeToGoal: profile.timeToGoal || 0,
+            dailyDeficit: profile.dailyDeficit || 0,
+            goalCalories: profile.dailyGoal || 0,
+            timeUnit: profile.timeUnit || 'weeks'
+        });
+        window.location.href = `tracker.html?${params.toString()}`;
+        return;
+    }
+    
+    // Initialize components
+    initializeComponents();
+}
+
+/**
+ * Initialize all tracker page components
+ */
+function initializeComponents() {
+    // Set up tab navigation
+    setupTabNavigation();
+    
+    // Initialize water tracker
+    initializeWaterTracker();
+    
+    // Set up quick add buttons
+    createQuickAddButtons();
+    
+    // Load daily tip
+    loadDailyTip();
+    
+    // Update planner
+    updatePlanner();
+}
+
+/**
+ * Set up tab navigation between sections
+ */
+function setupTabNavigation() {
+    // Tab navigation buttons
+    const tabButtons = [
+        { id: 'viewSummary', target: 'summary' },
+        { id: 'viewManual', target: 'manual' },
+        { id: 'viewMealBuilder', target: 'automatic' },
+        { id: 'viewPlanner', target: 'planner' },
+        { id: 'goToManual', target: 'manual' }
+    ];
+    
+    // Add click handlers to buttons
+    tabButtons.forEach(button => {
+        const element = document.getElementById(button.id);
+        if (element) {
+            element.addEventListener('click', () => showTab(button.target));
+        }
+    });
+    
+    // Handle button clicks for profile and dashboard
+    const backToProfileBtn = document.getElementById('backToProfile');
+    if (backToProfileBtn) {
+        backToProfileBtn.addEventListener('click', () => window.location.href = 'index.html');
+    }
+    
+    const navDashboard = document.getElementById('navDashboard');
+    if (navDashboard) {
+        navDashboard.addEventListener('click', () => window.location.href = 'dashboard.html');
+    }
+    
+    // Add Exercise button
+    const goToExerciseBtn = document.getElementById('goToExercise');
+    if (goToExerciseBtn) {
+        goToExerciseBtn.addEventListener('click', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentUser = getFromStorage('currentUser');
+            const profileKey = `profile_${currentUser.email}`;
+            const profile = getFromStorage(profileKey);
+            
+            const params = new URLSearchParams({
+                bmr: urlParams.get('bmr') || profile.bmr || 0,
+                dailyGoal: urlParams.get('goalCalories') || profile.dailyGoal || 0,
+                weight: profile.weight || 0,
+                goal: profile.goalWeight || 0,
+                tdee: urlParams.get('tdee') || profile.tdee || 0,
+                time: profile.timeToGoal || 0
+            });
+            
+            window.location.href = `exercise.html?${params.toString()}`;
+        });
+    }
+    
+    // Add Export Plan button handler
+    const exportPlanBtn = document.getElementById('exportPlan');
+    if (exportPlanBtn) {
+        exportPlanBtn.addEventListener('click', exportPlan);
+    }
+}
+
+/**
+ * Show the specified tab content
+ * @param {string} tabId - ID of the tab to show
+ */
+function showTab(tabId) {
+    // Hide all tabs
+    const tabs = document.querySelectorAll('.tab-content');
+    tabs.forEach(tab => tab.classList.remove('active'));
+    
+    // Deactivate all nav buttons
+    const navButtons = document.querySelectorAll('.nav-button');
+    navButtons.forEach(btn => btn.classList.remove('active'));
+    
+    // Show selected tab
+    const selectedTab = document.getElementById(tabId);
+    if (selectedTab) {
+        selectedTab.classList.add('active');
+    }
+    
+    // Activate corresponding nav button
+    const navSelector = `[id="view${tabId.charAt(0).toUpperCase() + tabId.slice(1)}"]`;
+    const activeNavButton = document.querySelector(navSelector);
+    if (activeNavButton) {
+        activeNavButton.classList.add('active');
+    }
+}
