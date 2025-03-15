@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wearable Device Integration - SlimEasy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="footer.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#4CAF50">
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="navbar-logo">
+                <a href="dashboard.html">
+                    <img src="slimeasylogo.jpg" alt="SlimEasy Logo" class="logo-image">
+                    <span class="logo-text">SlimEasy</span>
+                </a>
+            </div>
+            <ul class="navbar-nav" id="mainNavLinks">
+                <li><a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="tracker.html"><i class="fas fa-utensils"></i> Food Tracker</a></li>
+                <li><a href="exercise.html"><i class="fas fa-running"></i> Exercise</a></li>
+                <li class="active"><a href="wearable-settings.html"><i class="fas fa-sync"></i> Wearables</a></li>
+                <li><a href="community.html"><i class="fas fa-users"></i> Community</a></li>
+                <li><a href="contact.html"><i class="fas fa-envelope"></i> Contact Us</a></li>
+            </ul>
+            <div class="navbar-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1><i class="fas fa-sync"></i> Wearable & Device Integration</h1>
+            <p class="welcome-text" id="welcomeMessage">Welcome back</p>
+        </div>
+
+        <section class="card">
+            <div class="card-body">
+                <h2 class="card-title">Connect Your Devices</h2>
+                <p>Connect your fitness wearables and health apps to automatically sync your activity data.</p>
+                
+                <div class="benefits-list">
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="benefit-text">
+                            <h4>Automatic Data Syncing</h4>
+                            <p>Stay up-to-date without manual entry</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="benefit-text">
+                            <h4>Track Exercise & Steps</h4>
+                            <p>Automatically import workouts and daily activity</p>
+                        </div>
+                    </div>
+                    <div class="benefit-item">
+                        <i class="fas fa-check-circle"></i>
+                        <div class="benefit-text">
+                            <h4>Weight Tracking</h4>
+                            <p>Sync weight measurements from smart scales</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Wearable integration container will be populated by JS -->
+                <div id="wearableIntegrationContainer" class="mt-4"></div>
+            </div>
+        </section>
+        
+        <section class="card">
+            <div class="card-body">
+                <h2 class="card-title">Sync Settings</h2>
+                
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="syncFrequency">Auto-Sync Frequency</label>
+                        <select id="syncFrequency" class="form-control">
+                            <option value="15">Every 15 minutes</option>
+                            <option value="30">Every 30 minutes</option>
+                            <option value="60" selected>Every hour</option>
+                            <option value="120">Every 2 hours</option>
+                            <option value="0">Manual sync only</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Sync Options</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="syncExercises" checked>
+                                <span class="checkbox-text">Sync exercises</span>
+                            </label>
+                            
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="syncWeight" checked>
+                                <span class="checkbox-text">Sync weight measurements</span>
+                            </label>
+                            
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="syncSteps" checked>
+                                <span class="checkbox-text">Sync steps</span>
+                            </label>
+                            
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="syncCalories" checked>
+                                <span class="checkbox-text">Sync calories burned</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <button id="saveSettings" class="primary-button">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <section class="card">
+            <div class="card-body">
+                <h2 class="card-title">Supported Devices & Apps</h2>
+                
+                <div class="supported-devices">
+                    <div class="device-category">
+                        <h3>Fitness Trackers & Smartwatches</h3>
+                        <ul class="device-list">
+                            <li><i class="fas fa-check"></i> Fitbit (Charge, Versa, Sense, etc.)</li>
+                            <li><i class="fas fa-check"></i> Apple Watch (via Apple Health)</li>
+                            <li><i class="fas fa-check"></i> Samsung Galaxy Watch (via Samsung Health)</li>
+                            <li><i class="fas fa-check"></i> Garmin (Forerunner, Vivoactive, Fenix, etc.)</li>
+                            <li><i class="fas fa-check"></i> Google Pixel Watch (via Google Fit)</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="device-category">
+                        <h3>Health Apps</h3>
+                        <ul class="device-list">
+                            <li><i class="fas fa-check"></i> Apple Health (iOS)</li>
+                            <li><i class="fas fa-check"></i> Google Fit (Android)</li>
+                            <li><i class="fas fa-check"></i> Samsung Health (Android)</li>
+                            <li><i class="fas fa-check"></i> Garmin Connect</li>
+                            <li><i class="fas fa-check"></i> Fitbit App</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="device-category">
+                        <h3>Smart Scales</h3>
+                        <ul class="device-list">
+                            <li><i class="fas fa-check"></i> Fitbit Aria</li>
+                            <li><i class="fas fa-check"></i> Withings/Nokia Body+</li>
+                            <li><i class="fas fa-check"></i> Garmin Index</li>
+                            <li><i class="fas fa-check"></i> Eufy Smart Scale</li>
+                            <li><i class="fas fa-check"></i> Renpho Bluetooth Body Fat Scale</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>SlimEasy</h3>
+                <p>Your companion for a healthier lifestyle.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Links</h3>
+                <ul>
+                    <li><a href="dashboard.html">Dashboard</a></li>
+                    <li><a href="tracker.html">Food Tracker</a></li>
+                    <li><a href="exercise.html">Exercise</a></li>
+                    <li><a href="community.html">Community</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact</h3>
+                <p>Email: support@slimeasy.com</p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2025 SlimEasy. All rights reserved.</p>
+            <p><a href="privacy-policy.html">Privacy Policy</a></p>
+        </div>
+    </footer>
+
+    <script src="utils.js"></script>
+    <script src="theme.js"></script>
+    <script src="wearable-integration.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize page components
+            if (!initializePage()) return;
+            
+            // Initialize wearable integration
+            initializeWearableIntegration();
+            
+            // Set up sync frequency handler
+            const syncFrequency = document.getElementById('syncFrequency');
+            if (syncFrequency) {
+                // Load saved frequency if available
+                const currentUser = getFromStorage('currentUser');
+                if (currentUser && currentUser.email) {
+                    const settingsKey = `wearable_settings_${currentUser.email}`;
+                    const settings = getFromStorage(settingsKey, {});
+                    
+                    if (settings.syncFrequency) {
+                        syncFrequency.value = settings.syncFrequency;
+                    }
+                }
+                
+                // Update auto-sync when frequency changes
+                syncFrequency.addEventListener('change', function() {
+                    const minutes = parseInt(this.value);
+                    if (minutes > 0) {
+                        setupAutoSync(minutes);
+                        showNotification(`Auto-sync set to every ${minutes} minutes`, 'success');
+                    } else {
+                        // Clear any existing interval
+                        if (window.autoSyncInterval) {
+                            clearInterval(window.autoSyncInterval);
+                            window.autoSyncInterval = null;
+                        }
+                        showNotification('Auto-sync disabled. Manual sync only.', 'info');
+                    }
+                });
+            }
+            
+            // Save settings button handler
+            const saveSettings = document.getElementById('saveSettings');
+            if (saveSettings) {
+                saveSettings.addEventListener('click', function() {
+                    const currentUser = getFromStorage('currentUser');
+                    if (!currentUser || !currentUser.email) return;
+                    
+                    // Collect settings
+                    const settings = {
+                        syncFrequency: parseInt(document.getElementById('syncFrequency').value),
+                        syncExercises: document.getElementById('syncExercises').checked,
+                        syncWeight: document.getElementById('syncWeight').checked,
+                        syncSteps: document.getElementById('syncSteps').checked,
+                        syncCalories: document.getElementById('syncCalories').checked,
+                        lastUpdated: Date.now()
+                    };
+                    
+                    // Save settings
+                    const settingsKey = `wearable_settings_${currentUser.email}`;
+                    saveToStorage(settingsKey, settings);
+                    
+                    // Update auto-sync
+                    if (settings.syncFrequency > 0) {
+                        setupAutoSync(settings.syncFrequency);
+                    } else if (window.autoSyncInterval) {
+                        clearInterval(window.autoSyncInterval);
+                        window.autoSyncInterval = null;
+                    }
+                    
+                    // Show confirmation
+                    showNotification('Settings saved successfully!', 'success');
+                });
+            }
+            
+            // Initialize auto-sync based on saved settings
+            const currentUser = getFromStorage('currentUser');
+            if (currentUser && currentUser.email) {
+                const settingsKey = `wearable_settings_${currentUser.email}`;
+                const settings = getFromStorage(settingsKey, {});
+                
+                if (settings.syncFrequency > 0) {
+                    setupAutoSync(settings.syncFrequency);
+                }
+                
+                // Load checkbox settings
+                if (typeof settings.syncExercises !== 'undefined') {
+                    document.getElementById('syncExercises').checked = settings.syncExercises;
+                }
+                if (typeof settings.syncWeight !== 'undefined') {
+                    document.getElementById('syncWeight').checked = settings.syncWeight;
+                }
+                if (typeof settings.syncSteps !== 'undefined') {
+                    document.getElementById('syncSteps').checked = settings.syncSteps;
+                }
+                if (typeof settings.syncCalories !== 'undefined') {
+                    document.getElementById('syncCalories').checked = settings.syncCalories;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
