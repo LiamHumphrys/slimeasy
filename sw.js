@@ -80,3 +80,74 @@ self.addEventListener('fetch', event => {
       })
   );
 });
+
+// Handle notification clicks
+self.addEventListener('notificationclick', event => {
+  event.notification.close();
+
+  // Handle add-water action
+  if (event.action === 'add-water') {
+    // Open window and pass action parameter
+    event.waitUntil(
+      clients.matchAll({type: 'window'}).then(clientsArr => {
+        // If a window exists, focus it and update water count
+        const hadWindowToFocus = clientsArr.some(windowClient => {
+          if (windowClient.url.includes('tracker.html')) {
+            return windowClient.focus().then(() => {
+              windowClient.postMessage({
+                type: 'ADD_WATER',
+                waterCount: event.notification.data.waterCount
+              });
+              return true;
+            });
+          }
+        });
+
+        // If no window focused, open a new one
+        if (!hadWindowToFocus) {
+          clients.openWindow('/tracker.html?action=add-water')
+            .then(windowClient => windowClient && windowClient.focus());
+        }
+      })
+    );
+  } else {
+    // Default action - open app
+    event.waitUntil(
+      clients.matchAll({type: 'window'}).then(clientsArr => {
+        // Check if already open and focus that
+        const hadWindowToFocus = clientsArr.some(windowClient => windowClient.focus());
+        // If no window to focus, open new one
+        if (!hadWindowToFocus) clients.openWindow('/tracker.html');
+      })
+    );
+  }
+});
+
+// Listen for push notifications
+self.addEventListener('push', event => {
+  let data = {};
+  if (event.data) {
+    try {
+      data = event.data.json();
+    } catch (e) {
+      data = {
+        title: 'SlimEasy Reminder',
+        body: event.data.text()
+      };
+    }
+  }
+
+  const options = {
+    body: data.body || 'Time to check your progress!',
+    icon: 'slimeasylogo.jpg',
+    badge: 'slimeasylogo.jpg',
+    data: data.data || {},
+    actions: data.actions || [
+      { action: 'open', title: 'Open App' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'SlimEasy', options)
+  );
+});
