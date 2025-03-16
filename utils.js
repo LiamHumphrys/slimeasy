@@ -245,14 +245,18 @@ function setupMobileMenu() {
 
 /**
  * Check user login status and redirect if not logged in
+ * @returns {boolean} True if user is logged in, false otherwise
  */
 function checkUserLogin() {
     // Check if user is logged in
     const currentUser = getFromStorage('currentUser');
-    if (!currentUser) {
+    if (!currentUser || !currentUser.email) {
         window.location.href = 'login.html';
         return false;
     }
+    
+    // Ensure user data exists
+    ensureUserDataStructures(currentUser.email);
     
     // Display welcome message
     const welcomeElement = document.getElementById('welcomeMessage');
@@ -261,6 +265,51 @@ function checkUserLogin() {
     }
     
     return true;
+}
+
+/**
+ * Ensure all necessary data structures exist for a user
+ * @param {string} email - User email
+ */
+function ensureUserDataStructures(email) {
+    if (!email) return;
+    
+    // Check profile data
+    const profileKey = `profile_${email}`;
+    let profile = getFromStorage(profileKey);
+    if (!profile) {
+        profile = {};
+        saveToStorage(profileKey, profile);
+    }
+    
+    // Check weight history
+    const weightDataKey = `weight_history_${email}`;
+    if (!getFromStorage(weightDataKey)) {
+        saveToStorage(weightDataKey, []);
+    }
+    
+    // Check planner data
+    const userKey = `planner_${email}`;
+    const weeklyCalories = getFromStorage(`${userKey}_calories`);
+    if (!weeklyCalories) {
+        saveToStorage(`${userKey}_calories`, [0, 0, 0, 0, 0, 0, 0]);
+    }
+    
+    const weeklyExercise = getFromStorage(`${userKey}_exercise`);
+    if (!weeklyExercise) {
+        saveToStorage(`${userKey}_exercise`, [0, 0, 0, 0, 0, 0, 0]);
+    }
+    
+    const weeklyFoods = getFromStorage(`${userKey}_foods`);
+    if (!weeklyFoods) {
+        saveToStorage(`${userKey}_foods`, [[], [], [], [], [], [], []]);
+    }
+    
+    // Check achievements
+    const achievementsKey = `achievements_${email}`;
+    if (!getFromStorage(achievementsKey)) {
+        saveToStorage(achievementsKey, { earned: {}, points: 0 });
+    }
 }
 
 /**
@@ -378,6 +427,9 @@ function initializeHydrationReminders(intervalMinutes = 120) {
                 
                 console.log(`Hydration reminders initialized (${intervalMinutes} minute intervals)`);
             }
+        })
+        .catch(error => {
+            console.error('Error requesting notification permission:', error);
         });
     
     // Store user preference
