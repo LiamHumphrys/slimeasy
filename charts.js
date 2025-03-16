@@ -98,7 +98,10 @@ function initializeCharts(profile) {
     createCalorieChart(calorieData.labels, calorieData.intake, calorieData.goal);
     createExerciseChart(exerciseData.labels, exerciseData.values);
     // Note: Average Calorie Chart removed to maintain 4 graphs
-    createExerciseChart(exerciseData.labels, exerciseData.values);
+    // Create macro chart if function exists
+    if (typeof createMacroChart === 'function') {
+        createMacroChart();
+    }
 }
 
 /**
@@ -107,24 +110,39 @@ function initializeCharts(profile) {
  * @returns {Object} Chart data with labels, values, and trend
  */
 function getWeightChartData(profile) {
-    // Get weight history
-    const weightHistory = getWeeklyWeightData();
-    
-    // Create datasets
-    const labels = [];
-    const values = [];
-    
-    // Add weight entries
-    weightHistory.forEach(entry => {
-        const date = new Date(entry.date);
-        labels.push(formatChartDate(date));
-        values.push(entry.weight);
-    });
-    
-    // Calculate weight trend line using simple moving average
-    const trend = calculateTrendLine(values);
-    
-    return { labels, values, trend };
+    try {
+        // Get weight history (with error handling)
+        const weightHistory = getWeeklyWeightData() || [];
+        
+        // Create datasets
+        const labels = [];
+        const values = [];
+        
+        // Add weight entries (with validation)
+        if (Array.isArray(weightHistory)) {
+            weightHistory.forEach(entry => {
+                if (entry && entry.date && typeof entry.weight === 'number') {
+                    try {
+                        const date = new Date(entry.date);
+                        if (!isNaN(date.getTime())) { // Valid date check
+                            labels.push(formatChartDate(date));
+                            values.push(entry.weight);
+                        }
+                    } catch (err) {
+                        console.error('Error processing weight entry:', err);
+                    }
+                }
+            });
+        }
+        
+        // Calculate weight trend line using simple moving average
+        const trend = calculateTrendLine(values);
+        
+        return { labels, values, trend };
+    } catch (error) {
+        console.error('Error getting weight chart data:', error);
+        return { labels: [], values: [], trend: [] };
+    }
 }
 
 /**
@@ -904,12 +922,14 @@ initializeCharts = function(profile) {
 
 // Update when view changes
 const originalUpdateCharts = updateCharts;
-updateCharts = function(period) {
+updateCharts = function(viewMode) {
     // Call the original function
-    originalUpdateCharts(period);
+    originalUpdateCharts(viewMode);
     
-    // Update macro chart based on period
-    createMacroChart();
+    // Update macro chart based on period if function exists
+    if (typeof createMacroChart === 'function') {
+        createMacroChart();
+    }
 };
 
 // Export functions to global scope
