@@ -545,26 +545,40 @@ function createPrintableContent() {
  * @returns {string} CSV content
  */
 function formatMealPlanAsCSV(mealPlanData) {
-    if (!mealPlanData) return '';
+    if (!mealPlanData || !mealPlanData.days) return '';
     
     // CSV header
     let csv = 'Day,Date,Breakfast,Lunch,Dinner,Snacks,Exercise,Total Calories,Exercise Calories,Net Calories,Remaining Calories\n';
     
     // Add rows for each day
     mealPlanData.days.forEach(day => {
+        // Make sure day.foods exists and has the expected structure
+        if (!day.foods) {
+            day.foods = { breakfast: [], lunch: [], dinner: [], snack: [], exercise: [] };
+        }
+        
+        // Ensure all meal type arrays exist
+        day.foods.breakfast = Array.isArray(day.foods.breakfast) ? day.foods.breakfast : [];
+        day.foods.lunch = Array.isArray(day.foods.lunch) ? day.foods.lunch : [];
+        day.foods.dinner = Array.isArray(day.foods.dinner) ? day.foods.dinner : [];
+        day.foods.snack = Array.isArray(day.foods.snack) ? day.foods.snack : [];
+        day.foods.exercise = Array.isArray(day.foods.exercise) ? day.foods.exercise : [];
+        
         // Format meals as comma-separated list
-        const breakfast = day.foods.breakfast.map(f => f.text.replace(/,/g, ' ')).join('; ');
-        const lunch = day.foods.lunch.map(f => f.text.replace(/,/g, ' ')).join('; ');
-        const dinner = day.foods.dinner.map(f => f.text.replace(/,/g, ' ')).join('; ');
-        const snacks = day.foods.snack.map(f => f.text.replace(/,/g, ' ')).join('; ');
-        const exercise = day.foods.exercise.map(f => f.text.replace(/,/g, ' ')).join('; ');
+        const breakfast = day.foods.breakfast.map(f => f.text ? f.text.replace(/,/g, ' ') : '').join('; ');
+        const lunch = day.foods.lunch.map(f => f.text ? f.text.replace(/,/g, ' ') : '').join('; ');
+        const dinner = day.foods.dinner.map(f => f.text ? f.text.replace(/,/g, ' ') : '').join('; ');
+        const snacks = day.foods.snack.map(f => f.text ? f.text.replace(/,/g, ' ') : '').join('; ');
+        const exercise = day.foods.exercise.map(f => f.text ? f.text.replace(/,/g, ' ') : '').join('; ');
         
         // Add row
-        csv += `${day.name},${day.date},"${breakfast}","${lunch}","${dinner}","${snacks}","${exercise}",${day.calories},${day.exercise},${day.net},${day.remaining}\n`;
+        csv += `${day.name},${day.date},"${breakfast}","${lunch}","${dinner}","${snacks}","${exercise}",${day.calories || 0},${day.exercise || 0},${day.net || 0},${day.remaining || 0}\n`;
     });
     
-    // Add summary row
-    csv += `\nSummary,${mealPlanData.period.startDate} to ${mealPlanData.period.endDate},,,,,,${mealPlanData.summary.totalCalories},${mealPlanData.summary.totalExercise},${mealPlanData.summary.netCalories},${mealPlanData.goals.weeklyCalories - mealPlanData.summary.netCalories}\n`;
+    // Add summary row (with null checks)
+    if (mealPlanData.period && mealPlanData.summary && mealPlanData.goals) {
+        csv += `\nSummary,${mealPlanData.period.startDate} to ${mealPlanData.period.endDate},,,,,,${mealPlanData.summary.totalCalories || 0},${mealPlanData.summary.totalExercise || 0},${mealPlanData.summary.netCalories || 0},${(mealPlanData.goals.weeklyCalories || 0) - (mealPlanData.summary.netCalories || 0)}\n`;
+    }
     
     return csv;
 }
