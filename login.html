@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
+     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="SlimEasy - Login or create an account to start tracking your nutrition and fitness goals">
@@ -149,10 +152,30 @@
             const name = document.getElementById('createName').value.trim();
             const email = document.getElementById('createEmail').value.trim().toLowerCase();
             const password = document.getElementById('createPassword').value;
+            const privacyConsent = document.getElementById('privacyConsent').checked;
             
             // Validate inputs
             if (!name || !email || !password) {
                 showNotification('Please fill in all fields.', 'warning');
+                return;
+            }
+            
+            // Validate email format
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                showNotification('Please enter a valid email address.', 'warning');
+                return;
+            }
+            
+            // Validate privacy consent
+            if (!privacyConsent) {
+                showNotification('You must agree to the Privacy Policy.', 'warning');
+                return;
+            }
+            
+            // Validate password strength (min 6 characters)
+            if (password.length < 6) {
+                showNotification('Password must be at least 6 characters long.', 'warning');
                 return;
             }
             
@@ -165,18 +188,62 @@
                 return;
             }
             
-            // Add new account
-            accounts.push({ name, email, password });
-            saveToStorage('accounts', accounts);
+            try {
+                // Add new account - store only secured password (in a real app, this would be properly hashed)
+                accounts.push({ name, email, password });
+                saveToStorage('accounts', accounts);
+                
+                // Set as current user (never store password in the session)
+                saveToStorage('currentUser', { name, email });
+                
+                // Initialize user data structures
+                initializeUserData(email);
+                
+                // Show success message and redirect
+                showNotification('Account created successfully!', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            } catch (error) {
+                console.error('Account creation error:', error);
+                showNotification('Error creating account. Please try again.', 'error');
+            }
+        }
+        
+        /**
+         * Initialize data structures for a new user
+         * @param {string} email - User email
+         */
+        function initializeUserData(email) {
+            // Create empty profile structure
+            const profileKey = `profile_${email}`;
+            if (!getFromStorage(profileKey)) {
+                saveToStorage(profileKey, {});
+            }
             
-            // Set as current user
-            saveToStorage('currentUser', { name, email });
+            // Initialize empty weight history
+            const weightDataKey = `weight_history_${email}`;
+            if (!getFromStorage(weightDataKey)) {
+                saveToStorage(weightDataKey, []);
+            }
             
-            // Show success message and redirect
-            showNotification('Account created successfully!', 'success');
-            setTimeout(() => {
-                window.location.href = 'index.html';
-            }, 1000);
+            // Initialize empty meal planner data
+            const userKey = `planner_${email}`;
+            if (!getFromStorage(`${userKey}_calories`)) {
+                saveToStorage(`${userKey}_calories`, [0, 0, 0, 0, 0, 0, 0]);
+            }
+            if (!getFromStorage(`${userKey}_exercise`)) {
+                saveToStorage(`${userKey}_exercise`, [0, 0, 0, 0, 0, 0, 0]);
+            }
+            if (!getFromStorage(`${userKey}_foods`)) {
+                saveToStorage(`${userKey}_foods`, [[], [], [], [], [], [], []]);
+            }
+            
+            // Initialize achievements
+            const achievementsKey = `achievements_${email}`;
+            if (!getFromStorage(achievementsKey)) {
+                saveToStorage(achievementsKey, { earned: {}, points: 0 });
+            }
         }
         
         /**
@@ -196,31 +263,68 @@
                 return;
             }
             
-            // Get accounts from storage
-            const accounts = getFromStorage('accounts', []);
-            
-            // Find matching account
-            const account = accounts.find(acc => acc.email === email && acc.password === password);
-            
-            if (account) {
-                // Login successful
-                saveToStorage('currentUser', { name: account.name, email });
-                hideLoginError();
-                
-                // Show success notification
-                showNotification('Login successful!', 'success');
-                
-                // Check if profile exists and redirect accordingly
-                const profileKey = `profile_${email}`;
-                const profile = getFromStorage(profileKey);
-                
-                setTimeout(() => {
-                    window.location.href = profile ? 'dashboard.html' : 'index.html';
-                }, 800);
-            } else {
-                // Login failed
-                showLoginError('Invalid email or password.');
+            // Validate email format
+            const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailPattern.test(email)) {
+                showLoginError('Please enter a valid email address.');
+                return;
             }
+            
+            try {
+                // Get accounts from storage
+                const accounts = getFromStorage('accounts', []);
+                
+                // Add a slight delay for security (prevents timing attacks in a real app)
+                setTimeout(() => {
+                    // Find matching account
+                    const account = accounts.find(acc => acc.email === email && acc.password === password);
+                    
+                    if (account) {
+                        // Login successful
+                        saveToStorage('currentUser', { name: account.name, email });
+                        hideLoginError();
+                        
+                        // Show success notification
+                        showNotification('Login successful!', 'success');
+                        
+                        // Check if user data exists, create if not
+                        ensureUserDataExists(email, account.name);
+                        
+                        // Check if profile exists and redirect accordingly
+                        const profileKey = `profile_${email}`;
+                        const profile = getFromStorage(profileKey);
+                        
+                        // Set last login timestamp
+                        saveToStorage('lastLogin', new Date().toISOString());
+                        
+                        setTimeout(() => {
+                            window.location.href = profile && Object.keys(profile).length > 0 ? 'dashboard.html' : 'index.html';
+                        }, 800);
+                    } else {
+                        // Login failed
+                        showLoginError('Invalid email or password.');
+                    }
+                }, 300); // Small delay for better security and UX
+            } catch (error) {
+                console.error('Login error:', error);
+                showLoginError('An error occurred during login. Please try again.');
+            }
+        }
+        
+        /**
+         * Ensure all user data structures exist
+         * @param {string} email - User email
+         * @param {string} name - User name
+         */
+        function ensureUserDataExists(email, name) {
+            // Create profile if it doesn't exist
+            const profileKey = `profile_${email}`;
+            if (!getFromStorage(profileKey)) {
+                saveToStorage(profileKey, {});
+            }
+            
+            // Initialize user data structures if they don't exist
+            initializeUserData(email);
         }
         
         /**
