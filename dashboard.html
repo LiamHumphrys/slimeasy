@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
+     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="SlimEasy - Your personalized dashboard for tracking weight loss, nutrition, and fitness goals">
@@ -362,6 +365,7 @@
     <script src="theme.js"></script>
     <script src="utils.js"></script>
     <script src="charts.js"></script>
+    <!-- Enhanced AI Buddy with improved context and conversation capabilities -->
     <script src="ai-buddy.js"></script>
     <script src="wearable-integration.js"></script>
     <script>
@@ -1367,7 +1371,9 @@
         }
         
         // Initialize AI Buddy
-        function initializeAIBuddy() {
+        // This function is now provided by ai-buddy.js and contains the enhanced version
+        // Keeping this as a stub for backward compatibility
+        function oldInitializeAIBuddy() {
             const aiBuddyBtn = document.getElementById('aiBuddyBtn');
             const aiBuddyModal = document.getElementById('aiBuddyModal');
             const aiBuddyClose = document.getElementById('aiBuddyClose');
@@ -1384,8 +1390,8 @@
                 aiBuddyModal.classList.add('show');
                 aiMessageInput.focus();
                 
-                // Prepopulate suggestions based on user data
-                generateAISuggestions();
+                // This is now handled by ai-buddy.js via generatePersonalizedSuggestions
+                // generateAISuggestions();
             });
             
             // Close AI Buddy modal
@@ -1401,6 +1407,9 @@
             });
             
             // Send message on button click
+            // These event listeners are now managed by ai-buddy.js
+            // Commented out to prevent conflicts with the enhanced version
+            /*
             aiSendBtn.addEventListener('click', sendAIMessage);
             
             // Send message on Enter key
@@ -1409,14 +1418,16 @@
                     sendAIMessage();
                 }
             });
+            */
             
-            // Function to send message to AI Buddy
-            function sendAIMessage() {
+            // Function is now replaced by the version in ai-buddy.js
+            function legacySendAIMessage() {
                 const message = aiMessageInput.value.trim();
                 if (!message) return;
                 
-                // Add user message to chat
-                addMessageToChat('user', message);
+                // This is now handled by ai-buddy.js
+                // addMessageToChat('user', message);
+                legacyAddMessageToChat('user', message);
                 
                 // Clear input
                 aiMessageInput.value = '';
@@ -1424,35 +1435,39 @@
                 // Show typing indicator
                 aiTyping.style.display = 'flex';
                 
-                // Scroll to bottom
-                scrollAIChat();
+                // This is now handled by ai-buddy.js
+                // scrollAIChat();
+                legacyScrollAIChat();
                 
                 // Generate AI response after a delay (simulating processing)
                 setTimeout(() => {
                     // Hide typing indicator
                     aiTyping.style.display = 'none';
                     
-                    // Generate response based on message and user data
-                    const response = generateAIResponse(message);
+                    // This function is now provided by ai-buddy.js
+                    // const response = generateAIResponse(message);
+                    const response = "The AI buddy has been upgraded. Please use the enhanced version.";
                     
-                    // Add AI response to chat
-                    addMessageToChat('buddy', response);
+                    // This is now handled by ai-buddy.js
+                    // addMessageToChat('buddy', response);
+                    legacyAddMessageToChat('buddy', response);
                     
-                    // Scroll to bottom
-                    scrollAIChat();
+                    // This is now handled by ai-buddy.js
+                    // scrollAIChat();
+                    legacyScrollAIChat();
                 }, 1500);
             }
             
-            // Add message to chat
-            function addMessageToChat(type, text) {
+            // This function is now replaced by the version in ai-buddy.js
+            function legacyAddMessageToChat(type, text) {
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `ai-message ${type}`;
                 messageDiv.textContent = text;
                 aiChatMessages.appendChild(messageDiv);
             }
             
-            // Scroll chat to bottom
-            function scrollAIChat() {
+            // This function is now replaced by the version in ai-buddy.js
+            function legacyScrollAIChat() {
                 aiChatMessages.scrollTop = aiChatMessages.scrollHeight;
             }
             
@@ -1509,8 +1524,9 @@
                 // Add suggestions to chat
                 aiChatMessages.appendChild(suggestionsDiv);
                 
-                // Scroll to show suggestions
-                scrollAIChat();
+                // This is now handled by ai-buddy.js
+                // scrollAIChat();
+                legacyScrollAIChat();
             }
             
             // Create a suggestion element
@@ -1537,8 +1553,8 @@
                 return suggestionDiv;
             }
             
-            // Generate AI response based on message and user data
-            function generateAIResponse(message) {
+            // This function is now replaced by the version in ai-buddy.js
+            function legacyGenerateAIResponse(message) {
                 message = message.toLowerCase();
                 
                 // Basic keyword matching for responses
@@ -3220,16 +3236,12 @@
             </div>
             <div class="ai-modal-body">
                 <div class="ai-chat-messages" id="aiChatMessages">
-                    <div class="ai-message buddy">
-                        Hello! I'm your SlimEasy AI Buddy. I can provide personalized meal suggestions, 
-                        exercise tips, and motivation based on your profile and progress data. 
-                        How can I help you today?
-                    </div>
+                    <!-- Chat messages will be added dynamically -->
                 </div>
                 <div class="ai-typing" id="aiTyping" style="display: none;">
-                    <span class="ai-dot"></span>
-                    <span class="ai-dot"></span>
-                    <span class="ai-dot"></span>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
+                    <div class="typing-dot"></div>
                 </div>
             </div>
             <div class="ai-modal-footer">
