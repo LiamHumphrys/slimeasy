@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
+     crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="SlimEasy - Track your progress over time with calendar view">
@@ -359,12 +362,28 @@
                     let totalCarbs = 0;
                     let totalFat = 0;
                     
-                    Object.values(dayFoods || {}).forEach(meal => {
-                        meal.forEach(food => {
-                            totalCalories += food.calories || 0;
-                            totalProtein += food.protein || 0;
-                            totalCarbs += food.carbs || 0;
-                            totalFat += food.fat || 0;
+                    // Make sure dayFoods is an object and not null/undefined
+                    const foods = dayFoods || {};
+                    
+                    // Process each meal type (breakfast, lunch, dinner, snack)
+                    Object.entries(foods).forEach(([mealType, mealFoods]) => {
+                        // Make sure meal is an array
+                        const foodItems = Array.isArray(mealFoods) ? mealFoods : [];
+                        
+                        foodItems.forEach(food => {
+                            if (food) {
+                                // Handle calories
+                                const calories = typeof food.calories === 'number' ? food.calories : 
+                                                (typeof food.cal === 'number' ? food.cal : 0);
+                                totalCalories += calories;
+                                
+                                // Handle macros - check both direct properties and nested nutrients object
+                                const nutrients = food.nutrients || {};
+                                
+                                totalProtein += food.protein || nutrients.protein || 0;
+                                totalCarbs += food.carbs || nutrients.carbs || 0;
+                                totalFat += food.fat || nutrients.fat || 0;
+                            }
                         });
                     });
                     
