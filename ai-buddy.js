@@ -312,11 +312,23 @@ const mealDatabase = {
     ]
 };
 
-// AI Buddy conversation history
+// AI Buddy conversation history with enhanced context tracking
 let conversationHistory = [];
 
 // Flag to determine if AI Buddy should proactively suggest meals
 let proactiveSuggestionEnabled = true;
+
+// Context tracking for better conversation continuity
+let conversationContext = {
+    lastMealType: null,          // Last meal type discussed (breakfast, lunch, dinner, snack)
+    lastMealSuggested: null,     // Last meal suggested to user
+    lastCalorieTarget: null,     // Last discussed calorie target
+    dietaryPreferences: [],      // User's dietary preferences inferred from conversation
+    lastTopic: null,             // Last topic of conversation (meals, exercise, progress, etc.)
+    recentQueries: [],           // List of recent user queries for context
+    userFeedback: {},            // Track user likes/dislikes for better recommendations
+    currentMealTime: null        // Current meal time based on time of day
+};
 
 /**
  * Initialize AI Buddy functionality
@@ -349,6 +361,28 @@ function initializeAIBuddy() {
             addMessageToChat('buddy', greeting);
             // Add to conversation history
             conversationHistory.push({ role: 'buddy', message: greeting });
+            
+            // Initialize current meal time in context based on time of day
+            const hour = new Date().getHours();
+            if (hour >= 5 && hour < 11) {
+                conversationContext.currentMealTime = 'breakfast';
+                conversationContext.lastMealType = 'breakfast';
+            } else if (hour >= 11 && hour < 15) {
+                conversationContext.currentMealTime = 'lunch';
+                conversationContext.lastMealType = 'lunch';
+            } else if (hour >= 15 && hour < 17) {
+                conversationContext.currentMealTime = 'snacks';
+                conversationContext.lastMealType = 'snacks';
+            } else if (hour >= 17 && hour < 21) {
+                conversationContext.currentMealTime = 'dinner';
+                conversationContext.lastMealType = 'dinner';
+            } else {
+                conversationContext.currentMealTime = 'snacks';
+                conversationContext.lastMealType = 'snacks';
+            }
+            
+            // Set initial topic
+            conversationContext.lastTopic = 'meals';
         }
     });
     
@@ -367,6 +401,36 @@ function initializeAIBuddy() {
         }
     });
     
+    // Add quick suggestion buttons if they don't exist
+    if (aiChatMessages && !document.getElementById('quickSuggestions')) {
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'quickSuggestions';
+        suggestionsContainer.className = 'quick-suggestions';
+        
+        // Create suggestion buttons
+        const suggestions = [
+            { text: "Meal ideas", action: () => handleQuickSuggestion("Show me some meal ideas") },
+            { text: "Exercise tips", action: () => handleQuickSuggestion("Give me exercise suggestions") },
+            { text: "My progress", action: () => handleQuickSuggestion("How is my progress going?") },
+            { text: "Motivation", action: () => handleQuickSuggestion("I need some motivation") }
+        ];
+        
+        suggestions.forEach(suggestion => {
+            const button = document.createElement('button');
+            button.className = 'quick-suggestion-btn';
+            button.textContent = suggestion.text;
+            button.addEventListener('click', suggestion.action);
+            suggestionsContainer.appendChild(button);
+        });
+        
+        // Insert before the message input
+        const chatContainer = document.querySelector('.ai-chat-container');
+        if (chatContainer) {
+            const inputContainer = document.querySelector('.ai-input-container');
+            chatContainer.insertBefore(suggestionsContainer, inputContainer);
+        }
+    }
+    
     // Send message on button click
     aiSendBtn.addEventListener('click', sendAIMessage);
     
@@ -377,8 +441,121 @@ function initializeAIBuddy() {
         }
     });
     
+    // Add voice input button if supported by browser
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        addVoiceInputButton();
+    }
+    
+    // Load user preferences from storage
+    loadUserPreferences();
+    
     // Check if we should trigger proactive meal suggestions
     checkForProactiveSuggestions();
+}
+
+/**
+ * Handle quick suggestion button click
+ * @param {string} text - Suggestion text
+ */
+function handleQuickSuggestion(text) {
+    const aiMessageInput = document.getElementById('aiMessageInput');
+    if (aiMessageInput) {
+        aiMessageInput.value = text;
+        sendAIMessage();
+    }
+}
+
+/**
+ * Add voice input button to the chat
+ */
+function addVoiceInputButton() {
+    const inputContainer = document.querySelector('.ai-input-container');
+    if (!inputContainer) return;
+    
+    // Check if button already exists
+    if (document.getElementById('aiVoiceBtn')) return;
+    
+    // Create voice button
+    const voiceBtn = document.createElement('button');
+    voiceBtn.id = 'aiVoiceBtn';
+    voiceBtn.className = 'ai-voice-btn';
+    voiceBtn.innerHTML = '<i class="fas fa-microphone"></i>';
+    voiceBtn.title = 'Voice input';
+    
+    // Add to input container before send button
+    const sendBtn = document.getElementById('aiSendBtn');
+    if (sendBtn && sendBtn.parentNode) {
+        sendBtn.parentNode.insertBefore(voiceBtn, sendBtn);
+    }
+    
+    // Set up speech recognition
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        
+        // Handle results
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            const aiMessageInput = document.getElementById('aiMessageInput');
+            if (aiMessageInput) {
+                aiMessageInput.value = transcript;
+                // Send message automatically
+                sendAIMessage();
+            }
+        };
+        
+        // Handle end of voice input
+        recognition.onend = function() {
+            voiceBtn.classList.remove('recording');
+        };
+        
+        // Handle errors
+        recognition.onerror = function() {
+            voiceBtn.classList.remove('recording');
+        };
+        
+        // Toggle voice recording on click
+        voiceBtn.addEventListener('click', function() {
+            if (voiceBtn.classList.contains('recording')) {
+                recognition.stop();
+                voiceBtn.classList.remove('recording');
+            } else {
+                recognition.start();
+                voiceBtn.classList.add('recording');
+            }
+        });
+    }
+}
+
+/**
+ * Load user preferences from storage
+ */
+function loadUserPreferences() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser || !currentUser.email) return;
+    
+    // Check for stored preferences
+    const preferencesKey = `ai_preferences_${currentUser.email}`;
+    const storedPreferences = getFromStorage(preferencesKey);
+    
+    if (storedPreferences) {
+        // Load dietary preferences
+        if (storedPreferences.dietaryPreferences) {
+            conversationContext.dietaryPreferences = storedPreferences.dietaryPreferences;
+        }
+        
+        // Load feedback
+        if (storedPreferences.userFeedback) {
+            conversationContext.userFeedback = storedPreferences.userFeedback;
+        }
+    }
+    
+    // Set default sound preference if not set
+    if (getFromStorage('soundEnabled') === null) {
+        saveToStorage('soundEnabled', true);
+    }
 }
 
 /**
@@ -425,6 +602,9 @@ function sendAIMessage() {
     // Store in conversation history
     conversationHistory.push({ role: 'user', message: message });
     
+    // Update context tracking with user query
+    updateConversationContext(message);
+    
     // Clear input
     aiMessageInput.value = '';
     
@@ -439,7 +619,7 @@ function sendAIMessage() {
         // Hide typing indicator
         aiTyping.style.display = 'none';
         
-        // Generate response based on message and user data
+        // Generate response based on message and user data with context
         const response = generateAIResponse(message);
         
         // Add AI response to chat
@@ -448,8 +628,20 @@ function sendAIMessage() {
         // Store in conversation history
         conversationHistory.push({ role: 'buddy', message: response });
         
+        // Update conversation context with the response
+        storeResponseInContext(response);
+        
         // Scroll to bottom
         scrollAIChat();
+        
+        // Play a subtle sound for notification if enabled
+        if (getFromStorage('soundEnabled', true)) {
+            const audioElement = document.getElementById('messageSound');
+            if (audioElement) {
+                audioElement.volume = 0.3; // Keep volume low
+                audioElement.play().catch(e => console.log('Audio play prevented by browser.'));
+            }
+        }
     }, 1500);
 }
 
@@ -465,11 +657,78 @@ function addMessageToChat(type, text) {
     const messageDiv = document.createElement('div');
     messageDiv.className = `ai-message ${type}`;
     
-    // Render links as clickable
-    const textWithLinks = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank">$1</a>');
+    // Render links as clickable with proper styling
+    let textWithLinks = text.replace(
+        /(https?:\/\/[^\s]+)/g, 
+        '<a href="$1" target="_blank" style="color: inherit; text-decoration: underline;">$1</a>'
+    );
+    
+    // Format nutrition info in buddy messages (make them more readable)
+    if (type === 'buddy') {
+        // Format calorie mentions
+        textWithLinks = textWithLinks.replace(
+            /(\~\d+\s*calories)/g, 
+            '<strong style="color: var(--primary-color, #4CAF50);">$1</strong>'
+        );
+        
+        // Format nutrition info section
+        textWithLinks = textWithLinks.replace(
+            /(Nutrition info:)([^\.]+\.)/g, 
+            '<div style="margin: 8px 0; padding: 5px; background-color: rgba(33, 150, 243, 0.05); border-radius: 5px; display: inline-block;">$1$2</div>'
+        );
+        
+        // Make protein, carbs, fat and fiber numbers bold
+        textWithLinks = textWithLinks.replace(
+            /(\d+g\s*(protein|carbs|fat|fiber))/g,
+            '<strong>$1</strong>'
+        );
+        
+        // Format meal names (first part before colon if exists)
+        textWithLinks = textWithLinks.replace(
+            /^([^:]+):/,
+            '<span style="font-size: 1.1em; font-weight: bold; color: var(--primary-color, #4CAF50);">$1:</span>'
+        );
+    }
+    
     messageDiv.innerHTML = textWithLinks;
     
+    // Add timestamp
+    const timestamp = document.createElement('div');
+    timestamp.className = 'message-timestamp';
+    timestamp.style.fontSize = '10px';
+    timestamp.style.marginTop = '5px';
+    timestamp.style.opacity = '0.7';
+    timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    messageDiv.appendChild(timestamp);
+    
+    // Add to chat
     aiChatMessages.appendChild(messageDiv);
+    
+    // If it's a buddy message, update the context and save preferences
+    if (type === 'buddy') {
+        storeResponseInContext(text);
+        saveUserPreferences();
+    }
+    
+    // If it's a user message, check for preference information
+    if (type === 'user') {
+        if (text.toLowerCase().includes('like') || 
+            text.toLowerCase().includes('prefer') || 
+            text.toLowerCase().includes('enjoy')) {
+            learnUserPreferences(text);
+        }
+        
+        if (text.toLowerCase().includes('don\'t like') || 
+            text.toLowerCase().includes("don't like") || 
+            text.toLowerCase().includes('dislike') || 
+            text.toLowerCase().includes('hate') || 
+            text.toLowerCase().includes('allergic')) {
+            learnUserDislikes(text);
+        }
+        
+        // Save preferences after learning
+        saveUserPreferences();
+    }
 }
 
 /**
@@ -585,7 +844,8 @@ function createSuggestion(title, content, meta) {
         actionBtn.innerHTML = '<i class="fas fa-plus-circle"></i> Add to Tracker';
         actionBtn.onclick = function() {
             // Extract the meal name from content
-            const mealName = content.split(":")[0].trim();
+            const mealNameMatch = content.match(/(.+?):/); 
+            const mealName = mealNameMatch ? mealNameMatch[1].trim() : content.trim();
             // Add to food tracker with estimated calories
             addMealToTracker(mealName, getCaloriesFromMealSuggestion(content));
             // Show confirmation
@@ -629,47 +889,72 @@ function generateAIResponse(message) {
     // Get current calories info
     const caloriesInfo = getCurrentCaloriesInfo();
     
+    // Check for follow-up queries that reference previous context
+    if (isFollowUpQuery(message)) {
+        return handleFollowUpQuery(message, caloriesInfo);
+    }
+    
     // Handle meal-related queries
     if (message.includes('meal') || message.includes('food') || message.includes('eat') || 
         message.includes('dinner') || message.includes('lunch') || message.includes('breakfast') ||
-        message.includes('snack') || message.includes('hungry')) {
+        message.includes('snack') || message.includes('hungry') || message.includes('recipe')) {
         
         // Handle specific meal time requests
-        if (message.includes('breakfast')) {
-            return generateMealSuggestionByType('breakfast', caloriesInfo);
-        } else if (message.includes('lunch')) {
-            return generateMealSuggestionByType('lunch', caloriesInfo);
-        } else if (message.includes('dinner')) {
-            return generateMealSuggestionByType('dinner', caloriesInfo);
+        if (message.includes('breakfast') || message.includes('morning meal')) {
+            return generateMealSuggestionByType('breakfast', caloriesInfo, extractDietaryPreferences(message));
+        } else if (message.includes('lunch') || message.includes('midday')) {
+            return generateMealSuggestionByType('lunch', caloriesInfo, extractDietaryPreferences(message));
+        } else if (message.includes('dinner') || message.includes('supper') || message.includes('evening meal')) {
+            return generateMealSuggestionByType('dinner', caloriesInfo, extractDietaryPreferences(message));
         } else if (message.includes('snack')) {
-            return generateMealSuggestionByType('snacks', caloriesInfo);
+            return generateMealSuggestionByType('snacks', caloriesInfo, extractDietaryPreferences(message));
         } 
         
         // Look for calorie ranges in the message
         const calorieMatch = message.match(/(\d+)\s*(?:kcal|calories|cal)/);
         if (calorieMatch && calorieMatch[1]) {
             const targetCalories = parseInt(calorieMatch[1]);
-            return generateMealSuggestionByCalories(targetCalories);
+            return generateMealSuggestionByCalories(targetCalories, extractDietaryPreferences(message));
         }
         
+        // Check for dietary preferences in the query
+        const dietaryPreferences = extractDietaryPreferences(message);
+        
         // Default to smart suggestion based on time of day and remaining calories
-        return generateSmartMealSuggestion(caloriesInfo);
+        return generateSmartMealSuggestion(caloriesInfo, dietaryPreferences);
     } 
     
     // Handle exercise queries
     else if (message.includes('exercise') || message.includes('workout') || 
              message.includes('activity') || message.includes('move') || 
              message.includes('burn') || message.includes('cardio') ||
-             message.includes('strength')) {
+             message.includes('strength') || message.includes('training')) {
         
         // Check if looking for specific type of exercise
-        if (message.includes('cardio') || message.includes('aerobic')) {
+        if (message.includes('cardio') || message.includes('aerobic') || message.includes('running') || 
+            message.includes('walking') || message.includes('cycling') || message.includes('swimming')) {
             return generateExerciseSuggestionByType('cardio');
         } else if (message.includes('strength') || message.includes('weights') || 
-                  message.includes('muscle') || message.includes('toning')) {
+                  message.includes('muscle') || message.includes('toning') || message.includes('resistance')) {
             return generateExerciseSuggestionByType('strength');
-        } else if (message.includes('flexibility') || message.includes('stretch')) {
+        } else if (message.includes('flexibility') || message.includes('stretch') || 
+                  message.includes('yoga') || message.includes('mobility')) {
             return generateExerciseSuggestionByType('flexibility');
+        }
+        
+        // Check for duration mentions
+        const durationMatch = message.match(/(\d+)\s*(?:minute|min|hour)/);
+        if (durationMatch && durationMatch[1]) {
+            const minutes = parseInt(durationMatch[1]);
+            // Adjust suggestions based on duration
+            return generateExerciseSuggestionByDuration(minutes);
+        }
+        
+        // Check for intensity mentions
+        if (message.includes('easy') || message.includes('light') || message.includes('beginner')) {
+            return generateExerciseSuggestionByIntensity('light');
+        } else if (message.includes('hard') || message.includes('intense') || message.includes('advanced')) {
+            return generateExerciseSuggestionByIntensity('intense');
         }
         
         // Default exercise suggestion
@@ -679,20 +964,33 @@ function generateAIResponse(message) {
     // Handle weight/progress queries
     else if (message.includes('weight') || message.includes('progress') || 
              message.includes('lost') || message.includes('losing') || 
-             message.includes('goal') || message.includes('target')) {
+             message.includes('gain') || message.includes('gained') ||
+             message.includes('goal') || message.includes('target') ||
+             message.includes('track') || message.includes('tracking')) {
         return generateProgressInsight();
     } 
     
     // Handle motivation queries
     else if (message.includes('motivation') || message.includes('inspire') || 
              message.includes('help me') || message.includes('struggling') || 
-             message.includes('hard') || message.includes('difficult')) {
+             message.includes('hard') || message.includes('difficult') ||
+             message.includes('discouraged') || message.includes('stuck') ||
+             message.includes('plateau')) {
         return generateMotivationMessage();
     } 
     
     // Handle thank you messages
-    else if (message.includes('thanks') || message.includes('thank you')) {
-        return "You're welcome! I'm here to help you on your weight loss journey. Let me know if you need any other assistance!";
+    else if (message.includes('thanks') || message.includes('thank you') || message.includes('thx')) {
+        // More personalized thanks based on context
+        if (conversationContext.lastTopic === 'meals') {
+            return "You're welcome! I'm glad I could help with meal suggestions. Let me know if you'd like more food ideas or have questions about nutrition!";
+        } else if (conversationContext.lastTopic === 'exercise') {
+            return "You're welcome! Keep up the great work with your exercise routine. I'm here if you need more workout ideas or tips!";
+        } else if (conversationContext.lastTopic === 'progress') {
+            return "You're welcome! Keep focusing on your progress, not perfection. Every step counts, and I'm here to support your journey!";
+        } else {
+            return "You're welcome! I'm here to help you on your health journey. Let me know if you need anything else!";
+        }
     } 
     
     // Handle setting-related questions
@@ -711,12 +1009,32 @@ function generateAIResponse(message) {
         }
     }
     
-    // Instead of a generic response, provide personalized suggestions right away
-    const caloriesInfo = getCurrentCaloriesInfo();
+    // Handle preference learning queries
+    else if (message.includes('like') || message.includes('prefer') || message.includes('love') || 
+             message.includes('favorite') || message.includes('enjoy')) {
+        
+        // Learn user preferences for future personalization
+        learnUserPreferences(message);
+        
+        return "Thanks for sharing your preferences! I'll keep that in mind for future recommendations. Would you like me to suggest something based on what you enjoy?";
+    }
+    
+    // Handle dislike queries
+    else if (message.includes('don\'t like') || message.includes("don't like") || 
+             message.includes('dislike') || message.includes('hate') || 
+             message.includes('allergic') || message.includes('avoid')) {
+        
+        // Learn user dislikes for future personalization
+        learnUserDislikes(message);
+        
+        return "I've noted what you want to avoid. I'll make sure future recommendations take this into account. Would you like me to suggest an alternative?";
+    }
+    
+    // Instead of a generic response, provide personalized suggestions based on context
     const currentHour = new Date().getHours();
     let personalizedResponse = "";
     
-    // Determine current meal time context
+    // Determine current meal time context with more natural language
     if (currentHour >= 5 && currentHour < 11) {
         personalizedResponse += "Good morning! ";
     } else if (currentHour >= 11 && currentHour < 15) {
@@ -729,37 +1047,374 @@ function generateAIResponse(message) {
         personalizedResponse += "Hi there! ";
     }
     
-    // Add calorie context
+    // Add calorie context with more natural language
     if (caloriesInfo.remaining > 500) {
-        personalizedResponse += `You have ${caloriesInfo.remaining} calories remaining today. Here's a meal idea:\n\n`;
+        personalizedResponse += `You have ${caloriesInfo.remaining} calories remaining today. Here's a meal idea that fits your plan:\n\n`;
         personalizedResponse += generateMealSuggestionByType(
             currentHour >= 5 && currentHour < 11 ? 'breakfast' : 
             currentHour >= 11 && currentHour < 15 ? 'lunch' : 
             currentHour >= 18 && currentHour < 22 ? 'dinner' : 'snacks', 
-            caloriesInfo
+            caloriesInfo,
+            conversationContext.dietaryPreferences
         );
     } else if (caloriesInfo.remaining > 0) {
-        personalizedResponse += `You have ${caloriesInfo.remaining} calories remaining today. Here's a light option:\n\n`;
-        // Generate a low-calorie snack suggestion
+        personalizedResponse += `With ${caloriesInfo.remaining} calories remaining, you might want something light. Here's an option:\n\n`;
+        // Generate a low-calorie snack suggestion taking into account dietary preferences
         const snacks = mealDatabase.snacks.filter(s => s.calories <= caloriesInfo.remaining);
-        const snack = snacks[Math.floor(Math.random() * snacks.length)] || mealDatabase.snacks[0];
+        let filteredSnacks = snacks;
+        
+        // Filter by dietary preferences if any are known
+        if (conversationContext.dietaryPreferences.length > 0) {
+            filteredSnacks = snacks.filter(snack => {
+                // Check if snack tags match any dietary preferences
+                return snack.tags.some(tag => conversationContext.dietaryPreferences.includes(tag));
+            });
+            
+            // If no matches, fall back to all snacks
+            if (filteredSnacks.length === 0) filteredSnacks = snacks;
+        }
+        
+        const snack = filteredSnacks[Math.floor(Math.random() * filteredSnacks.length)] || snacks[0] || mealDatabase.snacks[0];
         personalizedResponse += `${snack.name}: ${snack.ingredients.join(', ')}. (~${snack.calories} calories)`;
     } else {
-        personalizedResponse += `You've reached your calorie goal for today! How about an exercise suggestion instead?\n\n`;
+        personalizedResponse += `You've reached your calorie goal for today! How about an exercise suggestion to boost your progress?\n\n`;
         personalizedResponse += generateExerciseSuggestion();
     }
     
-    personalizedResponse += "\n\nYou can also ask me about meal ideas, exercise suggestions, progress tracking, or motivation. What else can I help with today?";
+    personalizedResponse += "\n\nYou can ask me about specific meals, exercise routines, or how your progress is going. What would you like to know more about?";
     
     return personalizedResponse;
 }
 
 /**
+ * Determine if a message is a follow-up query referencing previous context
+ * @param {string} message - User message
+ * @returns {boolean} True if this is a follow-up query
+ */
+function isFollowUpQuery(message) {
+    const followUpPhrases = [
+        'another', 'different', 'more', 'similar', 'like that', 'else', 'other',
+        'again', 'instead', 'alternative', 'something else', 'one more'
+    ];
+    
+    // Check if message contains any follow-up phrases
+    return followUpPhrases.some(phrase => message.includes(phrase));
+}
+
+/**
+ * Handle follow-up queries by using conversation context
+ * @param {string} message - User message
+ * @param {Object} caloriesInfo - Current calorie information
+ * @returns {string} AI response
+ */
+function handleFollowUpQuery(message, caloriesInfo) {
+    // If we have a previous topic, use it to determine response
+    if (conversationContext.lastTopic) {
+        switch(conversationContext.lastTopic) {
+            case 'meals':
+                // If asking for another meal suggestion, use the last meal type
+                if (conversationContext.lastMealType) {
+                    // Filter out the last suggested meal to ensure variety
+                    let response = `Here's another ${conversationContext.lastMealType} idea for you:\n\n`;
+                    response += generateMealSuggestionByType(
+                        conversationContext.lastMealType, 
+                        caloriesInfo,
+                        conversationContext.dietaryPreferences,
+                        conversationContext.lastMealSuggested // Exclude last suggested meal
+                    );
+                    return response;
+                } 
+                // If asking for a different calorie target
+                else if (message.includes('lower') || message.includes('fewer') || message.includes('less')) {
+                    const newTarget = conversationContext.lastCalorieTarget 
+                        ? Math.max(100, conversationContext.lastCalorieTarget - 100)
+                        : Math.max(100, caloriesInfo.remaining * 0.4);
+                    
+                    return generateMealSuggestionByCalories(newTarget, conversationContext.dietaryPreferences);
+                }
+                else if (message.includes('higher') || message.includes('more')) {
+                    const newTarget = conversationContext.lastCalorieTarget 
+                        ? conversationContext.lastCalorieTarget + 100
+                        : caloriesInfo.remaining * 0.6;
+                    
+                    return generateMealSuggestionByCalories(newTarget, conversationContext.dietaryPreferences);
+                }
+                else {
+                    // Default to current meal time
+                    return generateMealSuggestionByType(
+                        conversationContext.currentMealTime,
+                        caloriesInfo,
+                        conversationContext.dietaryPreferences
+                    );
+                }
+                break;
+                
+            case 'exercise':
+                // Provide different exercise suggestion based on context
+                if (message.includes('easier') || message.includes('beginner')) {
+                    return generateExerciseSuggestionByIntensity('light');
+                } else if (message.includes('harder') || message.includes('advanced')) {
+                    return generateExerciseSuggestionByIntensity('intense');
+                } else if (message.includes('different') || message.includes('type')) {
+                    // Provide a different type than last time
+                    const types = ['cardio', 'strength', 'flexibility'];
+                    const lastType = types.find(type => conversationHistory.slice(-3).some(h => 
+                        h.role === 'buddy' && h.message.includes(type)));
+                    
+                    // Remove last type from options
+                    const filteredTypes = lastType ? types.filter(t => t !== lastType) : types;
+                    const newType = filteredTypes[Math.floor(Math.random() * filteredTypes.length)];
+                    
+                    return generateExerciseSuggestionByType(newType);
+                } else {
+                    // Default to another general exercise
+                    return generateExerciseSuggestion();
+                }
+                break;
+                
+            case 'progress':
+                // Provide additional insights about progress
+                return "Looking at your progress from a different angle: consistency in healthy habits is just as important as the numbers. Small daily choices add up to big results over time. Would you like me to suggest some small, sustainable habit changes that could help?";
+                break;
+                
+            default:
+                // Default to meal suggestions if topic unclear
+                return generateSmartMealSuggestion(caloriesInfo, conversationContext.dietaryPreferences);
+        }
+    }
+    
+    // If no clear context, provide a meal suggestion based on time
+    return generateSmartMealSuggestion(caloriesInfo, conversationContext.dietaryPreferences);
+}
+
+/**
+ * Extract dietary preferences from user message
+ * @param {string} message - User message
+ * @returns {Array} List of dietary preferences
+ */
+function extractDietaryPreferences(message) {
+    const preferences = [];
+    const lowerMessage = message.toLowerCase();
+    
+    // Check for specific dietary terms
+    if (lowerMessage.includes('vegetarian') || 
+        lowerMessage.includes('no meat')) {
+        preferences.push('vegetarian');
+    }
+    
+    if (lowerMessage.includes('vegan') || 
+        lowerMessage.includes('plant based') || 
+        lowerMessage.includes('no animal')) {
+        preferences.push('vegan');
+    }
+    
+    if (lowerMessage.includes('gluten free') || 
+        lowerMessage.includes('gluten-free') || 
+        lowerMessage.includes('no gluten') ||
+        lowerMessage.includes('celiac')) {
+        preferences.push('gluten-free');
+    }
+    
+    if (lowerMessage.includes('keto') || 
+        lowerMessage.includes('ketogenic') || 
+        lowerMessage.includes('low carb') ||
+        lowerMessage.includes('low-carb')) {
+        preferences.push('keto-friendly');
+    }
+    
+    if (lowerMessage.includes('high protein') || 
+        lowerMessage.includes('high-protein') ||
+        lowerMessage.includes('protein rich')) {
+        preferences.push('high-protein');
+    }
+    
+    if (lowerMessage.includes('quick') || 
+        lowerMessage.includes('fast') || 
+        lowerMessage.includes('easy')) {
+        preferences.push('quick');
+    }
+    
+    // Get preferences from context if none in message
+    if (preferences.length === 0 && conversationContext.dietaryPreferences.length > 0) {
+        return [...conversationContext.dietaryPreferences];
+    }
+    
+    return preferences;
+}
+
+/**
+ * Learn and store user preferences from message
+ * @param {string} message - User message
+ */
+function learnUserPreferences(message) {
+    // Common food preferences to detect
+    const foodPreferences = [
+        'chicken', 'beef', 'fish', 'seafood', 'pork', 'vegetarian', 'vegan', 
+        'pasta', 'rice', 'quinoa', 'bread', 'salad', 'soup', 'sandwich',
+        'spicy', 'sweet', 'savory', 'fruit', 'vegetables', 'dairy', 'cheese',
+        'eggs', 'nuts', 'seeds', 'legumes', 'beans', 'tofu', 'gluten-free'
+    ];
+    
+    // Add detected preferences to context
+    foodPreferences.forEach(food => {
+        if (message.toLowerCase().includes(food)) {
+            // Store in user feedback
+            if (!conversationContext.userFeedback.likes) {
+                conversationContext.userFeedback.likes = [];
+            }
+            
+            if (!conversationContext.userFeedback.likes.includes(food)) {
+                conversationContext.userFeedback.likes.push(food);
+            }
+        }
+    });
+}
+
+/**
+ * Learn and store user dislikes from message
+ * @param {string} message - User message
+ */
+function learnUserDislikes(message) {
+    // Common food dislikes to detect
+    const foodDislikes = [
+        'chicken', 'beef', 'fish', 'seafood', 'pork', 'meat', 
+        'pasta', 'rice', 'quinoa', 'bread', 'gluten', 'salad', 'soup', 'sandwich',
+        'spicy', 'sweet', 'savory', 'fruit', 'vegetables', 'dairy', 'cheese',
+        'eggs', 'nuts', 'seeds', 'legumes', 'beans', 'tofu', 'soy'
+    ];
+    
+    // Extract what user doesn't like
+    const lowerMessage = message.toLowerCase();
+    
+    // Check common patterns for expressing dislikes
+    const dislikePatterns = [
+        /(?:don\'t|dont|do not|cannot|can\'t) (?:eat|have|like|stand|tolerate) ([a-z\s]+)/i,
+        /(?:hate|dislike|avoid) ([a-z\s]+)/i,
+        /(?:allergic to) ([a-z\s]+)/i,
+        /no ([a-z\s]+) (?:please|for me)/i
+    ];
+    
+    // Try to extract specific disliked foods from patterns
+    dislikePatterns.forEach(pattern => {
+        const match = lowerMessage.match(pattern);
+        if (match && match[1]) {
+            const dislikedFood = match[1].trim();
+            
+            // Store in user feedback
+            if (!conversationContext.userFeedback.dislikes) {
+                conversationContext.userFeedback.dislikes = [];
+            }
+            
+            if (!conversationContext.userFeedback.dislikes.includes(dislikedFood)) {
+                conversationContext.userFeedback.dislikes.push(dislikedFood);
+            }
+        }
+    });
+    
+    // Also check for specific known foods
+    foodDislikes.forEach(food => {
+        const negativeContext = [
+            `don't like ${food}`, 
+            `don't eat ${food}`, 
+            `hate ${food}`, 
+            `dislike ${food}`,
+            `allergic to ${food}`,
+            `avoid ${food}`,
+            `no ${food}`
+        ];
+        
+        if (negativeContext.some(phrase => lowerMessage.includes(phrase))) {
+            // Store in user feedback
+            if (!conversationContext.userFeedback.dislikes) {
+                conversationContext.userFeedback.dislikes = [];
+            }
+            
+            if (!conversationContext.userFeedback.dislikes.includes(food)) {
+                conversationContext.userFeedback.dislikes.push(food);
+            }
+        }
+    });
+}
+
+/**
+ * Generate an exercise suggestion based on specified duration
+ * @param {number} minutes - Duration in minutes
+ * @returns {string} Exercise suggestion
+ */
+function generateExerciseSuggestionByDuration(minutes) {
+    // Short workouts (less than 15 minutes)
+    if (minutes < 15) {
+        const shortWorkouts = [
+            `Try this ${minutes}-minute HIIT routine: 30 seconds each of jumping jacks, push-ups, squats, and plank with 15 seconds rest between exercises. Repeat until time is up.`,
+            `For a quick ${minutes}-minute workout, try a tabata format: 20 seconds of mountain climbers followed by 10 seconds of rest, then 20 seconds of high knees, 10 seconds rest. Repeat for the full duration.`,
+            `Even with just ${minutes} minutes, you can do 3 rounds of 10 squats, 10 push-ups (modified if needed), and 30 seconds of marching in place.`,
+            `Try this ${minutes}-minute cardio blast: 30 seconds each of jumping jacks, high knees, butt kicks, and fast feet. Rest as needed and repeat until time is up.`
+        ];
+        return shortWorkouts[Math.floor(Math.random() * shortWorkouts.length)];
+    }
+    // Medium workouts (15-30 minutes)
+    else if (minutes <= 30) {
+        const mediumWorkouts = [
+            `For a ${minutes}-minute workout, try this circuit: 1 minute each of jumping jacks, squats, push-ups, lunges, and plank. Rest 1 minute, then repeat for 2-3 rounds.`,
+            `Here's a ${minutes}-minute walking interval workout: alternate 2 minutes of brisk walking with 1 minute of speed walking or light jogging.`,
+            `Try this ${minutes}-minute bodyweight routine: 12 squats, 10 push-ups, 10 reverse lunges (each leg), 30-second plank, and 15 mountain climbers. Rest 1 minute between rounds and repeat.`,
+            `For a ${minutes}-minute workout, try 5 minutes of light cardio warm-up, then alternate 1 minute of strength (squats, push-ups, etc.) with 1 minute of cardio (jumping jacks, high knees) until time is up.`
+        ];
+        return mediumWorkouts[Math.floor(Math.random() * mediumWorkouts.length)];
+    }
+    // Longer workouts (more than 30 minutes)
+    else {
+        const longWorkouts = [
+            `For a ${minutes}-minute session, try: 10-minute warm-up, 20 minutes of interval training (1 minute high intensity, 2 minutes recovery), followed by 10 minutes of strength exercises and 5 minutes of stretching.`,
+            `Here's a full ${minutes}-minute workout: 5-minute warm-up, 15 minutes of strength training (3 sets of squats, lunges, push-ups, rows), 15 minutes of moderate cardio, and 5-10 minutes of cool-down stretches.`,
+            `For a complete ${minutes}-minute routine: Start with 10 minutes of mobility work, then 20 minutes of circuit training (30 seconds work/15 seconds rest), followed by 10 minutes of steady-state cardio and 5 minutes of stretching.`,
+            `Try this ${minutes}-minute workout: 10-minute warm-up, 20-minute pyramid intervals (increase intensity for 5 minutes, then decrease for 5 minutes, repeat), 10 minutes of core work, and 5 minutes of stretching.`
+        ];
+        return longWorkouts[Math.floor(Math.random() * longWorkouts.length)];
+    }
+}
+
+/**
+ * Generate an exercise suggestion based on specified intensity
+ * @param {string} intensity - 'light', 'moderate', or 'intense'
+ * @returns {string} Exercise suggestion
+ */
+function generateExerciseSuggestionByIntensity(intensity) {
+    const suggestions = {
+        'light': [
+            "Try a gentle 20-minute walk around your neighborhood, focusing on your posture and breathing deeply.",
+            "Consider a beginner yoga flow that focuses on basic poses and proper breathing techniques. Just 15-20 minutes can help your flexibility and relaxation.",
+            "Try chair exercises: seated leg lifts, arm circles, and gentle twists. Perfect for when you need low-impact movement.",
+            "A light stretching routine focusing on your major muscle groups for 10-15 minutes can improve mobility and reduce stiffness.",
+            "Try a 15-minute light dance workout to your favorite music - movement that brings joy is always beneficial!"
+        ],
+        'moderate': [
+            "Consider a 30-minute brisk walking routine, aiming to walk at a pace where conversation is possible but you're still feeling some exertion.",
+            "Try a circuit of bodyweight exercises: 12 squats, 10 push-ups (modified if needed), 10 lunges each leg, and a 30-second plank. Rest 30 seconds between exercises and repeat 3 times.",
+            "A 25-minute bike ride at a steady pace is excellent moderate-intensity exercise that's low impact on your joints.",
+            "Try a 30-minute dance workout video focusing on continuous movement rather than high-intensity jumps and moves.",
+            "Consider a yoga flow class that incorporates some strength poses like warrior sequences and chair pose, which provide a moderate challenge."
+        ],
+        'intense': [
+            "Try a HIIT workout: 40 seconds of burpees, mountain climbers, jump squats, and push-ups with 20 seconds rest between each. Repeat for 4-5 rounds.",
+            "For an intense cardio session, try sprint intervals: 30 seconds of all-out effort followed by 90 seconds of recovery, repeated 8-10 times.",
+            "Try a pyramid strength workout: Start with 10 reps of squats, push-ups, and lunges, then 9, then 8, all the way down to 1, resting only when needed.",
+            "Consider a Tabata workout: 20 seconds of maximum effort followed by 10 seconds of rest, repeated 8 times for each exercise (jumping jacks, push-ups, mountain climbers, high knees).",
+            "For a challenging workout, try 5 rounds of: 15 kettlebell swings, 10 burpees, 15 mountain climbers, and 10 push-ups, resting only between rounds."
+        ]
+    };
+    
+    const intensitySuggestions = suggestions[intensity] || suggestions.moderate;
+    return intensitySuggestions[Math.floor(Math.random() * intensitySuggestions.length)];
+}
+
+/**
  * Generate a meal suggestion based on the time of day and remaining calories
  * @param {Object} caloriesInfo - Information about today's calories
+ * @param {Array} dietaryPreferences - User's dietary preferences 
  * @returns {string} Meal suggestion
  */
-function generateSmartMealSuggestion(caloriesInfo) {
+function generateSmartMealSuggestion(caloriesInfo, dietaryPreferences = []) {
     // Get current time to determine the next meal
     const hour = new Date().getHours();
     let mealType;
@@ -788,7 +1443,19 @@ function generateSmartMealSuggestion(caloriesInfo) {
     if (caloriesInfo.remaining <= 0) {
         // If over budget, suggest very light options
         targetCalories = 150;
-        return `You're currently ${Math.abs(caloriesInfo.remaining)} calories over your daily goal. If you're still hungry, try a very light option like cucumber slices with lemon (15 calories) or a cup of herbal tea with a small apple (80 calories).`;
+        
+        // Check for dietary preferences
+        let lightOptions = "cucumber slices with lemon (15 calories) or a cup of herbal tea with a small apple (80 calories)";
+        
+        if (dietaryPreferences.includes('high-protein')) {
+            lightOptions = "a hard-boiled egg white (17 calories) or a small portion of plain Greek yogurt (60 calories)";
+        } else if (dietaryPreferences.includes('vegan')) {
+            lightOptions = "cucumber and carrot sticks (25 calories) or a handful of berries (30 calories)";
+        } else if (dietaryPreferences.includes('keto-friendly')) {
+            lightOptions = "a few slices of cucumber with a thin spread of cream cheese (45 calories) or a small handful of mixed nuts (70 calories)";
+        }
+        
+        return `You're currently ${Math.abs(caloriesInfo.remaining)} calories over your daily goal. If you're still hungry, try a very light option like ${lightOptions}.`;
     } else {
         // Allocate calories based on meal type and remaining calories
         switch (mealType) {
@@ -809,7 +1476,7 @@ function generateSmartMealSuggestion(caloriesInfo) {
         }
     }
     
-    return generateMealSuggestionByType(mealType, caloriesInfo, Math.round(targetCalories));
+    return generateMealSuggestionByType(mealType, caloriesInfo, Math.round(targetCalories), dietaryPreferences);
 }
 
 /**
@@ -817,9 +1484,11 @@ function generateSmartMealSuggestion(caloriesInfo) {
  * @param {string} mealType - Type of meal
  * @param {Object} caloriesInfo - Information about today's calories
  * @param {number} targetCalories - Target calories for the meal
+ * @param {Array} dietaryPreferences - User's dietary preferences
+ * @param {string} excludeMeal - Name of a meal to exclude (for variety)
  * @returns {string} Meal suggestion
  */
-function generateMealSuggestionByType(mealType, caloriesInfo, targetCalories) {
+function generateMealSuggestionByType(mealType, caloriesInfo, targetCalories, dietaryPreferences = [], excludeMeal = null) {
     if (!mealDatabase[mealType] || mealDatabase[mealType].length === 0) {
         return `I don't have any ${mealType} suggestions at the moment.`;
     }
@@ -845,16 +1514,79 @@ function generateMealSuggestionByType(mealType, caloriesInfo, targetCalories) {
     const lowerBound = targetCalories * 0.7;
     const upperBound = targetCalories * 1.3;
     
+    // Start with meals in the calorie range
     let eligibleMeals = mealDatabase[mealType].filter(meal => 
         meal.calories >= lowerBound && meal.calories <= upperBound
     );
     
-    // If no meals in range, get closest matches
-    if (eligibleMeals.length === 0) {
-        const sortedByCloseness = [...mealDatabase[mealType]].sort((a, b) => 
-            Math.abs(a.calories - targetCalories) - Math.abs(b.calories - targetCalories)
+    // Filter by dietary preferences if specified
+    if (dietaryPreferences && dietaryPreferences.length > 0) {
+        // Keep meals that match ANY of the dietary preferences in their tags
+        const filteredByDiet = eligibleMeals.filter(meal => 
+            meal.tags.some(tag => dietaryPreferences.includes(tag))
         );
-        eligibleMeals = sortedByCloseness.slice(0, 3);
+        
+        // Only use filtered results if we found matches
+        if (filteredByDiet.length > 0) {
+            eligibleMeals = filteredByDiet;
+        }
+    }
+    
+    // Check for user preferences and dislikes in conversation context
+    if (conversationContext.userFeedback) {
+        // Filter out meals containing disliked ingredients
+        if (conversationContext.userFeedback.dislikes && conversationContext.userFeedback.dislikes.length > 0) {
+            eligibleMeals = eligibleMeals.filter(meal => {
+                // Check if any of the disliked ingredients are in this meal
+                return !conversationContext.userFeedback.dislikes.some(dislike => 
+                    // Check ingredients as a string to catch partial matches
+                    meal.ingredients.join(' ').toLowerCase().includes(dislike.toLowerCase())
+                );
+            });
+        }
+        
+        // Prioritize meals containing liked ingredients if we have more than 3 options
+        if (conversationContext.userFeedback.likes && conversationContext.userFeedback.likes.length > 0 && eligibleMeals.length > 3) {
+            const preferredMeals = eligibleMeals.filter(meal => {
+                // Check if any of the liked ingredients are in this meal
+                return conversationContext.userFeedback.likes.some(like => 
+                    // Check ingredients as a string to catch partial matches
+                    meal.ingredients.join(' ').toLowerCase().includes(like.toLowerCase())
+                );
+            });
+            
+            // Use preferred meals if we found matches
+            if (preferredMeals.length > 0) {
+                eligibleMeals = preferredMeals;
+            }
+        }
+    }
+    
+    // Exclude the specified meal if needed
+    if (excludeMeal) {
+        eligibleMeals = eligibleMeals.filter(meal => meal.name !== excludeMeal);
+    }
+    
+    // If no meals in range after filtering, get closest matches
+    if (eligibleMeals.length === 0) {
+        // Try again without dietary filters but still respect calorie range
+        eligibleMeals = mealDatabase[mealType].filter(meal => 
+            meal.calories >= lowerBound && meal.calories <= upperBound
+        );
+        
+        // If still empty, sort all meals by closest calorie match
+        if (eligibleMeals.length === 0) {
+            const sortedByCloseness = [...mealDatabase[mealType]].sort((a, b) => 
+                Math.abs(a.calories - targetCalories) - Math.abs(b.calories - targetCalories)
+            );
+            
+            // Exclude previously suggested meal
+            if (excludeMeal) {
+                eligibleMeals = sortedByCloseness.filter(meal => meal.name !== excludeMeal).slice(0, 3);
+            } else {
+                eligibleMeals = sortedByCloseness.slice(0, 3);
+            }
+        }
     }
     
     // Pick a random meal from eligible options
@@ -864,11 +1596,18 @@ function generateMealSuggestionByType(mealType, caloriesInfo, targetCalories) {
     let response = `${meal.name}: ${meal.ingredients.join(', ')}. (~${meal.calories} calories)\n\n`;
     response += `Nutrition info: ${meal.protein}g protein, ${meal.carbs}g carbs, ${meal.fat}g fat, ${meal.fiber}g fiber\n\n`;
     
-    // Add context about calorie budget
+    // Add context about calorie budget with appropriate language
     if (caloriesInfo.remaining > 0) {
-        response += `You have ${caloriesInfo.remaining} calories remaining today. This meal would leave you with ${caloriesInfo.remaining - meal.calories} calories for the rest of the day.`;
+        const caloriesLeft = caloriesInfo.remaining - meal.calories;
+        if (caloriesLeft > 300) {
+            response += `You have ${caloriesInfo.remaining} calories remaining today. This meal would leave you with ${caloriesLeft} calories for the rest of the day - enough for another meal or snacks.`;
+        } else if (caloriesLeft > 0) {
+            response += `You have ${caloriesInfo.remaining} calories remaining today. This meal would leave you with ${caloriesLeft} calories - perfect for a light snack later.`;
+        } else {
+            response += `This meal would put you ${Math.abs(caloriesLeft)} calories over your daily goal. You might want to add some exercise or adjust portion sizes.`;
+        }
     } else {
-        response += `You've already reached your calorie goal for today. This would put you ${Math.abs(caloriesInfo.remaining) + meal.calories} calories over your target.`;
+        response += `You've already reached your calorie goal for today. This would put you ${Math.abs(caloriesInfo.remaining) + meal.calories} calories over your target. Consider adding some exercise to offset this, or perhaps a lighter option.`;
     }
     
     return response;
@@ -877,9 +1616,10 @@ function generateMealSuggestionByType(mealType, caloriesInfo, targetCalories) {
 /**
  * Generate a meal suggestion based on a specific calorie target
  * @param {number} targetCalories - Target calories for the meal
+ * @param {Array} dietaryPreferences - User's dietary preferences
  * @returns {string} Meal suggestion
  */
-function generateMealSuggestionByCalories(targetCalories) {
+function generateMealSuggestionByCalories(targetCalories, dietaryPreferences = []) {
     // Collect all meals from all types
     const allMeals = [
         ...mealDatabase.breakfast,
@@ -892,25 +1632,86 @@ function generateMealSuggestionByCalories(targetCalories) {
     const lowerBound = targetCalories * 0.7;
     const upperBound = targetCalories * 1.3;
     
+    // Start with meals in the calorie range
     let eligibleMeals = allMeals.filter(meal => 
         meal.calories >= lowerBound && meal.calories <= upperBound
     );
     
-    // If no meals in range, get closest matches
-    if (eligibleMeals.length === 0) {
-        const sortedByCloseness = [...allMeals].sort((a, b) => 
-            Math.abs(a.calories - targetCalories) - Math.abs(b.calories - targetCalories)
+    // Filter by dietary preferences if specified
+    if (dietaryPreferences && dietaryPreferences.length > 0) {
+        const filteredByDiet = eligibleMeals.filter(meal => 
+            meal.tags.some(tag => dietaryPreferences.includes(tag))
         );
-        eligibleMeals = sortedByCloseness.slice(0, 3);
+        
+        // Only use filtered results if we found matches
+        if (filteredByDiet.length > 0) {
+            eligibleMeals = filteredByDiet;
+        }
+    }
+    
+    // Check for user preferences and dislikes
+    if (conversationContext.userFeedback) {
+        // Filter out meals containing disliked ingredients
+        if (conversationContext.userFeedback.dislikes && conversationContext.userFeedback.dislikes.length > 0) {
+            eligibleMeals = eligibleMeals.filter(meal => {
+                return !conversationContext.userFeedback.dislikes.some(dislike => 
+                    meal.ingredients.join(' ').toLowerCase().includes(dislike.toLowerCase())
+                );
+            });
+        }
+        
+        // Prioritize meals containing liked ingredients
+        if (conversationContext.userFeedback.likes && conversationContext.userFeedback.likes.length > 0 && eligibleMeals.length > 3) {
+            const preferredMeals = eligibleMeals.filter(meal => {
+                return conversationContext.userFeedback.likes.some(like => 
+                    meal.ingredients.join(' ').toLowerCase().includes(like.toLowerCase())
+                );
+            });
+            
+            if (preferredMeals.length > 0) {
+                eligibleMeals = preferredMeals;
+            }
+        }
+    }
+    
+    // If no meals in range after filtering, get closest matches
+    if (eligibleMeals.length === 0) {
+        // Try again without dietary filters but respect calorie range
+        eligibleMeals = allMeals.filter(meal => 
+            meal.calories >= lowerBound && meal.calories <= upperBound
+        );
+        
+        // If still empty, sort all meals by closest calorie match
+        if (eligibleMeals.length === 0) {
+            const sortedByCloseness = [...allMeals].sort((a, b) => 
+                Math.abs(a.calories - targetCalories) - Math.abs(b.calories - targetCalories)
+            );
+            eligibleMeals = sortedByCloseness.slice(0, 3);
+        }
     }
     
     // Pick a random meal from eligible options
     const meal = eligibleMeals[Math.floor(Math.random() * eligibleMeals.length)];
     
-    // Format meal info with nutrition details
+    // Determine the meal type based on database
+    let mealTypeLabel = "meal";
+    if (mealDatabase.breakfast.some(m => m.name === meal.name)) {
+        mealTypeLabel = "breakfast";
+    } else if (mealDatabase.lunch.some(m => m.name === meal.name)) {
+        mealTypeLabel = "lunch";
+    } else if (mealDatabase.dinner.some(m => m.name === meal.name)) {
+        mealTypeLabel = "dinner";
+    } else if (mealDatabase.snacks.some(m => m.name === meal.name)) {
+        mealTypeLabel = "snack";
+    }
+    
+    // Format meal info with nutrition details and additional context
     let response = `${meal.name}: ${meal.ingredients.join(', ')}. (~${meal.calories} calories)\n\n`;
     response += `Nutrition info: ${meal.protein}g protein, ${meal.carbs}g carbs, ${meal.fat}g fat, ${meal.fiber}g fiber\n\n`;
-    response += `Preparation time: approximately ${meal.prepTime} minutes.`;
+    response += `Preparation time: approximately ${meal.prepTime} minutes.\n\n`;
+    
+    // Add context about when this meal might be appropriate
+    response += `This would make a great ${mealTypeLabel} option${meal.tags.length > 0 ? ' and is ' + meal.tags.join(', ') : ''}.`;
     
     return response;
 }
@@ -1273,6 +2074,24 @@ function checkForProactiveSuggestions() {
     setTimeout(checkForProactiveSuggestions, 15 * 60 * 1000);
 }
 
+/**
+ * Save current user preferences to storage
+ */
+function saveUserPreferences() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser || !currentUser.email) return;
+    
+    // Prepare preferences object
+    const preferences = {
+        dietaryPreferences: conversationContext.dietaryPreferences,
+        userFeedback: conversationContext.userFeedback
+    };
+    
+    // Save to storage
+    const preferencesKey = `ai_preferences_${currentUser.email}`;
+    saveToStorage(preferencesKey, preferences);
+}
+
 // Add AI Buddy styles
 function addAIBuddyStyles() {
     // Create style element if it doesn't exist
@@ -1374,13 +2193,321 @@ function addAIBuddyStyles() {
         .ai-suggestion-action:hover {
             background-color: var(--primary-dark, #388E3C);
         }
+        
+        /* Quick Suggestions */
+        .quick-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 10px 0;
+            padding: 5px 0;
+        }
+        
+        .quick-suggestion-btn {
+            background-color: var(--bg-secondary, #f5f5f5);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 15px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: var(--text-primary, #333);
+        }
+        
+        .quick-suggestion-btn:hover {
+            background-color: var(--primary-light, #c8e6c9);
+            border-color: var(--primary-color, #4CAF50);
+        }
+        
+        /* Voice Input Button */
+        .ai-voice-btn {
+            background-color: var(--bg-secondary, #f5f5f5);
+            border: 1px solid var(--border-color, #ddd);
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 8px;
+        }
+        
+        .ai-voice-btn:hover {
+            background-color: var(--primary-light, #c8e6c9);
+        }
+        
+        .ai-voice-btn.recording {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+            }
+        }
+        
+        /* Enhanced Message Styling */
+        .ai-message {
+            position: relative;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            line-height: 1.5;
+            max-width: 85%;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .ai-message.user {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 2px;
+        }
+        
+        .ai-message.buddy {
+            background-color: var(--bg-secondary, #f5f5f5);
+            color: var(--text-primary, #333);
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+        
+        .ai-message.user::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: -10px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--primary-color, #4CAF50);
+            clip-path: polygon(0 0, 0% 100%, 100% 100%);
+        }
+        
+        .ai-message.buddy::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--bg-secondary, #f5f5f5);
+            clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+        }
+        
+        /* Typing Indicator Styling */
+        .ai-typing {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            background-color: var(--bg-secondary, #f5f5f5);
+            max-width: 60px;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary, #666);
+            border-radius: 50%;
+            margin-right: 4px;
+            animation: typingAnimation 1.2s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) {
+            animation-delay: 0s;
+        }
+        
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+        }
+        
+        @keyframes typingAnimation {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-5px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
     `;
+}
+
+/**
+ * Update the conversation context based on user message
+ * @param {string} message - User message
+ */
+function updateConversationContext(message) {
+    // Store the last 5 queries for context
+    conversationContext.recentQueries.unshift(message.toLowerCase());
+    if (conversationContext.recentQueries.length > 5) {
+        conversationContext.recentQueries.pop();
+    }
+    
+    // Detect meal type mentions
+    const lowerMessage = message.toLowerCase();
+    if (lowerMessage.includes('breakfast') || 
+        lowerMessage.includes('morning meal') ||
+        lowerMessage.includes('brunch') ||
+        lowerMessage.includes('morning food')) {
+        conversationContext.lastMealType = 'breakfast';
+        conversationContext.lastTopic = 'meals';
+    } else if (lowerMessage.includes('lunch') || 
+               lowerMessage.includes('midday meal') ||
+               lowerMessage.includes('noon')) {
+        conversationContext.lastMealType = 'lunch';
+        conversationContext.lastTopic = 'meals';
+    } else if (lowerMessage.includes('dinner') || 
+               lowerMessage.includes('evening meal') ||
+               lowerMessage.includes('supper') ||
+               lowerMessage.includes('night meal')) {
+        conversationContext.lastMealType = 'dinner';
+        conversationContext.lastTopic = 'meals';
+    } else if (lowerMessage.includes('snack')) {
+        conversationContext.lastMealType = 'snacks';
+        conversationContext.lastTopic = 'meals';
+    }
+    
+    // Detect exercise mentions
+    if (lowerMessage.includes('exercise') || 
+        lowerMessage.includes('workout') || 
+        lowerMessage.includes('activity') || 
+        lowerMessage.includes('cardio') ||
+        lowerMessage.includes('strength') ||
+        lowerMessage.includes('training')) {
+        conversationContext.lastTopic = 'exercise';
+    }
+    
+    // Detect progress mentions
+    if (lowerMessage.includes('progress') || 
+        lowerMessage.includes('weight') || 
+        lowerMessage.includes('lost') ||
+        lowerMessage.includes('goal')) {
+        conversationContext.lastTopic = 'progress';
+    }
+    
+    // Detect calorie mentions
+    const calorieMatch = lowerMessage.match(/(\d+)\s*(?:kcal|calories|cal)/);
+    if (calorieMatch && calorieMatch[1]) {
+        conversationContext.lastCalorieTarget = parseInt(calorieMatch[1]);
+    }
+    
+    // Detect dietary preferences
+    const dietaryTerms = {
+        'vegetarian': ['vegetarian', 'no meat'],
+        'vegan': ['vegan', 'plant based', 'no animal products'],
+        'gluten-free': ['gluten free', 'gluten-free', 'no gluten', 'celiac'],
+        'keto': ['keto', 'ketogenic', 'low carb', 'low-carb'],
+        'dairy-free': ['dairy free', 'dairy-free', 'no dairy', 'lactose'],
+        'high-protein': ['high protein', 'protein rich', 'more protein'],
+        'low-fat': ['low fat', 'low-fat', 'less fat'],
+        'paleo': ['paleo', 'caveman diet']
+    };
+    
+    // Check for dietary preferences in message
+    Object.entries(dietaryTerms).forEach(([preference, terms]) => {
+        if (terms.some(term => lowerMessage.includes(term)) && 
+            !conversationContext.dietaryPreferences.includes(preference)) {
+            conversationContext.dietaryPreferences.push(preference);
+        }
+    });
+    
+    // Detect reference to previous meals with phrases like "another one", "similar", etc.
+    if ((lowerMessage.includes('another') || 
+         lowerMessage.includes('similar') || 
+         lowerMessage.includes('like that') ||
+         lowerMessage.includes('more') ||
+         lowerMessage.includes('different') ||
+         lowerMessage.includes('else')) && 
+        conversationContext.lastTopic === 'meals') {
+        
+        // Keep the previous meal type context
+        // The AI will use this to suggest another meal of the same type
+    }
+    
+    // Update current meal time context based on time of day
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) {
+        conversationContext.currentMealTime = 'breakfast';
+    } else if (hour >= 11 && hour < 15) {
+        conversationContext.currentMealTime = 'lunch';
+    } else if (hour >= 15 && hour < 17) {
+        conversationContext.currentMealTime = 'snacks';
+    } else if (hour >= 17 && hour < 21) {
+        conversationContext.currentMealTime = 'dinner';
+    } else {
+        conversationContext.currentMealTime = 'snacks';
+    }
+}
+
+/**
+ * Store AI response information in context for future reference
+ * @param {string} response - AI response
+ */
+function storeResponseInContext(response) {
+    // Extract meal name if a meal was suggested
+    const mealNameMatch = response.match(/^([^:]+):/);
+    if (mealNameMatch && mealNameMatch[1]) {
+        conversationContext.lastMealSuggested = mealNameMatch[1].trim();
+    }
+    
+    // Record if the response was about exercise
+    if (response.includes('workout') || 
+        response.includes('exercise') || 
+        response.includes('activity') ||
+        response.includes('cardio') ||
+        response.includes('training')) {
+        conversationContext.lastTopic = 'exercise';
+    }
+    
+    // Record if the response was about progress
+    if (response.includes('progress') || 
+        response.includes('weight') || 
+        response.includes('lost') ||
+        response.includes('BMI') ||
+        response.includes('goal')) {
+        conversationContext.lastTopic = 'progress';
+    }
+    
+    // Extract calorie information if mentioned
+    const calorieMatch = response.match(/~(\d+) calories/);
+    if (calorieMatch && calorieMatch[1]) {
+        const calories = parseInt(calorieMatch[1]);
+        if (calories > 0) {
+            conversationContext.lastCalorieTarget = calories;
+        }
+    }
 }
 
 // Initialize when DOM is loaded
 window.addEventListener('DOMContentLoaded', function() {
     addAIBuddyStyles();
     initializeAIBuddy();
+    
+    // Add sound element for notifications
+    const soundElement = document.createElement('audio');
+    soundElement.id = 'messageSound';
+    soundElement.src = 'achievement.mp3'; // Reuse existing sound
+    soundElement.preload = 'auto';
+    document.body.appendChild(soundElement);
 });
 
 /**
