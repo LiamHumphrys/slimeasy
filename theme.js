@@ -76,6 +76,9 @@ function createThemeToggle() {
     
     // Add to document
     document.body.appendChild(themeToggle);
+    
+    // Add theme toggle styles if they don't exist
+    addThemeToggleStyles();
 }
 
 /**
@@ -89,7 +92,65 @@ function toggleTheme() {
     setTheme(newTheme);
 }
 
+/**
+ * Add theme toggle button styles to the document
+ */
+function addThemeToggleStyles() {
+    // Check if styles already exist
+    if (document.getElementById('theme-toggle-styles')) {
+        return;
+    }
+    
+    // Create style element
+    const style = document.createElement('style');
+    style.id = 'theme-toggle-styles';
+    style.textContent = `
+        .theme-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .theme-toggle:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        
+        .theme-toggle:active {
+            transform: translateY(0);
+        }
+        
+        @media (max-width: 768px) {
+            .theme-toggle {
+                width: 40px;
+                height: 40px;
+                bottom: 15px;
+                right: 15px;
+                font-size: 16px;
+            }
+        }
+    `;
+    
+    // Add to document head
+    document.head.appendChild(style);
+}
+
 // Export the theme functions for use in other files
 window.initializeTheme = initializeTheme;
 window.setTheme = setTheme;
 window.toggleTheme = toggleTheme;
+window.addThemeToggleStyles = addThemeToggleStyles;
