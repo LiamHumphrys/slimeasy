@@ -250,18 +250,24 @@ function awardAchievement(achievementId) {
  * @param {Object} achievement - Achievement data
  */
 function showAchievementNotification(achievement) {
+    // Check if achievement is valid
+    if (!achievement || !achievement.name || !achievement.description) {
+        console.error('Invalid achievement data:', achievement);
+        return;
+    }
+
     // Create achievement popup
     const container = document.createElement('div');
     container.className = 'achievement-popup';
     container.innerHTML = `
         <div class="achievement-icon">
-            <i class="${achievement.icon}"></i>
+            <i class="${achievement.icon || 'fas fa-trophy'}"></i>
         </div>
         <div class="achievement-content">
             <h3>Achievement Unlocked!</h3>
             <h4>${achievement.name}</h4>
             <p>${achievement.description}</p>
-            <p class="achievement-points">+${achievement.points} points</p>
+            <p class="achievement-points">+${achievement.points || 0} points</p>
         </div>
     `;
     
@@ -273,9 +279,13 @@ function showAchievementNotification(achievement) {
         container.classList.add('show');
         
         // Play sound if available
-        const achievementSound = new Audio('./achievement.mp3');
-        achievementSound.volume = 0.5;
-        achievementSound.play().catch(e => console.log('Achievement sound not loaded'));
+        try {
+            const achievementSound = new Audio('./achievement.mp3');
+            achievementSound.volume = 0.5;
+            achievementSound.play().catch(e => console.log('Achievement sound not loaded:', e.message));
+        } catch (error) {
+            console.log('Error playing achievement sound:', error.message);
+        }
         
         // Remove after animation
         setTimeout(() => {
@@ -289,7 +299,9 @@ function showAchievementNotification(achievement) {
     }, 100);
     
     // Also show as a notification
-    showNotification(`Achievement Unlocked: ${achievement.name}`, 'success', 5000);
+    if (typeof showNotification === 'function') {
+        showNotification(`Achievement Unlocked: ${achievement.name}`, 'success', 5000);
+    }
 }
 
 /**
