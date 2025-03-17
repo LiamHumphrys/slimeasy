@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="dark-mode-fix.js"></script>
     <!-- Google AdSense verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
      crossorigin="anonymous"></script>
@@ -217,6 +218,11 @@
     <!-- Import theme and utility scripts -->
     <script src="theme.js"></script>
     <script src="utils.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-auth.js"></script>
+    <script src="crypto-utils.js"></script>
+    <script src="firebase-sync.js"></script>
+    <script src="sync-ui.js"></script>
     <script src="script.js"></script>
     
     <script>
@@ -265,41 +271,85 @@
                     return;
                 }
                 
-                // Collect all data associated with this user
-                const userData = {
-                    profile: getFromStorage(`profile_${currentUser.email}`),
-                    planner: {
-                        calories: getFromStorage(`planner_${currentUser.email}_calories`),
-                        exercise: getFromStorage(`planner_${currentUser.email}_exercise`),
-                        foods: getFromStorage(`planner_${currentUser.email}_foods`)
-                    },
-                    weights: getFromStorage(`weights_${currentUser.email}`),
-                    settings: getFromStorage(`settings_${currentUser.email}`),
-                    exportDate: new Date().toISOString()
-                };
+                // Show loading notification
+                showNotification('Preparing your data for export...', 'info');
                 
-                // Get all water intake data
-                const waterData = {};
-                for (let i = 0; i < localStorage.length; i++) {
-                    const key = localStorage.key(i);
-                    if (key.startsWith(`water_${currentUser.email}`)) {
-                        waterData[key.split(`water_${currentUser.email}_`)[1]] = localStorage.getItem(key);
+                // Use setTimeout to allow the UI to update before starting the export
+                setTimeout(() => {
+                    try {
+                        // Collect all data associated with this user
+                        const userData = {
+                            profile: getFromStorage(`profile_${currentUser.email}`),
+                            planner: {
+                                calories: getFromStorage(`planner_${currentUser.email}_calories`),
+                                exercise: getFromStorage(`planner_${currentUser.email}_exercise`),
+                                foods: getFromStorage(`planner_${currentUser.email}_foods`)
+                            },
+                            weights: getFromStorage(`weights_${currentUser.email}`),
+                            settings: getFromStorage(`settings_${currentUser.email}`),
+                            exportDate: new Date().toISOString()
+                        };
+                        
+                        // Get all water intake data
+                        const waterData = {};
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && key.startsWith(`water_${currentUser.email}`)) {
+                                waterData[key.split(`water_${currentUser.email}_`)[1]] = localStorage.getItem(key);
+                            }
+                        }
+                        userData.water = waterData;
+                        
+                        // Get all foods data from calendar
+                        const foodsData = {};
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && key.startsWith(`foods_${currentUser.email}_`)) {
+                                foodsData[key.split(`foods_${currentUser.email}_`)[1]] = getFromStorage(key);
+                            }
+                        }
+                        userData.foods = foodsData;
+                        
+                        // Get all exercise data
+                        const exerciseData = {};
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && key.startsWith(`exercise_${currentUser.email}_`)) {
+                                exerciseData[key.split(`exercise_${currentUser.email}_`)[1]] = getFromStorage(key);
+                            }
+                        }
+                        userData.exercise = exerciseData;
+                        
+                        // Generate JSON string
+                        const jsonData = JSON.stringify(userData, null, 2);
+                        
+                        // Create Blob instead of data URI (handles larger files better)
+                        const blob = new Blob([jsonData], {type: 'application/json'});
+                        const url = URL.createObjectURL(blob);
+                        
+                        // Create download link
+                        const downloadAnchorNode = document.createElement('a');
+                        downloadAnchorNode.href = url;
+                        downloadAnchorNode.download = `slimeasy_data_${currentUser.email}_${new Date().toISOString().split('T')[0]}.json`;
+                        
+                        // Trigger download
+                        document.body.appendChild(downloadAnchorNode);
+                        downloadAnchorNode.click();
+                        
+                        // Clean up
+                        setTimeout(() => {
+                            document.body.removeChild(downloadAnchorNode);
+                            URL.revokeObjectURL(url);
+                        }, 100);
+                        
+                        showNotification('Data exported successfully!', 'success');
+                    } catch (innerError) {
+                        console.error('Error during export process:', innerError);
+                        showNotification('Error exporting data. Please try again.', 'error');
                     }
-                }
-                userData.water = waterData;
-                
-                // Create a download link with the JSON data
-                const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData, null, 2));
-                const downloadAnchorNode = document.createElement('a');
-                downloadAnchorNode.setAttribute("href", dataStr);
-                downloadAnchorNode.setAttribute("download", `slimeasy_data_${currentUser.email}_${new Date().toISOString().split('T')[0]}.json`);
-                document.body.appendChild(downloadAnchorNode);
-                downloadAnchorNode.click();
-                downloadAnchorNode.remove();
-                
-                showNotification('Data exported successfully!', 'success');
+                }, 500);
             } catch (error) {
-                console.error('Error exporting data:', error);
+                console.error('Error initializing export:', error);
                 showNotification('Error exporting data. Please try again.', 'error');
             }
         }
@@ -363,56 +413,10 @@
                 document.getElementById('timeUnit').value = savedProfile.timeUnit || 'weeks';
             }
         }
-        // Check if user is logged in, redirect if not
-        document.addEventListener('DOMContentLoaded', function() {
-            const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-            if (!currentUser) {
-                window.location.href = 'login.html';
-            } else {
-                document.getElementById('welcomeMessage').textContent = `Welcome, ${currentUser.name}`;
-                
-                // Load existing profile data if available
-                loadSavedProfile(currentUser);
-                
-                // Initialize form handlers
-                initializeProfileForm();
-                
-                // Initialize theme (loaded from theme.js)
-                initializeTheme();
-                
-                // Register service worker for PWA functionality
-                registerServiceWorker();
-            }
-        });
+        // This duplicate event listener and the duplicate functions below it have been removed
+        // as they were causing issues with button functionality.
         
-        /**
-         * Load saved profile data to pre-fill form
-         * @param {Object} currentUser - Current user object
-         */
-        function loadSavedProfile(currentUser) {
-            const profileKey = `profile_${currentUser.email}`;
-            const savedProfile = JSON.parse(localStorage.getItem(profileKey));
-            
-            if (savedProfile) {
-                // Pre-fill form with saved data
-                document.getElementById('age').value = savedProfile.age;
-                document.getElementById('weight').value = savedProfile.weight;
-                document.getElementById('weightUnit').value = savedProfile.weightUnit;
-                document.getElementById('height').value = savedProfile.height;
-                document.getElementById('heightUnit').value = savedProfile.heightUnit;
-                document.getElementById('gender').value = savedProfile.gender;
-                document.getElementById('activity').value = savedProfile.activity;
-                document.getElementById('goalWeight').value = savedProfile.goalWeight;
-                document.getElementById('goalWeightUnit').value = savedProfile.goalWeightUnit;
-                document.getElementById('timeToGoal').value = savedProfile.timeToGoal;
-                document.getElementById('timeUnit').value = savedProfile.timeUnit;
-            }
-        }
-        
-        /**
-         * Initialize profile form submission and navigation
-         */
-        function initializeProfileForm() {
+        // Duplicate functions removed to fix button functionality issues
             // Form submission handler
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 e.preventDefault();
