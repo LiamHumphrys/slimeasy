@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="dark-mode-fix.js"></script>
     <!-- Google AdSense verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
      crossorigin="anonymous"></script>
@@ -76,9 +77,45 @@
                     <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
-            <div class="view-type">
-                <button class="view-button active" data-view="month" id="monthView">Month</button>
-                <button class="view-button" data-view="week" id="weekView">Week</button>
+            <div class="calendar-actions">
+                <div class="export-dropdown">
+                    <button id="exportCalendarBtn" class="export-button">
+                        <i class="fas fa-file-export"></i> Export
+                    </button>
+                    <div class="export-dropdown-content">
+                        <div class="export-section">
+                            <div class="export-header">Export as File</div>
+                            <button class="export-option" data-action="export" data-format="pdf">
+                                <i class="fas fa-file-pdf"></i> PDF Document
+                            </button>
+                            <button class="export-option" data-action="export" data-format="csv">
+                                <i class="fas fa-file-csv"></i> CSV Spreadsheet
+                            </button>
+                            <button class="export-option" data-action="export" data-format="text">
+                                <i class="fas fa-file-alt"></i> Text File
+                            </button>
+                        </div>
+                        <div class="export-section">
+                            <div class="export-header">Share</div>
+                            <button class="export-option" data-action="share" data-platform="email">
+                                <i class="fas fa-envelope"></i> Email
+                            </button>
+                            <button class="export-option" data-action="share" data-platform="copy">
+                                <i class="fas fa-copy"></i> Copy to Clipboard
+                            </button>
+                        </div>
+                        <div class="export-section">
+                            <div class="export-header">Print</div>
+                            <button class="export-option" data-action="print">
+                                <i class="fas fa-print"></i> Print Calendar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="view-type">
+                    <button class="view-button active" data-view="month" id="monthView">Month</button>
+                    <button class="view-button" data-view="week" id="weekView">Week</button>
+                </div>
             </div>
         </div>
         
@@ -191,6 +228,13 @@
                         </ul>
                     </div>
                     
+                    <div class="food-details" id="foodDetails">
+                        <h3>Food Details</h3>
+                        <div id="foodDetailsContent">
+                            <!-- Will be filled by JavaScript -->
+                        </div>
+                    </div>
+                    
                     <div class="exercise-list">
                         <h3>Exercise Log</h3>
                         <ul id="exerciseList">
@@ -211,6 +255,7 @@
     
     <script src="theme.js"></script>
     <script src="utils.js"></script>
+    <script src="export-utils.js"></script>
     <script>
         // Initialize when document is loaded
         document.addEventListener('DOMContentLoaded', function() {
@@ -255,6 +300,84 @@
             document.getElementById('modalClose').addEventListener('click', function() {
                 document.getElementById('dayDetailModal').classList.remove('show');
             });
+            
+            // Set up export button and dropdown
+            const exportBtn = document.getElementById('exportCalendarBtn');
+            if (exportBtn) {
+                // Toggle dropdown when button is clicked
+                exportBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const dropdown = document.querySelector('.export-dropdown-content');
+                    if (dropdown) {
+                        dropdown.classList.toggle('show');
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    const dropdown = document.querySelector('.export-dropdown-content');
+                    if (dropdown && dropdown.classList.contains('show')) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+                
+                // Handle export option clicks
+                document.addEventListener('click', function(e) {
+                    const option = e.target.closest('.export-option');
+                    if (!option) return;
+                    
+                    // Get action and format
+                    const action = option.dataset.action;
+                    const format = option.dataset.format;
+                    const platform = option.dataset.platform;
+                    
+                    // Close dropdown
+                    const dropdown = document.querySelector('.export-dropdown-content');
+                    if (dropdown) {
+                        dropdown.classList.remove('show');
+                    }
+                    
+                    // Handle actions
+                    if (action === 'export') {
+                        try {
+                            const mealData = window.getMealPlanData();
+                            
+                            if (format === 'pdf') {
+                                window.exportAsPDF(mealData);
+                            } else if (format === 'csv') {
+                                window.exportAsCSV(mealData);
+                            } else if (format === 'text') {
+                                window.exportAsText(mealData);
+                            }
+                        } catch (err) {
+                            console.error("Export error:", err);
+                            alert('There was an error with the export. Please try again.');
+                        }
+                    } else if (action === 'share') {
+                        try {
+                            const mealData = window.getMealPlanData();
+                            const textContent = window.formatMealPlanAsText(mealData);
+                            
+                            if (platform === 'email') {
+                                window.shareViaEmail(mealData, textContent);
+                            } else if (platform === 'copy') {
+                                window.copyToClipboard(textContent);
+                            }
+                        } catch (err) {
+                            console.error("Sharing error:", err);
+                            alert('There was an error with sharing. Please try again.');
+                        }
+                    } else if (action === 'print') {
+                        try {
+                            window.handlePrint();
+                        } catch (err) {
+                            console.error("Print error:", err);
+                            // Fallback to browser print
+                            window.print();
+                        }
+                    }
+                });
+            }
             
             // Load initial calendar data
             loadCalendarData();
@@ -715,6 +838,66 @@
         }
         
         /**
+         * Show food details in the food details section
+         * @param {Object} food - The food item data
+         */
+        function showFoodDetails(food) {
+            const detailsContainer = document.getElementById('foodDetailsContent');
+            
+            if (!detailsContainer) return;
+            
+            // Format the date if available
+            let dateAdded = '';
+            if (food.dateAdded) {
+                try {
+                    const date = new Date(food.dateAdded);
+                    dateAdded = date.toLocaleString();
+                } catch (e) {
+                    dateAdded = food.dateAdded;
+                }
+            }
+            
+            // Build details HTML
+            let detailsHtml = '<div class="food-detail-card">';
+            
+            // Food name and main info
+            detailsHtml += `<h4>${food.name || food.text}</h4>`;
+            detailsHtml += `<div class="detail-row"><span>Calories:</span> ${food.calories || 0} kcal</div>`;
+            
+            // Quantity and unit info if available
+            if (food.quantity && food.unit) {
+                detailsHtml += `<div class="detail-row"><span>Amount:</span> ${food.quantity} ${food.unit}</div>`;
+            }
+            
+            // Macros if available
+            if (food.protein || food.carbs || food.fat) {
+                detailsHtml += `<div class="detail-row"><span>Protein:</span> ${food.protein || 0}g</div>`;
+                detailsHtml += `<div class="detail-row"><span>Carbs:</span> ${food.carbs || 0}g</div>`;
+                detailsHtml += `<div class="detail-row"><span>Fat:</span> ${food.fat || 0}g</div>`;
+                
+                if (food.fiber) {
+                    detailsHtml += `<div class="detail-row"><span>Fiber:</span> ${food.fiber || 0}g</div>`;
+                }
+            }
+            
+            // Notes if available
+            if (food.notes) {
+                detailsHtml += `<div class="food-notes"><h5>Notes:</h5><p>${food.notes}</p></div>`;
+            }
+            
+            // Added date if available
+            if (dateAdded) {
+                detailsHtml += `<div class="detail-row date-added"><span>Added:</span> ${dateAdded}</div>`;
+            }
+            
+            detailsHtml += '</div>';
+            
+            // Display details
+            detailsContainer.innerHTML = detailsHtml;
+            document.getElementById('foodDetails').style.display = 'block';
+        }
+        
+        /**
          * Show day detail modal
          * @param {string} dateKey - Date in YYYY-MM-DD format
          */
@@ -808,10 +991,24 @@
                         foods.forEach(food => {
                             const foodItem = document.createElement('li');
                             foodItem.className = 'food-item';
+                            
+                            // Check if the food has notes or additional details
+                            const hasDetails = food.notes || food.quantity || food.dateAdded;
+                            
+                            // Create HTML with details indicator if needed
                             foodItem.innerHTML = `
-                                <span class="food-name">${food.name}</span>
+                                <span class="food-name">${food.name || food.text}${hasDetails ? ' <i class="fas fa-info-circle details-icon"></i>' : ''}</span>
                                 <span class="food-calories">${food.calories || 0} kcal</span>
                             `;
+                            
+                            // Add click handler to show details if available
+                            if (hasDetails) {
+                                foodItem.classList.add('has-details');
+                                foodItem.addEventListener('click', function() {
+                                    showFoodDetails(food);
+                                });
+                            }
+                            
                             foodList.appendChild(foodItem);
                         });
                     }
@@ -913,6 +1110,95 @@
             border-radius: var(--border-radius);
             padding: 15px;
             box-shadow: var(--card-shadow);
+        }
+        
+        .calendar-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .export-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--input-border-radius);
+            padding: 8px 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s;
+        }
+        
+        .export-button:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Export Dropdown */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .export-dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: white;
+            min-width: 220px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            z-index: 1000;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 5px;
+        }
+        
+        .export-dropdown-content.show {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+        
+        .export-section {
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+            padding: 5px 0;
+        }
+        
+        .export-section:last-child {
+            border-bottom: none;
+        }
+        
+        .export-header {
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 500;
+            padding: 8px 15px 4px;
+        }
+        
+        .export-option {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 15px;
+            font-size: 14px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            background: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .export-option:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .export-option i {
+            width: 18px;
+            text-align: center;
+            color: var(--primary-color);
         }
         
         .date-navigation {
@@ -1537,8 +1823,86 @@
             font-size: 14px;
         }
         
+        .food-item.has-details {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .food-item.has-details:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .details-icon {
+            font-size: 12px;
+            color: var(--primary-color);
+            margin-left: 5px;
+        }
+        
         .food-calories, .exercise-details {
             color: var(--text-secondary);
+        }
+        
+        /* Food details section */
+        .food-details {
+            background-color: var(--background-main);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-top: 20px;
+            display: none;
+        }
+        
+        .food-detail-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 15px;
+            margin-top: 10px;
+        }
+        
+        .food-detail-card h4 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            border-bottom: 1px solid var(--divider-color);
+            padding-bottom: 10px;
+        }
+        
+        .detail-row {
+            margin-bottom: 8px;
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .detail-row span {
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+        
+        .food-notes {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--divider-color);
+        }
+        
+        .food-notes h5 {
+            margin-top: 0;
+            margin-bottom: 5px;
+            color: var(--text-secondary);
+        }
+        
+        .food-notes p {
+            margin: 0;
+            white-space: pre-wrap;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .date-added {
+            margin-top: 15px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-top: 1px dashed var(--divider-color);
+            padding-top: 10px;
         }
         
         .no-data {
