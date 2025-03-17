@@ -46,8 +46,8 @@
     --accent-color: #FF6D00;
     --accent-dark: #F57C00;
     --accent-light: #5D4037;
-    --text-primary: #ECEFF1;
-    --text-secondary: #B0BEC5;
+    --text-primary: #FFFFFF;
+    --text-secondary: #DADADA;
     --divider-color: #424242;
     --background-main: #121212;
     --card-bg: #1E1E1E;
@@ -412,6 +412,21 @@ input, select, textarea {
     box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
 }
 
+[data-theme="dark"] input,
+[data-theme="dark"] select,
+[data-theme="dark"] textarea {
+    border-color: #444;
+    background-color: #2A2A2A;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] textarea:focus {
+    border-color: var(--primary-color);
+    background-color: #333333;
+}
+
 input:focus, select:focus, textarea:focus {
     outline: none;
     border-color: var(--primary-color);
@@ -591,6 +606,19 @@ tr:hover {
     background-color: rgba(0,0,0,0.04);
 }
 
+/* Dark mode improvements for tables */
+[data-theme="dark"] tr:nth-child(even) {
+    background-color: rgba(255,255,255,0.03);
+}
+
+[data-theme="dark"] tr:hover {
+    background-color: rgba(255,255,255,0.05);
+}
+
+[data-theme="dark"] td {
+    border-color: #444;
+}
+
 /* Colors */
 .green {
     color: var(--success-color);
@@ -631,6 +659,11 @@ li:last-child {
     align-items: flex-start;
     gap: 10px;
     transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+[data-theme="dark"] .note {
+    background-color: rgba(0, 191, 165, 0.15);
+    color: #FFFFFF;
 }
 
 .note i {
@@ -992,6 +1025,11 @@ body {
     transition: background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
+[data-theme="dark"] .results-section {
+    background-color: rgba(0, 191, 165, 0.15);
+    border-color: var(--primary-color);
+}
+
 .results-section.visible {
     display: block;
     animation: fadeIn 0.5s;
@@ -1129,6 +1167,36 @@ body {
     pointer-events: none;
 }
 
+/* Dark mode improvements for settings items */
+[data-theme="dark"] .settings-section {
+    border-color: #444;
+}
+
+[data-theme="dark"] .settings-item {
+    background-color: #2A2A2A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] .settings-button {
+    background-color: #333;
+    color: #FFFFFF;
+    border-color: #555;
+}
+
+[data-theme="dark"] .settings-button:hover {
+    background-color: #444;
+}
+
+[data-theme="dark"] .settings-button.danger {
+    background-color: rgba(255, 23, 68, 0.15);
+    color: #FF5252;
+}
+
+[data-theme="dark"] .settings-note {
+    background-color: #2A2A2A;
+    color: #DADADA;
+}
+
 .progress-bar-water {
     background-color: var(--progress-water);
 }
@@ -1146,15 +1214,240 @@ body {
 }
 
 /* Charts */
+/* Modern Chart Styling */
 .chart-container {
     width: 100%;
     height: 300px;
     margin: 20px 0;
     background-color: var(--card-bg);
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: 25px;
     box-shadow: var(--card-shadow);
-    transition: background-color var(--transition-speed);
+    transition: all var(--transition-speed);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(0,0,0,0.03);
+}
+
+.chart-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 6px;
+    height: 100%;
+    background: var(--gradient-primary);
+    opacity: 0.8;
+}
+
+.chart-container:hover {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    transform: translateY(-3px);
+}
+
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 15px;
+    padding: 0 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 10px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 6px;
+    display: inline-block;
+}
+
+/* Macro chart specific styling */
+.macro-chart-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.macro-chart-section {
+    flex: 1;
+    min-height: 180px;
+    position: relative;
+}
+
+.macro-details-section {
+    margin-top: 10px;
+}
+
+.macro-progress {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.macro-label {
+    display: flex;
+    align-items: center;
+    width: 80px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.macro-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    display: inline-block;
+}
+
+.macro-dot.protein { background-color: #E91E63; }
+.macro-dot.carbs { background-color: #2979FF; }
+.macro-dot.fat { background-color: #FF9800; }
+
+.progress-bar-container {
+    flex: 1;
+    height: 8px;
+    background-color: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 0 12px;
+}
+
+[data-theme="dark"] .progress-bar-container {
+    background-color: rgba(255,255,255,0.1);
+}
+
+.progress-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.protein-bar { background-color: #E91E63; }
+.carbs-bar { background-color: #2979FF; }
+.fat-bar { background-color: #FF9800; }
+
+.macro-value {
+    width: 40px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.macro-ratio {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.macro-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 15px;
+    border-top: 1px solid rgba(0,0,0,0.05);
+    padding-top: 15px;
+}
+
+[data-theme="dark"] .macro-stats {
+    border-top: 1px solid rgba(255,255,255,0.1);
+}
+
+.macro-stat {
+    text-align: center;
+}
+
+.macro-stat-label {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 3px;
+}
+
+.macro-stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Chart controls and insights */
+.chart-controls {
+    display: flex;
+    margin-left: auto;
+    gap: 8px;
+}
+
+.chart-control-btn {
+    background: transparent;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.chart-control-btn:hover {
+    color: var(--primary-color);
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme="dark"] .chart-control-btn:hover {
+    color: var(--primary-color);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.chart-insight {
+    position: absolute;
+    bottom: 15px;
+    right: 15px;
+    background-color: var(--card-bg);
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    animation: fadeIn 0.5s ease-out forwards;
+    opacity: 0;
+    transform: translateY(10px);
+}
+
+@keyframes fadeIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.chart-insight i {
+    color: var(--success-color);
+}
+
+.chart-insight.warning i {
+    color: var(--warning-color);
+}
+
+.chart-insight.danger i {
+    color: var(--error-color);
 }
 
 /* Quick Add Feature */
@@ -1283,6 +1576,12 @@ body {
     backdrop-filter: blur(10px);
 }
 
+[data-theme="dark"] .nav-bar {
+    background-color: rgba(255, 255, 255, 0.07);
+    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
 .nav-button {
     background-color: transparent;
     color: var(--text-primary);
@@ -1310,6 +1609,11 @@ body {
     background-color: rgba(0, 0, 0, 0.05);
     transform: translateY(-2px);
     box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+[data-theme="dark"] .nav-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.2);
 }
 
 .nav-button.active {
@@ -1860,4 +2164,35 @@ body {
     border-radius: var(--input-border-radius);
     margin-top: 10px;
     text-align: center;
+}
+
+/* Additional Dark Mode Improvements */
+[data-theme="dark"] .results-grid .result-item {
+    background-color: #2A2A2A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+[data-theme="dark"] #mealIngredients {
+    background-color: rgba(255,255,255,0.03);
+}
+
+[data-theme="dark"] .quick-add-btn {
+    background-color: #2A2A2A;
+    border-color: #444;
+    color: #DADADA; /* Ensure better contrast in dark mode */
+}
+
+[data-theme="dark"] .quick-add-btn:hover {
+    background-color: var(--primary-color);
+    color: #FFFFFF;
+    border-color: var(--primary-color);
+}
+
+[data-theme="dark"] label {
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .info .tooltip {
+    background-color: #333;
+    color: #FFFFFF;
 }
