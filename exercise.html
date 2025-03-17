@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="dark-mode-fix.js"></script>
     <!-- Google AdSense verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
      crossorigin="anonymous"></script>
@@ -68,83 +69,106 @@
         <section id="exercise" class="card-section">
             <h2><i class="fas fa-running"></i> Track Your Exercise</h2>
             
-            <form id="exerciseForm" class="card-form">
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="exerciseDate"><i class="fas fa-calendar-alt"></i> Select Date</label>
-                        <div class="date-picker-container">
-                            <input type="date" id="exerciseDate" required>
-                            <div class="calendar-icon">
-                                <i class="fas fa-calendar-alt"></i>
+            <div class="tab-bar">
+                <button type="button" class="tab-button active" data-tab="add-exercise">
+                    <i class="fas fa-plus-circle"></i> Add Exercise
+                </button>
+                <button type="button" class="tab-button" data-tab="history">
+                    <i class="fas fa-history"></i> History
+                </button>
+                <button type="button" class="tab-button" data-tab="devices">
+                    <i class="fas fa-sync"></i> Sync Devices
+                </button>
+            </div>
+            
+            <div class="tab-content" id="add-exercise">
+                <form id="exerciseForm" class="card-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="exerciseDate"><i class="fas fa-calendar-alt"></i> Select Date</label>
+                            <div class="date-picker-container">
+                                <input type="date" id="exerciseDate" required>
+                                <div class="calendar-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
                             </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="exerciseTime"><i class="fas fa-clock"></i> Time of Day</label>
+                            <select id="exerciseTime">
+                                <option value="morning">Morning</option>
+                                <option value="afternoon">Afternoon</option>
+                                <option value="evening">Evening</option>
+                            </select>
                         </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="exerciseTime"><i class="fas fa-clock"></i> Time of Day</label>
-                        <select id="exerciseTime">
-                            <option value="morning">Morning</option>
-                            <option value="afternoon">Afternoon</option>
-                            <option value="evening">Evening</option>
+                        <label for="exerciseType"><i class="fas fa-dumbbell"></i> Exercise Type</label>
+                        <select id="exerciseType">
+                            <optgroup label="Running">
+                                <option value="running_5mph">Running (5 mph - Low Intensity)</option>
+                                <option value="running_6mph">Running (6 mph - Moderate Intensity)</option>
+                                <option value="running_7mph">Running (7 mph - High Intensity)</option>
+                            </optgroup>
+                            <optgroup label="Walking">
+                                <option value="walking_3mph">Walking (3 mph - Low Intensity)</option>
+                                <option value="walking_4mph">Walking (4 mph - Moderate Intensity)</option>
+                                <option value="walking_5mph">Walking (5 mph - High Intensity)</option>
+                            </optgroup>
+                            <optgroup label="Cycling">
+                                <option value="cycling_10mph">Cycling (10 mph - Low Intensity)</option>
+                                <option value="cycling_12mph">Cycling (12 mph - Moderate Intensity)</option>
+                                <option value="cycling_14mph">Cycling (14 mph - High Intensity)</option>
+                            </optgroup>
                         </select>
                     </div>
-                </div>
-                
-                <div class="form-group">
-                    <label for="exerciseType"><i class="fas fa-dumbbell"></i> Exercise Type</label>
-                    <select id="exerciseType">
-                        <optgroup label="Running">
-                            <option value="running_5mph">Running (5 mph - Low Intensity)</option>
-                            <option value="running_6mph">Running (6 mph - Moderate Intensity)</option>
-                            <option value="running_7mph">Running (7 mph - High Intensity)</option>
-                        </optgroup>
-                        <optgroup label="Walking">
-                            <option value="walking_3mph">Walking (3 mph - Low Intensity)</option>
-                            <option value="walking_4mph">Walking (4 mph - Moderate Intensity)</option>
-                            <option value="walking_5mph">Walking (5 mph - High Intensity)</option>
-                        </optgroup>
-                        <optgroup label="Cycling">
-                            <option value="cycling_10mph">Cycling (10 mph - Low Intensity)</option>
-                            <option value="cycling_12mph">Cycling (12 mph - Moderate Intensity)</option>
-                            <option value="cycling_14mph">Cycling (14 mph - High Intensity)</option>
-                        </optgroup>
-                    </select>
-                </div>
-                
-                <div class="form-group">
-                    <label for="duration"><i class="fas fa-clock"></i> Duration (minutes)</label>
-                    <input type="number" id="duration" min="1" required placeholder="e.g., 30">
-                </div>
-                
-                <div class="button-group">
-                    <button type="submit" class="primary-button">
-                        <i class="fas fa-plus-circle"></i> Add Exercise
-                    </button>
-                    <button type="button" onclick="window.location.href='tracker.html'" class="secondary-button">
-                        <i class="fas fa-arrow-left"></i> Back to Planner
-                    </button>
-                    <button type="button" id="shareExerciseBtn" class="share-button">
-                        <i class="fas fa-share-alt"></i> Share to Community
-                    </button>
-                </div>
-            </form>
+                    
+                    <div class="form-group">
+                        <label for="duration"><i class="fas fa-clock"></i> Duration (minutes)</label>
+                        <input type="number" id="duration" min="1" required placeholder="e.g., 30">
+                    </div>
+                    
+                    <div class="button-group">
+                        <button type="submit" class="primary-button">
+                            <i class="fas fa-plus-circle"></i> Add Exercise
+                        </button>
+                        <button type="button" onclick="window.location.href='tracker.html'" class="secondary-button">
+                            <i class="fas fa-arrow-left"></i> Back to Planner
+                        </button>
+                        <button type="button" id="shareExerciseBtn" class="share-button">
+                            <i class="fas fa-share-alt"></i> Share to Community
+                        </button>
+                    </div>
+                </form>
             
-            <div id="exerciseSummary" class="exercise-summary">
-                <!-- Will be filled by JavaScript -->
+                <div id="exerciseSummary" class="exercise-summary">
+                    <!-- Will be filled by JavaScript -->
+                </div>
             </div>
             
-            <div class="import-device-section">
-                <h3><i class="fas fa-sync"></i> Import from Connected Devices</h3>
-                <p>Automatically sync your workouts from your fitness tracker or smartwatch.</p>
-                <div class="import-device-actions">
-                    <a href="wearable-settings.html" class="secondary-button">
-                        <i class="fas fa-link"></i> Connect Devices
-                    </a>
-                    <button id="importFromDevicesBtn" class="primary-button">
-                        <i class="fas fa-download"></i> Sync Activities
-                    </button>
+            <div class="tab-content" id="history" style="display: none;">
+                <h3><i class="fas fa-history"></i> Exercise History</h3>
+                <div class="exercise-history-container" id="exerciseHistoryContainer">
+                    <p class="empty-state">Your recent exercise activities will appear here.</p>
                 </div>
-                <div id="wearableActivityContainer"></div>
+            </div>
+            
+            <div class="tab-content" id="devices" style="display: none;">
+                <div class="import-device-section">
+                    <h3><i class="fas fa-sync"></i> Import from Connected Devices</h3>
+                    <p>Automatically sync your workouts from your fitness tracker or smartwatch.</p>
+                    <div class="import-device-actions">
+                        <a href="wearable-settings.html" class="secondary-button">
+                            <i class="fas fa-link"></i> Connect Devices
+                        </a>
+                        <button id="importFromDevicesBtn" class="primary-button">
+                            <i class="fas fa-download"></i> Sync Activities
+                        </button>
+                    </div>
+                    <div id="wearableActivityContainer"></div>
+                </div>
             </div>
             
             <div class="info-card">
@@ -174,154 +198,118 @@
         </div>
     </footer>
     
-    <script src="theme.js"></script>
-    <script src="utils.js"></script>
-    <script src="exercise.js"></script>
-    <script>
-        // Initialize when document is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // Initialize page (theme, menu, login check)
-            if (initializePage()) {
-                // Set up exercise form and summary
-                setupExerciseTracking();
-                
-                // Register service worker
-                registerServiceWorker();
-            }
-        });
-        
-        /**
-         * Check if user is logged in, redirect if not
-         */
-        function checkUserLogin() {
-            const currentUser = getFromStorage('currentUser');
-            if (!currentUser) {
-                window.location.href = 'login.html';
-            }
-        }
-        
-        /**
-         * Set up exercise tracking form and animations
-         */
-        function setupExerciseTracking() {
-            // Show animation when exercise is added
-            const exerciseForm = document.getElementById('exerciseForm');
-            if (exerciseForm) {
-                exerciseForm.addEventListener('submit', function() {
-                    setTimeout(() => {
-                        const summary = document.getElementById('exerciseSummary');
-                        if (summary && summary.textContent) {
-                            summary.classList.add('visible');
-                        }
-                    }, 100);
-                });
-            }
-            
-            // Set default date to today
-            const today = new Date();
-            const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
-            
-            // Set the date input default value to today
-            const dateInput = document.getElementById('exerciseDate');
-            if (dateInput) {
-                dateInput.value = formattedDate;
-            }
-            
-            // Set up share button
-            const shareBtn = document.getElementById('shareExerciseBtn');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function() {
-                    // Create a title and message for the share
-                    const exerciseType = document.getElementById('exerciseType');
-                    let exerciseName = "Exercise";
-                    
-                    if (exerciseType && exerciseType.selectedIndex >= 0) {
-                        exerciseName = exerciseType.options[exerciseType.selectedIndex].text.split(' - ')[0];
-                    }
-                    
-                    const duration = document.getElementById('duration').value || "30";
-                    
-                    const title = `Completed ${exerciseName} workout!`;
-                    const message = `Just finished a ${duration}-minute ${exerciseName.toLowerCase()} session. Feeling great! #FitnessJourney`;
-                    
-                    // Redirect to community page with share parameters
-                    window.location.href = `community.html?share=true&type=exercise&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`;
-                });
-            }
-            
-            // Set up share button
-            const shareBtn = document.getElementById('shareExerciseBtn');
-            if (shareBtn) {
-                shareBtn.addEventListener('click', function() {
-                    // Create a title and message for the share
-                    const exerciseType = document.getElementById('exerciseType');
-                    let exerciseName = "Exercise";
-                    
-                    if (exerciseType && exerciseType.selectedIndex >= 0) {
-                        exerciseName = exerciseType.options[exerciseType.selectedIndex].text.split(' - ')[0];
-                    }
-                    
-                    const duration = document.getElementById('duration').value || "30";
-                    
-                    const title = `Completed ${exerciseName} workout!`;
-                    const message = `Just finished a ${duration}-minute ${exerciseName.toLowerCase()} session. Feeling great! #FitnessJourney`;
-                    
-                    // Redirect to community page with share parameters
-                    window.location.href = `community.html?share=true&type=exercise&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`;
-                });
-            }
-        }
-        
-        // Check user login
-        checkUserLogin();
-        
-        /**
-         * Check if user is logged in, redirect if not
-         */
-        function checkUserLogin() {
-            try {
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                if (!currentUser || !currentUser.email) {
-                    console.log('User not logged in, redirecting to login page');
-                    window.location.href = 'login.html';
-                    return false;
-                }
-                return true;
-            } catch (e) {
-                console.error('Error checking user login:', e);
-                window.location.href = 'login.html';
-                return false;
-            }
-        }
-        
-        // Check login status
-        checkUserLogin();
-        
-        // Display a summary of added exercises
-        document.getElementById('exerciseForm').addEventListener('submit', function() {
-            setTimeout(() => {
-                const summary = document.getElementById('exerciseSummary');
-                if (summary && summary.textContent) {
-                    summary.classList.add('visible');
-                }
-            }, 100);
-        });
-
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('Service Worker registered'))
-                    .catch(err => console.log('Service Worker failed:', err));
-            });
-        }
-    </script>
-    
     <style>
         .card-section {
-            background-color: white;
+            background-color: var(--card-bg);
             border-radius: var(--border-radius);
             box-shadow: var(--card-shadow);
             padding: 30px;
+        }
+        
+        /* Exercise search input styling */
+        .exercise-search-container {
+            position: relative;
+            margin-bottom: 15px;
+        }
+        
+        .exercise-search-input {
+            width: 100%;
+            padding: 10px 40px 10px 12px;
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+        
+        .exercise-search-input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+        }
+        
+        /* Enhanced exercise summary styling */
+        .calories-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 5px;
+        }
+        
+        .calorie-value {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .calorie-detail {
+            font-size: 0.9em;
+            color: var(--text-secondary);
+        }
+        
+        .exercise-detail {
+            display: flex;
+            gap: 12px;
+            margin-top: 5px;
+            font-size: 0.85em;
+            color: var(--text-secondary);
+        }
+        
+        .met-info {
+            padding: 2px 6px;
+            background-color: rgba(76, 175, 80, 0.1);
+            border-radius: 3px;
+        }
+        
+        .category-info {
+            padding: 2px 6px;
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 3px;
+        }
+        
+        /* Tab Navigation */
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            background-color: var(--background-main);
+            padding: 5px;
+            border-radius: var(--input-border-radius);
+        }
+        
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            border-radius: var(--input-border-radius);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .tab-content {
+            animation: fadeIn 0.3s ease;
         }
         
         .card-form {
@@ -408,10 +396,11 @@
         }
         
         .info-card {
-            background-color: #f5f5f5;
+            background-color: var(--background-main);
             border-radius: var(--border-radius);
             padding: 20px;
             margin-top: 30px;
+            border: 1px solid var(--divider-color);
         }
         
         .info-card h3 {
@@ -423,6 +412,16 @@
             gap: 8px;
         }
         
+        /* Fix text coloration for better contrast in both light/dark modes */
+        .info-card h4 {
+            color: var(--text-primary);
+        }
+        
+        .info-card p {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -431,7 +430,7 @@
         }
         
         .info-item {
-            background-color: white;
+            background-color: var(--card-bg);
             border-radius: var(--input-border-radius);
             padding: 15px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
@@ -511,6 +510,82 @@
             outline: none;
         }
         
+        /* Exercise history styles */
+        .exercise-history-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+        
+        .exercise-history-item {
+            background-color: var(--card-bg);
+            border-radius: var(--input-border-radius);
+            padding: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: transform 0.2s ease;
+        }
+        
+        .exercise-history-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .exercise-history-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-light);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-color);
+            font-size: 18px;
+        }
+        
+        .exercise-history-details {
+            flex: 1;
+        }
+        
+        .exercise-history-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0 0 5px 0;
+        }
+        
+        .exercise-history-meta {
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            gap: 15px;
+        }
+        
+        .exercise-history-calories {
+            background-color: var(--primary-light);
+            padding: 3px 8px;
+            border-radius: 15px;
+            color: var(--primary-dark);
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .empty-state {
+            text-align: center;
+            color: var(--text-secondary);
+            padding: 30px;
+            font-style: italic;
+        }
+        
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
         @media (max-width: 768px) {
             .button-group {
                 flex-direction: column;
@@ -519,21 +594,43 @@
             .info-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .tab-button {
+                font-size: 14px;
+                padding: 10px;
+            }
+            
+            .tab-button i {
+                margin-right: 5px;
+            }
         }
     </style>
     
-    <script src="utils.js"></script>
     <script src="theme.js"></script>
+    <script src="utils.js"></script>
     <script src="exercise.js"></script>
     <script src="wearable-integration.js"></script>
     <script>
+        // Initialize when document is loaded
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize theme
+            initializeTheme();
+            
             // Check if user is logged in
             const currentUser = getFromStorage('currentUser');
             if (!currentUser) {
                 window.location.href = 'login.html';
                 return;
             }
+            
+            // Set up exercise form and summary
+            setupExerciseTracking();
+            
+            // Set up tab navigation
+            setupTabNavigation();
+            
+            // Load exercise history
+            loadExerciseHistory();
             
             // Initialize wearable widget
             initializeWearableWidget('wearableActivityContainer');
@@ -558,7 +655,211 @@
                     showNotification('Syncing activities from your devices...', 'info');
                 });
             }
+            
+            // Register service worker
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(reg => console.log('Service Worker registered'))
+                        .catch(err => console.log('Service Worker failed:', err));
+                });
+            }
         });
+        
+        /**
+         * Set up tab navigation functionality
+         */
+        function setupTabNavigation() {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to clicked button
+                    button.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => {
+                        content.style.display = 'none';
+                    });
+                    
+                    // Show selected tab content
+                    const tabId = button.getAttribute('data-tab');
+                    document.getElementById(tabId).style.display = 'block';
+                });
+            });
+        }
+        
+        /**
+         * Set up exercise tracking form and animations
+         */
+        function setupExerciseTracking() {
+            // Show animation when exercise is added
+            const exerciseForm = document.getElementById('exerciseForm');
+            if (exerciseForm) {
+                exerciseForm.addEventListener('submit', function() {
+                    setTimeout(() => {
+                        const summary = document.getElementById('exerciseSummary');
+                        if (summary && summary.textContent) {
+                            summary.classList.add('visible');
+                        }
+                    }, 100);
+                });
+            }
+            
+            // Set default date to today
+            const today = new Date();
+            const formattedDate = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+            
+            // Set the date input default value to today
+            const dateInput = document.getElementById('exerciseDate');
+            if (dateInput) {
+                dateInput.value = formattedDate;
+            }
+            
+            // Set up share button
+            const shareBtn = document.getElementById('shareExerciseBtn');
+            if (shareBtn) {
+                shareBtn.addEventListener('click', function() {
+                    // Create a title and message for the share
+                    const exerciseType = document.getElementById('exerciseType');
+                    let exerciseName = "Exercise";
+                    
+                    if (exerciseType && exerciseType.selectedIndex >= 0) {
+                        exerciseName = exerciseType.options[exerciseType.selectedIndex].text.split(' - ')[0];
+                    }
+                    
+                    const duration = document.getElementById('duration').value || "30";
+                    
+                    const title = `Completed ${exerciseName} workout!`;
+                    const message = `Just finished a ${duration}-minute ${exerciseName.toLowerCase()} session. Feeling great! #FitnessJourney`;
+                    
+                    // Redirect to community page with share parameters
+                    window.location.href = `community.html?share=true&type=exercise&title=${encodeURIComponent(title)}&message=${encodeURIComponent(message)}`;
+                });
+            }
+        }
+        
+        /**
+         * Load and display exercise history
+         */
+        function loadExerciseHistory() {
+            const historyContainer = document.getElementById('exerciseHistoryContainer');
+            if (!historyContainer) return;
+            
+            // Clear container
+            historyContainer.innerHTML = '';
+            
+            try {
+                // Get all exercise records for current user
+                const currentUser = getFromStorage('currentUser');
+                if (!currentUser || !currentUser.email) {
+                    historyContainer.innerHTML = '<p class="empty-state">Please log in to view your exercise history.</p>';
+                    return;
+                }
+                
+                // Collect all exercises from localStorage
+                const exercises = [];
+                const currentDate = new Date();
+                const currentYear = currentDate.getFullYear();
+                const currentMonth = currentDate.getMonth() + 1;
+                
+                // Check the current month and the previous month
+                for (let monthOffset = 0; monthOffset < 2; monthOffset++) {
+                    let year = currentYear;
+                    let month = currentMonth - monthOffset;
+                    
+                    if (month < 1) {
+                        month = 12 + month;
+                        year--;
+                    }
+                    
+                    const yearMonth = `${year}-${month.toString().padStart(2, '0')}`;
+                    const exerciseKey = `exercise_${currentUser.email}_${yearMonth}`;
+                    const monthData = getFromStorage(exerciseKey, {});
+                    
+                    // Process each day's exercises
+                    for (const day in monthData) {
+                        const dayData = monthData[day];
+                        
+                        // Process each time of day
+                        for (const timeOfDay in dayData) {
+                            const timeExercises = dayData[timeOfDay];
+                            
+                            // Add each exercise to our array
+                            timeExercises.forEach(ex => {
+                                exercises.push({
+                                    ...ex,
+                                    date: `${yearMonth}-${day}`,
+                                    timeOfDay: timeOfDay
+                                });
+                            });
+                        }
+                    }
+                }
+                
+                // Sort exercises by date (newest first)
+                exercises.sort((a, b) => new Date(b.date) - new Date(a.date));
+                
+                // Display exercises or empty state
+                if (exercises.length === 0) {
+                    historyContainer.innerHTML = '<p class="empty-state">No exercise history found. Start tracking your workouts!</p>';
+                    return;
+                }
+                
+                // Display the most recent 10 exercises
+                const recentExercises = exercises.slice(0, 10);
+                recentExercises.forEach(exercise => {
+                    // Format date for display
+                    const exerciseDate = new Date(exercise.date);
+                    const formattedDate = exerciseDate.toLocaleDateString('en-US', { 
+                        month: 'short', 
+                        day: 'numeric'
+                    });
+                    
+                    // Format time of day with first letter capitalized
+                    const timeFormatted = exercise.timeOfDay.charAt(0).toUpperCase() + exercise.timeOfDay.slice(1);
+                    
+                    // Create history item
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'exercise-history-item';
+                    
+                    // Determine which icon to use based on exercise name
+                    let iconClass = 'fa-running';
+                    if (exercise.name && exercise.name.toLowerCase().includes('cycling')) {
+                        iconClass = 'fa-biking';
+                    } else if (exercise.name && exercise.name.toLowerCase().includes('walking')) {
+                        iconClass = 'fa-walking';
+                    }
+                    
+                    historyItem.innerHTML = `
+                        <div class="exercise-history-icon">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div class="exercise-history-details">
+                            <h4 class="exercise-history-title">${exercise.name || 'Exercise'}</h4>
+                            <div class="exercise-history-meta">
+                                <span><i class="fas fa-calendar-day"></i> ${formattedDate}</span>
+                                <span><i class="fas fa-clock"></i> ${timeFormatted}</span>
+                                <span><i class="fas fa-stopwatch"></i> ${exercise.duration || '-'} min</span>
+                            </div>
+                        </div>
+                        <div class="exercise-history-calories">
+                            ${exercise.calories || 0} kcal
+                        </div>
+                    `;
+                    
+                    historyContainer.appendChild(historyItem);
+                });
+                
+            } catch (error) {
+                console.error('Error loading exercise history:', error);
+                historyContainer.innerHTML = '<p class="empty-state">Error loading exercise history. Please try again.</p>';
+            }
+        }
     </script>
 </body>
 </html>
