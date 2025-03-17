@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="dark-mode-fix.js"></script>
     <!-- Google AdSense verification -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
      crossorigin="anonymous"></script>
@@ -58,8 +59,8 @@
                 <a href="contact.html" class="nav-link">
                     <i class="fas fa-envelope"></i> Contact Us
                 </a>
-                <a href="#" class="nav-link" id="aiBuddyBtn">
-                    <i class="fas fa-robot"></i> AI Buddy
+                <a href="ai-assistants.html" class="nav-link">
+                    <i class="fas fa-robot"></i> AI Assistants
                 </a>
             </div>
         </div>
@@ -144,6 +145,32 @@
             <div class="stat-card">
                 <div class="stat-card-header">
                     <div class="stat-card-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h3 class="stat-card-title">Energy Metrics</h3>
+                </div>
+                <div class="energy-metrics">
+                    <div class="energy-metric">
+                        <div class="energy-label">BMR</div>
+                        <div class="energy-value" id="bmrValue">--</div>
+                        <div class="energy-subtitle">Basal Metabolic Rate</div>
+                    </div>
+                    <div class="energy-metric">
+                        <div class="energy-label">TDEE</div>
+                        <div class="energy-value" id="tdeeValue">--</div>
+                        <div class="energy-subtitle">Total Daily Energy Expenditure</div>
+                    </div>
+                    <div class="energy-metric">
+                        <div class="energy-label">Daily Goal</div>
+                        <div class="energy-value" id="dailyGoalValue">--</div>
+                        <div class="energy-subtitle">Target Daily Calories</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <div class="stat-card-icon">
                         <i class="fas fa-fire"></i>
                     </div>
                     <h3 class="stat-card-title">Calories Today</h3>
@@ -174,22 +201,38 @@
                 <h2 class="card-title">Water Intake Tracker</h2>
             </div>
             <div class="card-body">
-                <p>Track your daily water intake to stay hydrated (goal: 8 glasses per day)</p>
-                <div class="water-tracker">
-                    <div id="waterGlasses"></div>
-                    <div class="water-controls">
-                        <button class="water-btn" id="addWater">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <button class="water-btn" id="removeWater">
-                            <i class="fas fa-minus"></i>
-                        </button>
+                <div class="water-container">
+                    <div class="water-visual">
+                        <div class="water-level-container">
+                            <div class="water-level" id="waterLevelVisual" style="height: 0%"></div>
+                            <div class="water-goal-marker"></div>
+                        </div>
+                        <div class="water-info">
+                            <div class="water-count" id="waterCountDisplay">0</div>
+                            <div class="water-unit">glasses</div>
+                        </div>
+                    </div>
+                    <div class="water-content">
+                        <p class="water-description">Daily hydration goal: 8 glasses</p>
+                        <div class="water-progress">
+                            <div class="progress-container">
+                                <div class="progress-bar progress-bar-water" id="waterProgress" style="width: 0%"></div>
+                            </div>
+                            <div class="water-fraction" id="waterStatus">0/8</div>
+                        </div>
+                        <div class="water-controls">
+                            <button class="water-btn remove" id="removeWater">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <button class="water-btn add" id="addWater">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="water-motivation" id="waterMotivation">
+                            Start drinking water to stay hydrated!
+                        </div>
                     </div>
                 </div>
-                <div class="progress-container">
-                    <div class="progress-bar progress-bar-water" id="waterProgress" style="width: 0%"></div>
-                </div>
-                <p id="waterStatus">0/8 glasses</p>
             </div>
         </section>
         
@@ -344,10 +387,15 @@
                             <span id="carbsPercent">0%</span> /
                             <span id="fatPercent">0%</span>
                         </div>
-                        <div class="view-calendar-link">
-                            <a href="calendar.html" class="action-button">
-                                <i class="fas fa-calendar-alt"></i> View Calendar
-                            </a>
+                        <div class="macro-stats">
+                            <div class="macro-stat">
+                                <div class="macro-stat-label">Actual</div>
+                                <div class="macro-stat-value" id="actualMacroRatio">--</div>
+                            </div>
+                            <div class="macro-stat">
+                                <div class="macro-stat-label">Target</div>
+                                <div class="macro-stat-value" id="targetMacroRatio">30% / 40% / 30%</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -368,6 +416,187 @@
     <!-- Enhanced AI Buddy with improved context and conversation capabilities -->
     <script src="ai-buddy.js"></script>
     <script src="wearable-integration.js"></script>
+    
+    <script>
+        // Add energy metrics update function
+        document.addEventListener('DOMContentLoaded', function() {
+            // Update energy metrics after page load
+            updateEnergyMetrics();
+        });
+        
+        // Update energy metrics (BMR, TDEE, Daily Goal)
+        function updateEnergyMetrics() {
+            const currentUser = getFromStorage('currentUser');
+            if (!currentUser) return;
+            
+            const profileKey = `profile_${currentUser.email}`;
+            const profile = getFromStorage(profileKey);
+            if (!profile) return;
+            
+            // Get calculated metrics
+            const bmr = profile.bmr || 0;
+            const tdee = profile.tdee || 0;
+            const dailyGoal = profile.dailyGoal || 0;
+            
+            // Update UI elements with the metrics
+            const bmrElement = document.getElementById('bmrValue');
+            const tdeeElement = document.getElementById('tdeeValue');
+            const dailyGoalElement = document.getElementById('dailyGoalValue');
+            
+            if (bmrElement) {
+                bmrElement.textContent = `${Math.round(bmr)} kcal`;
+            }
+            
+            if (tdeeElement) {
+                tdeeElement.textContent = `${Math.round(tdee)} kcal`;
+            }
+            
+            if (dailyGoalElement) {
+                dailyGoalElement.textContent = `${Math.round(dailyGoal)} kcal`;
+            }
+            
+            // Update macronutrient ratio from calendar data
+            updateMacronutrientRatio();
+        }
+        
+        // Function to update macronutrient ratio from calendar data
+        function updateMacronutrientRatio() {
+            const currentUser = getFromStorage('currentUser');
+            if (!currentUser) return;
+            
+            // Get today's date
+            const today = new Date();
+            const yearMonth = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}`;
+            const dayStr = today.getDate().toString().padStart(2, '0');
+            
+            // Get food data from calendar
+            const foodsKey = `foods_${currentUser.email}_${yearMonth}`;
+            const monthFoods = getFromStorage(foodsKey, {});
+            
+            // If no data for today, try to get the most recent data
+            let dayFoods = monthFoods[dayStr];
+            if (!dayFoods) {
+                // Find the most recent date with data
+                const days = Object.keys(monthFoods).sort((a, b) => b - a);
+                if (days.length > 0) {
+                    dayFoods = monthFoods[days[0]];
+                }
+            }
+            
+            // Calculate macros
+            let totalProtein = 0;
+            let totalCarbs = 0;
+            let totalFat = 0;
+            
+            if (dayFoods) {
+                // Iterate through meal types
+                Object.values(dayFoods).forEach(foods => {
+                    if (Array.isArray(foods)) {
+                        foods.forEach(food => {
+                            totalProtein += food.protein || 0;
+                            totalCarbs += food.carbs || 0;
+                            totalFat += food.fat || 0;
+                        });
+                    }
+                });
+            }
+            
+            // Calculate percentages
+            const totalMacros = totalProtein + totalCarbs + totalFat;
+            const proteinPct = totalMacros > 0 ? Math.round((totalProtein / totalMacros) * 100) : 0;
+            const carbsPct = totalMacros > 0 ? Math.round((totalCarbs / totalMacros) * 100) : 0;
+            const fatPct = totalMacros > 0 ? Math.round((totalFat / totalMacros) * 100) : 0;
+            
+            // Update UI
+            const proteinPercentElement = document.getElementById('proteinPercent');
+            const carbsPercentElement = document.getElementById('carbsPercent');
+            const fatPercentElement = document.getElementById('fatPercent');
+            const actualMacroRatioElement = document.getElementById('actualMacroRatio');
+            
+            // Set protein bar width
+            const proteinBar = document.getElementById('proteinBar');
+            if (proteinBar) {
+                proteinBar.style.width = `${proteinPct}%`;
+            }
+            
+            // Set carbs bar width
+            const carbsBar = document.getElementById('carbsBar');
+            if (carbsBar) {
+                carbsBar.style.width = `${carbsPct}%`;
+            }
+            
+            // Set fat bar width
+            const fatBar = document.getElementById('fatBar');
+            if (fatBar) {
+                fatBar.style.width = `${fatPct}%`;
+            }
+            
+            // Update text values
+            if (proteinPercentElement) proteinPercentElement.textContent = `${proteinPct}%`;
+            if (carbsPercentElement) carbsPercentElement.textContent = `${carbsPct}%`;
+            if (fatPercentElement) fatPercentElement.textContent = `${fatPct}%`;
+            
+            // Update actual ratio
+            if (actualMacroRatioElement) {
+                if (totalMacros > 0) {
+                    actualMacroRatioElement.textContent = `${proteinPct}% / ${carbsPct}% / ${fatPct}%`;
+                } else {
+                    actualMacroRatioElement.textContent = 'No data yet';
+                }
+            }
+            
+            // Update gram values
+            const proteinGramElement = document.getElementById('proteinValue');
+            const carbsGramElement = document.getElementById('carbsValue');
+            const fatGramElement = document.getElementById('fatValue');
+            
+            if (proteinGramElement) proteinGramElement.textContent = `${Math.round(totalProtein)}g`;
+            if (carbsGramElement) carbsGramElement.textContent = `${Math.round(totalCarbs)}g`;
+            if (fatGramElement) fatGramElement.textContent = `${Math.round(totalFat)}g`;
+        }
+        
+        // Update water display
+        function updateWaterDisplay(waterCount) {
+            const waterLevelElement = document.getElementById('waterLevelVisual');
+            const waterCountElement = document.getElementById('waterCountDisplay');
+            const waterStatusElement = document.getElementById('waterStatus');
+            const waterProgressElement = document.getElementById('waterProgress');
+            const waterMotivationElement = document.getElementById('waterMotivation');
+            
+            const waterPercentage = Math.min(waterCount / 8 * 100, 100);
+            
+            if (waterLevelElement) {
+                waterLevelElement.style.height = `${waterPercentage}%`;
+            }
+            
+            if (waterCountElement) {
+                waterCountElement.textContent = waterCount;
+            }
+            
+            if (waterStatusElement) {
+                waterStatusElement.textContent = `${waterCount}/8`;
+            }
+            
+            if (waterProgressElement) {
+                waterProgressElement.style.width = `${waterPercentage}%`;
+            }
+            
+            // Update motivation text
+            if (waterMotivationElement) {
+                if (waterCount === 0) {
+                    waterMotivationElement.textContent = 'Start drinking water to stay hydrated!';
+                } else if (waterCount < 3) {
+                    waterMotivationElement.textContent = 'Good start! Keep drinking water throughout the day.';
+                } else if (waterCount < 6) {
+                    waterMotivationElement.textContent = 'Halfway there! Your body will thank you.';
+                } else if (waterCount < 8) {
+                    waterMotivationElement.textContent = 'Almost there! Just a bit more to reach your goal.';
+                } else {
+                    waterMotivationElement.textContent = 'Great job! You've reached your daily water goal!';
+                }
+            }
+        }
+    </script>
     <script>
         /**
          * Setup share buttons on the dashboard
@@ -2823,6 +3052,22 @@
             border-bottom: 1px solid var(--divider-color);
         }
         
+        .ai-assistants-link {
+            font-size: 12px;
+            color: var(--primary-color);
+            text-decoration: none;
+            margin-right: auto;
+            margin-left: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background-color: rgba(0, 191, 165, 0.1); /* Using #00BFA5 color values */
+            transition: background-color 0.3s ease;
+        }
+        
+        .ai-assistants-link:hover {
+            background-color: rgba(0, 191, 165, 0.2); /* Using #00BFA5 color values */
+        }
+        
         .ai-modal-header h3 {
             margin: 0;
             display: flex;
@@ -3195,6 +3440,424 @@
                 height: 200px;
             }
         }
+        
+        /* Energy Metrics Styling */
+        .energy-metrics {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding: 5px 0;
+        }
+        
+        .energy-metric {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background-color: var(--background-main);
+            border-radius: 8px;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .energy-metric:nth-child(1) {
+            border-left-color: #E91E63;
+        }
+        
+        .energy-metric:nth-child(2) {
+            border-left-color: #2196F3;
+        }
+        
+        .energy-metric:nth-child(3) {
+            border-left-color: #FF9800;
+        }
+        
+        .energy-label {
+            font-weight: bold;
+            font-size: 18px;
+            min-width: 70px;
+        }
+        
+        .energy-metric:nth-child(1) .energy-label {
+            color: #E91E63;
+        }
+        
+        .energy-metric:nth-child(2) .energy-label {
+            color: #2196F3;
+        }
+        
+        .energy-metric:nth-child(3) .energy-label {
+            color: #FF9800;
+        }
+        
+        .energy-value {
+            font-size: 16px;
+            font-weight: 500;
+            flex: 1;
+            color: var(--text-primary);
+            margin-left: 10px;
+        }
+        
+        .energy-subtitle {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-left: auto;
+        }
+        
+        /* Macro Stats */
+        .macro-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: var(--background-main);
+            border-radius: 8px;
+        }
+        
+        .macro-stat {
+            text-align: center;
+        }
+        
+        .macro-stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 3px;
+        }
+        
+        .macro-stat-value {
+            font-weight: 500;
+            font-size: 14px;
+        }
+        
+        /* Enhanced Water Tracker */
+        .water-container {
+            display: flex;
+            align-items: stretch;
+            gap: 20px;
+        }
+        
+        .water-visual {
+            flex: 0 0 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .water-level-container {
+            width: 60px;
+            height: 180px;
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .water-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, #2196F3, #03A9F4);
+            border-radius: 30px;
+            transition: height 0.5s ease;
+        }
+        
+        .water-level::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+        
+        .water-goal-marker {
+            position: absolute;
+            top: 25%;
+            left: -5px;
+            right: -5px;
+            height: 2px;
+            background-color: rgba(255,255,255,0.5);
+            z-index: 2;
+        }
+        
+        .water-info {
+            text-align: center;
+        }
+        
+        .water-count {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .water-unit {
+            color: var(--text-secondary);
+        }
+        
+        .water-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .water-description {
+            margin-bottom: 15px;
+        }
+        
+        .water-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .water-fraction {
+            font-weight: 500;
+            min-width: 30px;
+        }
+        
+        .progress-bar-water {
+            background: linear-gradient(270deg, #2196F3, #03A9F4, #2196F3);
+            background-size: 200% 200%;
+            animation: progressAnimation 3s ease infinite;
+        }
+        
+        .water-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .water-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .water-btn.add {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .water-btn.remove {
+            background-color: #f1f1f1;
+            color: #666;
+        }
+        
+        .water-btn.add:hover {
+            background-color: #0d8aee;
+            transform: scale(1.05);
+        }
+        
+        .water-btn.remove:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.05);
+        }
+        
+        .water-motivation {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        @media (max-width: 600px) {
+            .water-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .water-visual {
+                flex-direction: row;
+                gap: 15px;
+            }
+            
+            .water-level-container {
+                height: 120px;
+            }
+        }
+        /* Enhanced Water Tracker */
+        .water-container {
+            display: flex;
+            align-items: stretch;
+            gap: 20px;
+        }
+        
+        .water-visual {
+            flex: 0 0 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .water-level-container {
+            width: 60px;
+            height: 180px;
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+        
+        .water-level {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(180deg, #2196F3, #03A9F4);
+            border-radius: 30px;
+            transition: height 0.5s ease;
+        }
+        
+        .water-level::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 15px;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            filter: blur(5px);
+        }
+        
+        .water-goal-marker {
+            position: absolute;
+            top: 25%;
+            left: -5px;
+            right: -5px;
+            height: 2px;
+            background-color: rgba(255,255,255,0.5);
+            z-index: 2;
+        }
+        
+        .water-info {
+            text-align: center;
+        }
+        
+        .water-count {
+            font-size: 32px;
+            font-weight: bold;
+            color: #2196F3;
+        }
+        
+        .water-unit {
+            color: var(--text-secondary);
+        }
+        
+        .water-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .water-description {
+            margin-bottom: 15px;
+        }
+        
+        .water-progress {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .water-fraction {
+            font-weight: 500;
+            min-width: 30px;
+        }
+        
+        .progress-bar-water {
+            background: linear-gradient(270deg, #2196F3, #03A9F4, #2196F3);
+            background-size: 200% 200%;
+            animation: progressAnimation 3s ease infinite;
+        }
+        
+        .water-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .water-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .water-btn.add {
+            background-color: #2196F3;
+            color: white;
+        }
+        
+        .water-btn.remove {
+            background-color: #f1f1f1;
+            color: #666;
+        }
+        
+        .water-btn.add:hover {
+            background-color: #0d8aee;
+            transform: scale(1.05);
+        }
+        
+        .water-btn.remove:hover {
+            background-color: #e0e0e0;
+            transform: scale(1.05);
+        }
+        
+        .water-motivation {
+            text-align: center;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+        
+        @media (max-width: 600px) {
+            .water-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .water-visual {
+                flex-direction: row;
+                gap: 15px;
+            }
+            
+            .water-level-container {
+                height: 120px;
+            }
+        }
     </style>
     
     <!-- Share Progress Modal -->
@@ -3230,6 +3893,7 @@
         <div class="ai-modal-content">
             <div class="ai-modal-header">
                 <h3><i class="fas fa-robot"></i> SlimEasy AI Buddy</h3>
+                <a href="ai-assistants.html" class="ai-assistants-link">View All AI Assistants</a>
                 <button class="ai-modal-close" id="aiBuddyClose">
                     <i class="fas fa-times"></i>
                 </button>
