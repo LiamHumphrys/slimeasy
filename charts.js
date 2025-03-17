@@ -3,74 +3,145 @@
  * Provides visualization charts for user progress
  */
 
-// Chart color palette based on app theme
+// Modern chart color palette based on app theme
 const chartColors = {
-    primary: '#4CAF50',
-    secondary: '#2196F3',
-    accent: '#FFC107',
-    danger: '#F44336',
-    light: 'rgba(76, 175, 80, 0.1)',
-    primaryTransparent: 'rgba(76, 175, 80, 0.2)',
-    secondaryTransparent: 'rgba(33, 150, 243, 0.2)',
-    grid: 'rgba(0, 0, 0, 0.05)',
-    text: '#666'
+    // Primary palette
+    primary: '#00BFA5',          // Teal - matches theme
+    secondary: '#2979FF',        // Blue
+    accent: '#FF6D00',           // Orange
+    danger: '#FF1744',           // Red
+    success: '#00C853',          // Green
+    
+    // Transparent versions
+    primaryTransparent: 'rgba(0, 191, 165, 0.2)',
+    secondaryTransparent: 'rgba(41, 121, 255, 0.2)',
+    accentTransparent: 'rgba(255, 109, 0, 0.2)',
+    
+    // Gradients
+    primaryGradient: ['rgba(0, 191, 165, 0.8)', 'rgba(0, 137, 123, 0.4)'],
+    secondaryGradient: ['rgba(41, 121, 255, 0.8)', 'rgba(0, 67, 202, 0.4)'],
+    accentGradient: ['rgba(255, 109, 0, 0.8)', 'rgba(245, 124, 0, 0.4)'],
+    
+    // UI elements
+    grid: 'rgba(0, 0, 0, 0.04)',
+    text: '#656565',
+    lightText: '#9E9E9E'
 };
 
-// Shared chart options
+// Shared chart options with enhanced styling
 const chartDefaults = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+        duration: 1200,
+        easing: 'easeOutQuart',
+        delay: 150
+    },
     plugins: {
         legend: {
             display: true,
             position: 'top',
+            align: 'center',
             labels: {
-                boxWidth: 12,
-                padding: 15,
+                boxWidth: 14,
+                boxHeight: 14,
+                padding: 20,
                 font: {
-                    size: 12
-                }
+                    size: 13,
+                    family: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    weight: '500'
+                },
+                usePointStyle: true,
+                pointStyle: 'circle'
             }
         },
         tooltip: {
             enabled: true,
             mode: 'index',
             intersect: false,
-            backgroundColor: 'rgba(255, 255, 255, 0.9)',
+            backgroundColor: 'rgba(255, 255, 255, 0.95)',
             titleColor: '#333',
-            bodyColor: '#666',
-            borderColor: '#ddd',
+            bodyColor: '#555',
+            borderColor: 'rgba(0, 0, 0, 0.05)',
             borderWidth: 1,
-            cornerRadius: 8,
-            boxPadding: 6,
-            usePointStyle: true
+            cornerRadius: 12,
+            boxPadding: 8,
+            usePointStyle: true,
+            titleFont: {
+                size: 14,
+                weight: '600'
+            },
+            bodyFont: {
+                size: 13,
+                weight: '400'
+            },
+            callbacks: {
+                // Make label text more readable
+                title: function(tooltipItems) {
+                    return tooltipItems[0].label;
+                }
+            },
+            padding: 12,
+            caretSize: 7
+        }
+    },
+    layout: {
+        padding: {
+            top: 10,
+            right: 16,
+            bottom: 10,
+            left: 16
         }
     },
     scales: {
         x: {
             grid: {
                 color: chartColors.grid,
-                borderColor: chartColors.grid,
-                tickColor: chartColors.grid
+                borderColor: 'transparent',
+                tickColor: 'transparent',
+                display: true,
+                drawBorder: false,
+                drawOnChartArea: true,
+                drawTicks: false
             },
             ticks: {
                 font: {
-                    size: 11
+                    size: 12,
+                    family: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    weight: '500'
                 },
-                color: chartColors.text
+                color: chartColors.text,
+                padding: 10,
+                maxRotation: 0
+            },
+            border: {
+                display: false
             }
         },
         y: {
             grid: {
                 color: chartColors.grid,
-                borderColor: chartColors.grid,
-                tickColor: chartColors.grid
+                borderColor: 'transparent',
+                tickColor: 'transparent',
+                drawBorder: false,
+                lineWidth: 1,
+                drawOnChartArea: true,
+                drawTicks: false
             },
             ticks: {
                 font: {
-                    size: 11
+                    size: 12,
+                    family: "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+                    weight: '500'
                 },
-                color: chartColors.text
+                color: chartColors.lightText,
+                padding: 10,
+                callback: function(value) {
+                    return value;
+                }
+            },
+            border: {
+                display: false
             },
             beginAtZero: true
         }
@@ -93,6 +164,9 @@ function initializeCharts(profile) {
     const calorieData = getCalorieChartData();
     const exerciseData = getExerciseChartData();
     
+    // Set chart theme based on current theme
+    updateChartTheme();
+    
     // Create charts
     createWeightChart(weightData.labels, weightData.values, weightData.trend);
     createCalorieChart(calorieData.labels, calorieData.intake, calorieData.goal);
@@ -101,6 +175,55 @@ function initializeCharts(profile) {
     // Create macro chart if function exists
     if (typeof createMacroChart === 'function') {
         createMacroChart();
+    }
+}
+
+/**
+ * Update chart theme based on the current app theme
+ */
+function updateChartTheme() {
+    // Check if dark mode is active
+    const isDarkMode = document.body.getAttribute('data-theme') === 'dark';
+    
+    // Update chart text and grid colors
+    if (isDarkMode) {
+        // Dark mode theme
+        chartColors.grid = 'rgba(255, 255, 255, 0.05)';
+        chartColors.text = '#DADADA';
+        chartColors.lightText = '#919191';
+        
+        // Update chart defaults
+        chartDefaults.plugins.tooltip.backgroundColor = 'rgba(40, 40, 40, 0.95)';
+        chartDefaults.plugins.tooltip.titleColor = '#FFFFFF';
+        chartDefaults.plugins.tooltip.bodyColor = '#DADADA';
+        chartDefaults.plugins.tooltip.borderColor = 'rgba(255, 255, 255, 0.1)';
+        
+        // Update chart insights to be readable in dark mode
+        const insights = document.querySelectorAll('.chart-insight');
+        insights.forEach(insight => {
+            insight.style.backgroundColor = 'rgba(40, 40, 40, 0.95)';
+            insight.style.color = '#DADADA';
+            insight.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        });
+    } else {
+        // Light mode theme
+        chartColors.grid = 'rgba(0, 0, 0, 0.04)';
+        chartColors.text = '#656565';
+        chartColors.lightText = '#9E9E9E';
+        
+        // Update chart defaults
+        chartDefaults.plugins.tooltip.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+        chartDefaults.plugins.tooltip.titleColor = '#333';
+        chartDefaults.plugins.tooltip.bodyColor = '#555';
+        chartDefaults.plugins.tooltip.borderColor = 'rgba(0, 0, 0, 0.05)';
+        
+        // Update chart insights for light mode
+        const insights = document.querySelectorAll('.chart-insight');
+        insights.forEach(insight => {
+            insight.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+            insight.style.color = '#555';
+            insight.style.borderColor = 'rgba(0, 0, 0, 0.05)';
+        });
     }
 }
 
@@ -311,19 +434,30 @@ function createWeightChart(labels, values, trend) {
                 {
                     label: 'Weight',
                     data: values,
-                    backgroundColor: chartColors.primaryTransparent,
+                    backgroundColor: context => {
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, 'rgba(0, 191, 165, 0.3)');
+                        gradient.addColorStop(1, 'rgba(0, 191, 165, 0.02)');
+                        return gradient;
+                    },
                     borderColor: chartColors.primary,
-                    borderWidth: 2,
-                    pointBackgroundColor: chartColors.primary,
-                    pointRadius: 4,
-                    tension: 0.1,
+                    borderWidth: 2.5,
+                    pointBackgroundColor: 'white',
+                    pointBorderColor: chartColors.primary,
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7,
+                    pointHoverBackgroundColor: 'white',
+                    pointHoverBorderColor: chartColors.primary,
+                    pointHoverBorderWidth: 3,
+                    tension: 0.3,
                     fill: true
                 },
                 {
                     label: 'Trend',
                     data: trend,
                     borderColor: chartColors.secondary,
-                    borderWidth: 2,
+                    borderWidth: 2.5,
                     borderDash: [5, 5],
                     pointRadius: 0,
                     tension: 0.4,
@@ -331,6 +465,29 @@ function createWeightChart(labels, values, trend) {
                 }
             ]
         },
+        plugins: [{
+            id: 'weightLineHighlight',
+            beforeDraw: function(chart, args, options) {
+                if (chart.tooltip._active && chart.tooltip._active.length) {
+                    const ctx = chart.ctx;
+                    const activePoint = chart.tooltip._active[0];
+                    const x = activePoint.element.x;
+                    const topY = chart.scales.y.top;
+                    const bottomY = chart.scales.y.bottom;
+                    
+                    // Draw vertical line
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.setLineDash([5, 5]);
+                    ctx.moveTo(x, topY);
+                    ctx.lineTo(x, bottomY);
+                    ctx.lineWidth = 1;
+                    ctx.strokeStyle = 'rgba(0, 0, 0, 0.1)';
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }],
         options: {
             ...chartDefaults,
             plugins: {
@@ -378,12 +535,18 @@ function createCalorieChart(labels, intake, goal) {
                 {
                     label: 'Net Calories',
                     data: intake,
-                    backgroundColor: chartColors.primaryTransparent,
-                    borderColor: chartColors.primary,
-                    borderWidth: 1,
-                    borderRadius: 4,
+                    backgroundColor: context => {
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, chartColors.primaryGradient[0]);
+                        gradient.addColorStop(1, chartColors.primaryGradient[1]);
+                        return gradient;
+                    },
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 8,
                     categoryPercentage: 0.6,
-                    barPercentage: 0.8
+                    barPercentage: 0.75,
+                    hoverBackgroundColor: chartColors.primary
                 },
                 {
                     label: 'Goal',
@@ -391,13 +554,40 @@ function createCalorieChart(labels, intake, goal) {
                     type: 'line',
                     borderColor: chartColors.accent,
                     borderWidth: 2,
-                    borderDash: [5, 5],
-                    pointStyle: 'dash',
+                    borderDash: [6, 6],
+                    pointStyle: 'rectRounded',
                     pointRadius: 0,
-                    fill: false
+                    fill: false,
+                    tension: 0.1
                 }
             ]
         },
+        plugins: [{
+            id: 'calorieBarHighlight',
+            beforeDraw: function(chart) {
+                const ctx = chart.ctx;
+                const meta = chart.getDatasetMeta(0);
+                const yScale = chart.scales.y;
+                const xScale = chart.scales.x;
+                
+                // Draw horizontal grid line at the goal value if it exists
+                if (chart.data.datasets[1] && chart.data.datasets[1].data && chart.data.datasets[1].data.length > 0) {
+                    const goalValue = chart.data.datasets[1].data[0];
+                    if (goalValue) {
+                        const yPosition = yScale.getPixelForValue(goalValue);
+                        
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.moveTo(xScale.left, yPosition);
+                        ctx.lineTo(xScale.right, yPosition);
+                        ctx.lineWidth = 2;
+                        ctx.strokeStyle = 'rgba(255, 109, 0, 0.2)';
+                        ctx.stroke();
+                        ctx.restore();
+                    }
+                }
+            }
+        }],
         options: {
             ...chartDefaults,
             scales: {
@@ -495,12 +685,18 @@ function createExerciseChart(labels, values) {
                 {
                     label: 'Calories Burned',
                     data: values,
-                    backgroundColor: chartColors.secondaryTransparent,
-                    borderColor: chartColors.secondary,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                    categoryPercentage: 0.6,
-                    barPercentage: 0.8
+                    backgroundColor: context => {
+                        const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+                        gradient.addColorStop(0, chartColors.secondaryGradient[0]);
+                        gradient.addColorStop(1, chartColors.secondaryGradient[1]);
+                        return gradient;
+                    },
+                    borderColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 8,
+                    categoryPercentage: 0.7,
+                    barPercentage: 0.75,
+                    hoverBackgroundColor: chartColors.secondary
                 }
             ]
         },
@@ -881,21 +1077,45 @@ function createMacroChart() {
             labels: ['Protein', 'Carbs', 'Fat'],
             datasets: [{
                 data: [protein, carbs, fat],
-                backgroundColor: ['#E91E63', '#2196F3', '#FF9800'],
-                borderColor: ['#C2185B', '#1976D2', '#F57C00'],
-                borderWidth: 1,
-                hoverOffset: 5
+                backgroundColor: ['#E91E63', '#2979FF', '#FF9800'],
+                borderColor: ['#FFFFFF', '#FFFFFF', '#FFFFFF'],
+                borderWidth: 3,
+                hoverOffset: 8,
+                borderRadius: 3,
+                spacing: 2,
+                hoverBorderColor: ['#C2185B', '#0D47A1', '#F57C00'],
+                hoverBorderWidth: 3
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            cutout: '70%',
+            cutout: '75%',
+            animation: {
+                animateRotate: true,
+                animateScale: true,
+                duration: 1200
+            },
             plugins: {
                 legend: {
                     display: false
                 },
                 tooltip: {
+                    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                    titleColor: '#333',
+                    bodyColor: '#555',
+                    borderColor: 'rgba(0, 0, 0, 0.05)',
+                    borderWidth: 1,
+                    cornerRadius: 12,
+                    boxPadding: 8,
+                    titleFont: {
+                        size: 14,
+                        weight: '600'
+                    },
+                    bodyFont: {
+                        size: 13,
+                        weight: '500'
+                    },
                     callbacks: {
                         label: function(context) {
                             const label = context.label || '';
@@ -932,9 +1152,355 @@ updateCharts = function(viewMode) {
     }
 };
 
+// Listen for theme changes and update charts
+document.addEventListener('themeChanged', function(e) {
+    updateChartTheme();
+    
+    // Refresh all charts with new theme
+    if (weightChart) weightChart.update();
+    if (calorieChart) calorieChart.update();
+    if (exerciseChart) exerciseChart.update();
+    if (window.macroChart) window.macroChart.update();
+});
+
+/**
+ * Add modern UI elements to chart containers
+ */
+function enhanceChartUI() {
+    // Add chart controls and insights
+    addChartControls();
+    addChartInsights();
+    
+    // Update color indicators in legend
+    updateChartLegends();
+    
+    // Add interaction
+    setupChartInteractions();
+}
+
+/**
+ * Add control buttons to chart headers
+ */
+function addChartControls() {
+    // Find chart containers
+    const weightChart = document.getElementById('weightChart');
+    const calorieChart = document.getElementById('calorieChart');
+    const exerciseChart = document.getElementById('exerciseChart');
+    
+    // Weight chart controls
+    if (weightChart) {
+        const weightContainer = weightChart.closest('.chart-container');
+        if (weightContainer) {
+            const weightCard = weightContainer.closest('.card');
+            if (weightCard) {
+                const weightHeader = weightCard.querySelector('.card-header');
+                if (weightHeader && !weightHeader.querySelector('.chart-controls')) {
+                    const controls = document.createElement('div');
+                    controls.className = 'chart-controls';
+                    controls.innerHTML = `
+                        <button class="chart-control-btn" id="weightChartZoom" title="Toggle zoom">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    `;
+                    weightHeader.appendChild(controls);
+                }
+            }
+        }
+    }
+    
+    // Calorie chart controls
+    if (calorieChart) {
+        const calorieContainer = calorieChart.closest('.chart-container');
+        if (calorieContainer) {
+            const calorieCard = calorieContainer.closest('.card');
+            if (calorieCard) {
+                const calorieHeader = calorieCard.querySelector('.card-header');
+                if (calorieHeader && !calorieHeader.querySelector('.chart-controls')) {
+                    const controls = document.createElement('div');
+                    controls.className = 'chart-controls';
+                    controls.innerHTML = `
+                        <button class="chart-control-btn" id="calorieChartView" title="Change view">
+                            <i class="fas fa-calendar-week"></i>
+                        </button>
+                    `;
+                    calorieHeader.appendChild(controls);
+                }
+            }
+        }
+    }
+    
+    // Exercise chart controls
+    if (exerciseChart) {
+        const exerciseContainer = exerciseChart.closest('.chart-container');
+        if (exerciseContainer) {
+            const exerciseCard = exerciseContainer.closest('.card');
+            if (exerciseCard) {
+                const exerciseHeader = exerciseCard.querySelector('.card-header');
+                if (exerciseHeader && !exerciseHeader.querySelector('.chart-controls')) {
+                    const controls = document.createElement('div');
+                    controls.className = 'chart-controls';
+                    controls.innerHTML = `
+                        <button class="chart-control-btn" id="exerciseChartStats" title="Show stats">
+                            <i class="fas fa-chart-pie"></i>
+                        </button>
+                    `;
+                    exerciseHeader.appendChild(controls);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Add insight elements to charts
+ */
+function addChartInsights() {
+    // Weight chart insights
+    const weightChart = document.getElementById('weightChart');
+    if (weightChart) {
+        const weightContainer = weightChart.closest('.chart-container');
+        if (weightContainer && !weightContainer.querySelector('.chart-insight')) {
+            const insight = document.createElement('div');
+            insight.className = 'chart-insight';
+            insight.id = 'weightInsight';
+            insight.innerHTML = `
+                <i class="fas fa-chart-line"></i>
+                <span>Tracking well against your goal</span>
+            `;
+            weightContainer.appendChild(insight);
+            
+            // Delayed appearance for visual effect
+            setTimeout(() => {
+                insight.style.opacity = '1';
+                insight.style.transform = 'translateY(0)';
+            }, 500);
+        }
+    }
+    
+    // Calorie chart insights
+    const calorieChart = document.getElementById('calorieChart');
+    if (calorieChart) {
+        const calorieContainer = calorieChart.closest('.chart-container');
+        if (calorieContainer && !calorieContainer.querySelector('.chart-insight')) {
+            const insight = document.createElement('div');
+            insight.className = 'chart-insight';
+            insight.id = 'calorieInsight';
+            insight.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>62% days under goal</span>
+            `;
+            calorieContainer.appendChild(insight);
+            
+            // Delayed appearance for visual effect
+            setTimeout(() => {
+                insight.style.opacity = '1';
+                insight.style.transform = 'translateY(0)';
+            }, 600);
+        }
+    }
+    
+    // Exercise chart insights
+    const exerciseChart = document.getElementById('exerciseChart');
+    if (exerciseChart) {
+        const exerciseContainer = exerciseChart.closest('.chart-container');
+        if (exerciseContainer && !exerciseContainer.querySelector('.chart-insight')) {
+            const insight = document.createElement('div');
+            insight.className = 'chart-insight warning';
+            insight.id = 'exerciseInsight';
+            insight.innerHTML = `
+                <i class="fas fa-exclamation-circle"></i>
+                <span>2 days below target</span>
+            `;
+            exerciseContainer.appendChild(insight);
+            
+            // Delayed appearance for visual effect
+            setTimeout(() => {
+                insight.style.opacity = '1';
+                insight.style.transform = 'translateY(0)';
+            }, 700);
+        }
+    }
+}
+
+/**
+ * Update chart legends with modern colors
+ */
+function updateChartLegends() {
+    // Find all legend elements
+    const legends = document.querySelectorAll('.chart-legend');
+    
+    legends.forEach(legend => {
+        const items = legend.querySelectorAll('.legend-item');
+        
+        // First, identify which chart this legend belongs to
+        const legendText = legend.textContent.toLowerCase();
+        
+        if (legendText.includes('weight') && legendText.includes('trend')) {
+            // This is the weight chart legend
+            items.forEach(item => {
+                const span = item.querySelector('span:not(.legend-color)');
+                const color = item.querySelector('.legend-color');
+                
+                if (span && color) {
+                    if (span.textContent.toLowerCase().includes('actual')) {
+                        color.style.backgroundColor = '#00BFA5';
+                    } else if (span.textContent.toLowerCase().includes('trend')) {
+                        color.style.backgroundColor = '#2979FF';
+                    }
+                }
+            });
+        } 
+        else if (legendText.includes('calories') && legendText.includes('goal')) {
+            // This is the calorie chart legend
+            items.forEach(item => {
+                const span = item.querySelector('span:not(.legend-color)');
+                const color = item.querySelector('.legend-color');
+                
+                if (span && color) {
+                    if (span.textContent.toLowerCase().includes('net')) {
+                        color.style.backgroundColor = '#00BFA5';
+                    } else if (span.textContent.toLowerCase().includes('goal')) {
+                        color.style.backgroundColor = '#FF6D00';
+                    }
+                }
+            });
+        }
+        else if (legendText.includes('calories burned')) {
+            // This is the exercise chart legend
+            items.forEach(item => {
+                const color = item.querySelector('.legend-color');
+                if (color) {
+                    color.style.backgroundColor = '#2979FF';
+                }
+            });
+        }
+    });
+}
+
+/**
+ * Setup chart interaction handlers
+ */
+function setupChartInteractions() {
+    // Weight chart zoom
+    const zoomBtn = document.getElementById('weightChartZoom');
+    if (zoomBtn) {
+        zoomBtn.addEventListener('click', () => {
+            const weightChart = document.getElementById('weightChart');
+            if (weightChart) {
+                const container = weightChart.closest('.chart-container');
+                if (container) {
+                    container.classList.toggle('chart-fullscreen');
+                    
+                    // Toggle zoom button icon
+                    const icon = zoomBtn.querySelector('i');
+                    if (icon) {
+                        icon.classList.toggle('fa-search');
+                        icon.classList.toggle('fa-compress');
+                    }
+                    
+                    // Redraw chart after transition
+                    setTimeout(() => {
+                        if (window.weightChart) window.weightChart.resize();
+                    }, 300);
+                }
+            }
+        });
+    }
+    
+    // Calorie chart view toggle
+    const viewBtn = document.getElementById('calorieChartView');
+    if (viewBtn) {
+        viewBtn.addEventListener('click', () => {
+            // Toggle between weekly and monthly view
+            const viewMode = viewBtn.getAttribute('data-view') === 'weekly' ? 'monthly' : 'weekly';
+            viewBtn.setAttribute('data-view', viewMode);
+            
+            // Toggle button icon
+            const icon = viewBtn.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-calendar-week');
+                icon.classList.toggle('fa-calendar-alt');
+            }
+            
+            // Update chart data
+            updateCharts(viewMode);
+        });
+    }
+    
+    // Exercise chart stats
+    const statsBtn = document.getElementById('exerciseChartStats');
+    if (statsBtn) {
+        statsBtn.addEventListener('click', () => {
+            // Toggle between bar chart and distribution view
+            const insight = document.getElementById('exerciseInsight');
+            
+            if (insight) {
+                insight.innerHTML = `
+                    <i class="fas fa-info-circle"></i>
+                    <span>Avg: 247 kcal/day</span>
+                `;
+                
+                // Change back after 3 seconds
+                setTimeout(() => {
+                    insight.innerHTML = `
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span>2 days below target</span>
+                    `;
+                }, 3000);
+            }
+        });
+    }
+}
+
+// Add CSS for full-screen chart mode
+function addFullscreenChartStyles() {
+    // Check if styles already exist
+    if (document.getElementById('fullscreen-chart-styles')) {
+        return;
+    }
+    
+    // Create style element
+    const style = document.createElement('style');
+    style.id = 'fullscreen-chart-styles';
+    style.textContent = `
+        .chart-fullscreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw !important;
+            height: 100vh !important;
+            z-index: 1000;
+            margin: 0;
+            padding: 40px;
+            border-radius: 0;
+            transition: all 0.3s ease;
+        }
+        
+        .chart-fullscreen::before {
+            display: none;
+        }
+    `;
+    
+    // Add to document head
+    document.head.appendChild(style);
+}
+
+// Initialize chart enhancements when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Add fullscreen chart styles
+    addFullscreenChartStyles();
+    
+    // Apply modern UI enhancements after charts are loaded
+    setTimeout(() => {
+        enhanceChartUI();
+    }, 300);
+});
+
 // Export functions to global scope
 window.initializeCharts = initializeCharts;
 window.updateCharts = updateCharts;
 window.promptWeeklyWeight = promptWeeklyWeight;
 window.getMacroData = getMacroData;
 window.createMacroChart = createMacroChart;
+window.updateChartTheme = updateChartTheme;
+window.enhanceChartUI = enhanceChartUI;
