@@ -40,6 +40,7 @@ function setTheme(themeName) {
     
     // Update document root attribute
     document.documentElement.setAttribute('data-theme', themeName);
+    document.body.setAttribute('data-theme', themeName);
     
     // Update any existing toggle button
     const existingToggle = document.querySelector('.theme-toggle');
@@ -48,6 +49,12 @@ function setTheme(themeName) {
             ? '<i class="fas fa-sun"></i>' 
             : '<i class="fas fa-moon"></i>';
     }
+    
+    // Dispatch theme change event for components to listen for
+    const themeEvent = new CustomEvent('themeChanged', { 
+        detail: { theme: themeName } 
+    });
+    document.dispatchEvent(themeEvent);
 }
 
 /**
