@@ -49,6 +49,7 @@ function getWaterCount() {
  */
 function saveToStorage(key, value) {
     try {
+        // Save to localStorage
         localStorage.setItem(key, JSON.stringify(value));
         return true;
     } catch (error) {
