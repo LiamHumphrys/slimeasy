@@ -1,6 +1,10 @@
 /**
- * SlimEasy AI Buddy
- * Enhanced personalized AI assistant that provides recommendations based on user data
+ * SlimEasy AI Coaches Suite
+ * A comprehensive AI system featuring three specialized coaches:
+ * 1. AI Buddy - Motivational coach for mindset advice and emotional support
+ * 2. AI Chef - Nutrition expert providing meal suggestions and recipe guidance
+ * 3. AI Trainer - Fitness coach offering personalized workout plans and exercise advice
+ * All coaches use state-of-the-art AI to provide personalized guidance based on user data
  */
 
 // Meal database with nutritional information
@@ -312,79 +316,611 @@ const mealDatabase = {
     ]
 };
 
-// AI Buddy conversation history with enhanced context tracking
-let conversationHistory = [];
+// Conversation history for each AI coach
+let buddyConversationHistory = []; // AI Buddy conversation history (mindset & motivation)
+let chefConversationHistory = []; // AI Chef conversation history (meals & nutrition)
+let trainerConversationHistory = []; // AI Trainer conversation history (fitness & exercise)
 
-// Flag to determine if AI Buddy should proactively suggest meals
+// Flags to determine if AI coaches should proactively suggest content
 let proactiveSuggestionEnabled = true;
 
-// Context tracking for better conversation continuity
-let conversationContext = {
-    lastMealType: null,          // Last meal type discussed (breakfast, lunch, dinner, snack)
-    lastMealSuggested: null,     // Last meal suggested to user
+// Context tracking for better conversation continuity (shared between coaches)
+let sharedContext = {
     lastCalorieTarget: null,     // Last discussed calorie target
     dietaryPreferences: [],      // User's dietary preferences inferred from conversation
-    lastTopic: null,             // Last topic of conversation (meals, exercise, progress, etc.)
-    recentQueries: [],           // List of recent user queries for context
     userFeedback: {},            // Track user likes/dislikes for better recommendations
-    currentMealTime: null        // Current meal time based on time of day
+    currentMealTime: null,       // Current meal time based on time of day
+    recentQueries: [],           // List of recent user queries for context (shared)
+    activeCoach: 'buddy',        // Current active AI coach (buddy, chef, trainer)
+};
+
+// Specialized context for AI Buddy (motivation & mindset coach)
+let buddyContext = {
+    lastTopic: null,             // Last topic of conversation (motivation, mindset, etc.)
+    motivationLevel: 'moderate', // User's current motivation level
+    challenges: [],              // User's reported challenges
+    achievements: [],            // User's reported achievements
+    moodHistory: [],             // Track user's reported mood
+    goalProgress: null,          // Progress towards goals
+    lastMotivationMessage: null, // Last motivation message provided
+    personalizedApproach: 'supportive' // Approach style (supportive, challenging, etc.)
+};
+
+// Specialized context for AI Chef (meal & nutrition coach)
+let chefContext = {
+    lastMealType: null,          // Last meal type discussed (breakfast, lunch, dinner, snack)
+    lastMealSuggested: null,     // Last meal suggested to user
+    savedRecipes: [],            // Recipes the user has saved
+    mealPlanType: 'balanced',    // User's preferred meal plan type
+    cookingSkill: 'intermediate', // User's cooking skill level
+    cookingTime: 30,             // Preferred cooking time in minutes
+    lastIngredientDiscussed: [], // Last ingredients discussed
+    cuisinePreferences: [],      // Preferred cuisines
+    mealPrepMode: 'regular',     // Meal prep mode (regular, batch, quick)
+    weeklyMealPlan: null         // Generated weekly meal plan
+};
+
+// Specialized context for AI Trainer (fitness & exercise coach)
+let trainerContext = {
+    workoutPreferences: {        // User's workout preferences
+        fitnessLevel: 'beginner', // Default to beginner
+        preferredActivities: [],  // Store preferred workout types
+        workoutDuration: 30,      // Default workout duration in minutes
+        equipmentAvailable: false, // Whether user has access to gym equipment
+        focusAreas: [],           // Body areas to focus on
+        injuryConsiderations: []  // Injuries to consider
+    },
+    lastGeneratedWorkout: null,  // Last workout plan generated
+    savedWorkouts: [],           // Workouts the user has saved
+    workoutHistory: [],          // Track completed workouts
+    fitnessGoals: [],            // User's fitness goals
+    progressMetrics: {},         // Fitness progress metrics
+    weeklyWorkoutPlan: null,     // Generated weekly workout plan
+    lastExerciseFocus: null      // Last exercise focus area
 };
 
 /**
+ * Initialize AI Coaches Hub functionality
+ */
+function initializeAICoaches() {
+    // Get UI elements for coaches selection
+    const aiCoachesBtn = document.getElementById('aiCoachesBtn');
+    const aiCoachesModal = document.getElementById('aiCoachesModal');
+    
+    // Create the AI Coaches button if it doesn't exist
+    if (!aiCoachesBtn) {
+        createAICoachesButton();
+    }
+    
+    // Create the AI Coaches modal if it doesn't exist
+    if (!aiCoachesModal) {
+        createAICoachesModal();
+    }
+    
+    // Add styles for all AI coaches
+    addAICoachesStyles();
+    
+    // Initialize all AI coach modules
+    initializeAIBuddy();
+    initializeAIChef();
+    initializeAITrainer();
+    
+    // Set up shared context based on time of day
+    setupInitialContext();
+    
+    // Check for proactive suggestions
+    if (proactiveSuggestionEnabled) {
+        checkForProactiveSuggestions();
+    }
+}
+
+/**
+ * Set up initial AI context based on user data and time of day
+ */
+function setupInitialContext() {
+    // Get current user data
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return;
+    
+    // Get profile
+    const profileKey = `profile_${currentUser.email}`;
+    const profile = getFromStorage(profileKey);
+    
+    // Load stored preferences if available
+    const preferencesKey = `ai_preferences_${currentUser.email}`;
+    const storedPreferences = getFromStorage(preferencesKey);
+    
+    if (storedPreferences) {
+        if (storedPreferences.dietaryPreferences) {
+            sharedContext.dietaryPreferences = storedPreferences.dietaryPreferences;
+        }
+        if (storedPreferences.userFeedback) {
+            sharedContext.userFeedback = storedPreferences.userFeedback;
+        }
+    }
+    
+    // Set meal time based on current time
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 11) {
+        sharedContext.currentMealTime = 'breakfast';
+    } else if (hour >= 11 && hour < 15) {
+        sharedContext.currentMealTime = 'lunch';
+    } else if (hour >= 15 && hour < 17) {
+        sharedContext.currentMealTime = 'snacks';
+    } else if (hour >= 17 && hour < 21) {
+        sharedContext.currentMealTime = 'dinner';
+    } else {
+        sharedContext.currentMealTime = 'snacks';
+    }
+    
+    // Set fitness level based on profile if available
+    if (profile && profile.activityLevel) {
+        const activityMap = {
+            'sedentary': 'beginner',
+            'light': 'beginner',
+            'moderate': 'intermediate',
+            'active': 'advanced',
+            'very_active': 'advanced'
+        };
+        trainerContext.workoutPreferences.fitnessLevel = activityMap[profile.activityLevel.toLowerCase()] || 'beginner';
+    }
+    
+    // Set cooking skill level based on number of logged meals if available
+    const foodDataKey = `planner_${currentUser.email}_foods`;
+    const foodData = getFromStorage(foodDataKey);
+    if (foodData && Array.isArray(foodData)) {
+        // Flatten the array to count total meals
+        const allMeals = foodData.flat();
+        if (allMeals.length > 30) {
+            chefContext.cookingSkill = 'advanced';
+        } else if (allMeals.length > 10) {
+            chefContext.cookingSkill = 'intermediate';
+        } else {
+            chefContext.cookingSkill = 'beginner';
+        }
+    }
+}
+
+/**
+ * Create AI Coaches Button if it doesn't exist
+ */
+function createAICoachesButton() {
+    // Check if button already exists
+    if (document.getElementById('aiCoachesBtn')) return;
+    
+    // Find a good place to add the button (usually in header or action area)
+    const navMenu = document.querySelector('.nav-menu') || document.querySelector('.action-buttons') || document.querySelector('header');
+    
+    if (navMenu) {
+        // Create the button
+        const aiCoachesBtn = document.createElement('button');
+        aiCoachesBtn.id = 'aiCoachesBtn';
+        aiCoachesBtn.className = 'action-button ai-coaches-btn';
+        aiCoachesBtn.innerHTML = '<i class="fas fa-robot"></i> AI Coaches';
+        
+        // Add to the navigation menu
+        navMenu.appendChild(aiCoachesBtn);
+        
+        // Add event listener to open coaches selection modal
+        aiCoachesBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const aiCoachesModal = document.getElementById('aiCoachesModal');
+            if (aiCoachesModal) {
+                aiCoachesModal.classList.add('show');
+            }
+        });
+    }
+}
+
+/**
+ * Create AI Coaches Selection Modal
+ */
+function createAICoachesModal() {
+    // Check if modal already exists
+    if (document.getElementById('aiCoachesModal')) return;
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'aiCoachesModal';
+    modal.className = 'modal ai-coaches-modal';
+    
+    // Create modal content
+    modal.innerHTML = `
+        <div class="modal-content ai-coaches-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-robot"></i> AI Coaches</h2>
+                <button id="aiCoachesClose" class="close-btn">&times;</button>
+            </div>
+            <div class="coaches-selection">
+                <div class="coach-card" id="aiBuddyCard">
+                    <div class="coach-icon"><i class="fas fa-heart"></i></div>
+                    <h3>AI Buddy</h3>
+                    <p>Your motivational coach who provides mindset advice and emotional support based on your data.</p>
+                    <button class="coach-select-btn" id="selectAIBuddy">Chat with AI Buddy</button>
+                </div>
+                <div class="coach-card" id="aiChefCard">
+                    <div class="coach-icon"><i class="fas fa-utensils"></i></div>
+                    <h3>AI Chef</h3>
+                    <p>Get personalized meal ideas and recipes tailored to your preferences and nutritional goals.</p>
+                    <button class="coach-select-btn" id="selectAIChef">Chat with AI Chef</button>
+                </div>
+                <div class="coach-card" id="aiTrainerCard">
+                    <div class="coach-icon"><i class="fas fa-dumbbell"></i></div>
+                    <h3>AI Trainer</h3>
+                    <p>Receive customized workout plans and fitness advice based on your goals and activity level.</p>
+                    <button class="coach-select-btn" id="selectAITrainer">Chat with AI Trainer</button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.appendChild(modal);
+    
+    // Set up event listeners
+    setupAICoachesModalEvents();
+    
+    // Add styles for the coaches modal
+    addAICoachesStyles();
+}
+
+/**
+ * Set up event listeners for AI Coaches modal
+ */
+function setupAICoachesModalEvents() {
+    const aiCoachesModal = document.getElementById('aiCoachesModal');
+    const aiCoachesClose = document.getElementById('aiCoachesClose');
+    
+    // Close button event
+    if (aiCoachesClose) {
+        aiCoachesClose.addEventListener('click', function() {
+            aiCoachesModal.classList.remove('show');
+        });
+    }
+    
+    // Close when clicking outside the modal content
+    aiCoachesModal.addEventListener('click', function(e) {
+        if (e.target === aiCoachesModal) {
+            aiCoachesModal.classList.remove('show');
+        }
+    });
+    
+    // Coach selection buttons
+    const selectAIBuddy = document.getElementById('selectAIBuddy');
+    const selectAIChef = document.getElementById('selectAIChef');
+    const selectAITrainer = document.getElementById('selectAITrainer');
+    
+    // AI Buddy selection
+    if (selectAIBuddy) {
+        selectAIBuddy.addEventListener('click', function() {
+            // Hide coaches modal
+            aiCoachesModal.classList.remove('show');
+            
+            // Show AI Buddy modal
+            const aiBuddyModal = document.getElementById('aiBuddyModal');
+            if (aiBuddyModal) {
+                aiBuddyModal.classList.add('show');
+                
+                // Reset conversation context for Buddy mode
+                conversationContext.activeCoach = 'buddy';
+                
+                // Focus the input
+                const aiMessageInput = document.getElementById('aiMessageInput');
+                if (aiMessageInput) aiMessageInput.focus();
+                
+                // Show initial greeting if chat is empty
+                const aiChatMessages = document.getElementById('aiChatMessages');
+                if (aiChatMessages && aiChatMessages.children.length === 0) {
+                    const greeting = generatePersonalizedGreeting();
+                    addMessageToChat('buddy', greeting);
+                    conversationHistory.push({ role: 'buddy', message: greeting });
+                }
+            }
+        });
+    }
+    
+    // AI Chef selection
+    if (selectAIChef) {
+        selectAIChef.addEventListener('click', function() {
+            // Hide coaches modal
+            aiCoachesModal.classList.remove('show');
+            
+            // Show AI Chef modal
+            const aiChefModal = document.getElementById('aiChefModal');
+            if (aiChefModal) {
+                aiChefModal.classList.add('show');
+                
+                // Reset conversation context for Chef mode
+                conversationContext.activeCoach = 'chef';
+                
+                // Focus the input
+                const aiChefMessageInput = document.getElementById('aiChefMessageInput');
+                if (aiChefMessageInput) aiChefMessageInput.focus();
+                
+                // Show initial chef greeting if chat is empty
+                const aiChefChatMessages = document.getElementById('aiChefChatMessages');
+                if (aiChefChatMessages && aiChefChatMessages.children.length === 0) {
+                    const greeting = generateChefGreeting();
+                    addMessageToChefChat('chef', greeting);
+                    chefConversationHistory.push({ role: 'chef', message: greeting });
+                }
+            }
+        });
+    }
+    
+    // AI Trainer selection
+    if (selectAITrainer) {
+        selectAITrainer.addEventListener('click', function() {
+            // Hide coaches modal
+            aiCoachesModal.classList.remove('show');
+            
+            // Show AI Trainer modal
+            const aiTrainerModal = document.getElementById('aiTrainerModal');
+            if (aiTrainerModal) {
+                aiTrainerModal.classList.add('show');
+                
+                // Reset conversation context for Trainer mode
+                conversationContext.activeCoach = 'trainer';
+                
+                // Focus the input
+                const aiTrainerMessageInput = document.getElementById('aiTrainerMessageInput');
+                if (aiTrainerMessageInput) aiTrainerMessageInput.focus();
+                
+                // Show initial trainer greeting if chat is empty
+                const aiTrainerChatMessages = document.getElementById('aiTrainerChatMessages');
+                if (aiTrainerChatMessages && aiTrainerChatMessages.children.length === 0) {
+                    const greeting = generateTrainerGreeting();
+                    addMessageToTrainerChat('trainer', greeting);
+                    trainerConversationHistory.push({ role: 'trainer', message: greeting });
+                }
+            }
+        });
+    }
+}
+
+/**
+ * Add styles for AI Coaches interface
+ */
+function addAICoachesStyles() {
+    // Create style element if it doesn't exist
+    let styleEl = document.getElementById('ai-coaches-styles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'ai-coaches-styles';
+        document.head.appendChild(styleEl);
+    }
+    
+    // Add CSS rules
+    styleEl.textContent = `
+        /* AI Coaches Button */
+        .ai-coaches-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .ai-coaches-btn:hover {
+            background-color: var(--primary-dark, #388E3C);
+        }
+        
+        /* AI Assistants Link */
+        .ai-assistants-link {
+            font-size: 12px;
+            color: var(--primary-color, #4CAF50);
+            text-decoration: none;
+            margin-right: auto;
+            margin-left: 15px;
+            padding: 5px 10px;
+            border-radius: 15px;
+            background-color: rgba(0, 191, 165, 0.1);
+            transition: background-color 0.3s ease;
+        }
+        
+        .ai-assistants-link:hover {
+            background-color: rgba(0, 191, 165, 0.2);
+        }
+        
+        /* AI Coaches Modal */
+        .ai-coaches-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            animation: fadeIn 0.3s;
+        }
+        
+        .ai-coaches-modal.show {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .ai-coaches-content {
+            background-color: white;
+            margin: auto;
+            width: 90%;
+            max-width: 1000px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            animation: slideUp 0.3s;
+        }
+        
+        .coaches-selection {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+        
+        .coach-card {
+            flex: 1;
+            min-width: 280px;
+            max-width: 320px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .coach-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+            border-color: var(--primary-color, #4CAF50);
+        }
+        
+        .coach-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            margin: 0 auto 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+        }
+        
+        #aiBuddyCard .coach-icon {
+            background-color: #FF5722;
+        }
+        
+        #aiChefCard .coach-icon {
+            background-color: #2196F3;
+        }
+        
+        #aiTrainerCard .coach-icon {
+            background-color: #9C27B0;
+        }
+        
+        .coach-card h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .coach-card p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .coach-select-btn {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #aiBuddyCard .coach-select-btn {
+            background-color: #FF5722;
+        }
+        
+        #aiChefCard .coach-select-btn {
+            background-color: #2196F3;
+        }
+        
+        #aiTrainerCard .coach-select-btn {
+            background-color: #9C27B0;
+        }
+        
+        .coach-select-btn:hover {
+            filter: brightness(1.1);
+            transform: scale(1.05);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .coaches-selection {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .coach-card {
+                max-width: 100%;
+            }
+        }
+    `;
+}
+
+/**
  * Initialize AI Buddy functionality
+ */
+/**
+ * Initialize AI Buddy - Motivational Coach
+ * Focuses on mindset, motivation, and emotional support
  */
 function initializeAIBuddy() {
     // Get UI elements
     const aiBuddyBtn = document.getElementById('aiBuddyBtn');
     const aiBuddyModal = document.getElementById('aiBuddyModal');
+    
+    // If AI Buddy modal doesn't exist, create it
+    if (!aiBuddyModal) {
+        createAIBuddyModal();
+    }
+    
+    // Get the updated elements
     const aiBuddyClose = document.getElementById('aiBuddyClose');
     const aiMessageInput = document.getElementById('aiMessageInput');
     const aiSendBtn = document.getElementById('aiSendBtn');
     const aiChatMessages = document.getElementById('aiChatMessages');
     const aiTyping = document.getElementById('aiTyping');
     
-    // If key elements missing, exit
-    if (!aiBuddyBtn || !aiBuddyModal) return;
+    // If key elements still missing after creation, exit
+    if (!aiBuddyModal || !aiMessageInput || !aiSendBtn) return;
     
-    // Open AI Buddy modal
-    aiBuddyBtn.addEventListener('click', function(e) {
-        e.preventDefault();
-        aiBuddyModal.classList.add('show');
-        aiMessageInput.focus();
-        
-        // Generate personalized AI suggestions
-        generatePersonalizedSuggestions();
-        
-        // Show an initial personalized greeting if the chat is empty
-        if (aiChatMessages && aiChatMessages.children.length === 0) {
-            const greeting = generatePersonalizedGreeting();
-            addMessageToChat('buddy', greeting);
-            // Add to conversation history
-            conversationHistory.push({ role: 'buddy', message: greeting });
+    // Keep original AI Buddy button functionality if it exists
+    if (aiBuddyBtn) {
+        aiBuddyBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            aiBuddyModal.classList.add('show');
+            aiMessageInput.focus();
             
-            // Initialize current meal time in context based on time of day
-            const hour = new Date().getHours();
-            if (hour >= 5 && hour < 11) {
-                conversationContext.currentMealTime = 'breakfast';
-                conversationContext.lastMealType = 'breakfast';
-            } else if (hour >= 11 && hour < 15) {
-                conversationContext.currentMealTime = 'lunch';
-                conversationContext.lastMealType = 'lunch';
-            } else if (hour >= 15 && hour < 17) {
-                conversationContext.currentMealTime = 'snacks';
-                conversationContext.lastMealType = 'snacks';
-            } else if (hour >= 17 && hour < 21) {
-                conversationContext.currentMealTime = 'dinner';
-                conversationContext.lastMealType = 'dinner';
-            } else {
-                conversationContext.currentMealTime = 'snacks';
-                conversationContext.lastMealType = 'snacks';
+            // Show an initial personalized greeting if the chat is empty
+            if (aiChatMessages && aiChatMessages.children.length === 0) {
+                const greeting = generateBuddyGreeting();
+                addMessageToChat('buddy', greeting);
+                // Add to conversation history
+                buddyConversationHistory.push({ role: 'buddy', message: greeting });
+                
+                // Set active coach
+                sharedContext.activeCoach = 'buddy';
             }
-            
-            // Set initial topic
-            conversationContext.lastTopic = 'meals';
-        }
-    });
+        });
+    }
     
     // Enable AI Buddy notification badge
     setupAIBuddyBadge();
@@ -401,23 +937,23 @@ function initializeAIBuddy() {
         }
     });
     
-    // Add quick suggestion buttons if they don't exist
-    if (aiChatMessages && !document.getElementById('quickSuggestions')) {
+    // Add quick suggestion buttons tailored for motivational coach
+    if (aiChatMessages && !document.getElementById('buddyQuickSuggestions')) {
         const suggestionsContainer = document.createElement('div');
-        suggestionsContainer.id = 'quickSuggestions';
+        suggestionsContainer.id = 'buddyQuickSuggestions';
         suggestionsContainer.className = 'quick-suggestions';
         
-        // Create suggestion buttons
+        // Create suggestion buttons specific to motivation coach
         const suggestions = [
-            { text: "Meal ideas", action: () => handleQuickSuggestion("Show me some meal ideas") },
-            { text: "Exercise tips", action: () => handleQuickSuggestion("Give me exercise suggestions") },
-            { text: "My progress", action: () => handleQuickSuggestion("How is my progress going?") },
-            { text: "Motivation", action: () => handleQuickSuggestion("I need some motivation") }
+            { text: "Need motivation", action: () => handleBuddyQuickSuggestion("I need some motivation today") },
+            { text: "Feeling stuck", action: () => handleBuddyQuickSuggestion("I'm feeling stuck with my progress") },
+            { text: "Celebrate wins", action: () => handleBuddyQuickSuggestion("Help me celebrate my achievements") },
+            { text: "Overcome cravings", action: () => handleBuddyQuickSuggestion("I'm struggling with cravings") }
         ];
         
         suggestions.forEach(suggestion => {
             const button = document.createElement('button');
-            button.className = 'quick-suggestion-btn';
+            button.className = 'quick-suggestion-btn buddy-suggestion-btn';
             button.textContent = suggestion.text;
             button.addEventListener('click', suggestion.action);
             suggestionsContainer.appendChild(button);
@@ -432,36 +968,340 @@ function initializeAIBuddy() {
     }
     
     // Send message on button click
-    aiSendBtn.addEventListener('click', sendAIMessage);
+    aiSendBtn.addEventListener('click', () => sendBuddyMessage());
     
     // Send message on Enter key
     aiMessageInput.addEventListener('keydown', function(e) {
         if (e.key === 'Enter') {
-            sendAIMessage();
+            sendBuddyMessage();
         }
     });
     
     // Add voice input button if supported by browser
     if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        addVoiceInputButton();
+        addVoiceInputButton(aiMessageInput, sendBuddyMessage);
     }
     
-    // Load user preferences from storage
-    loadUserPreferences();
-    
-    // Check if we should trigger proactive meal suggestions
-    checkForProactiveSuggestions();
+    // Add AI Buddy specific styles
+    addAIBuddyStyles();
 }
 
 /**
- * Handle quick suggestion button click
+ * Initialize AI Chef - Nutrition Coach
+ * Focuses on meal planning, recipes, and nutrition advice
+ */
+function initializeAIChef() {
+    // Create AI Chef modal if it doesn't exist
+    if (!document.getElementById('aiChefModal')) {
+        createAIChefModal();
+    }
+    
+    // Get the updated elements
+    const aiChefModal = document.getElementById('aiChefModal');
+    const aiChefClose = document.getElementById('aiChefClose');
+    const aiChefMessageInput = document.getElementById('aiChefMessageInput');
+    const aiChefSendBtn = document.getElementById('aiChefSendBtn');
+    const aiChefChatMessages = document.getElementById('aiChefChatMessages');
+    
+    // If key elements still missing after creation, exit
+    if (!aiChefModal || !aiChefMessageInput || !aiChefSendBtn) return;
+    
+    // Close AI Chef modal
+    aiChefClose.addEventListener('click', function() {
+        aiChefModal.classList.remove('show');
+    });
+    
+    // Close when clicking outside the modal content
+    aiChefModal.addEventListener('click', function(e) {
+        if (e.target === aiChefModal) {
+            aiChefModal.classList.remove('show');
+        }
+    });
+    
+    // Add quick suggestion buttons tailored for meal suggestions
+    if (aiChefChatMessages && !document.getElementById('chefQuickSuggestions')) {
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'chefQuickSuggestions';
+        suggestionsContainer.className = 'quick-suggestions';
+        
+        // Create suggestion buttons specific to meal planning
+        const suggestions = [
+            { text: "Breakfast ideas", action: () => handleChefQuickSuggestion("Suggest healthy breakfast ideas") },
+            { text: "Quick meals", action: () => handleChefQuickSuggestion("I need quick meal ideas under 15 minutes") },
+            { text: "Weekly meal plan", action: () => handleChefQuickSuggestion("Create a weekly meal plan for me") },
+            { text: "High protein", action: () => handleChefQuickSuggestion("Suggest high protein meals") }
+        ];
+        
+        suggestions.forEach(suggestion => {
+            const button = document.createElement('button');
+            button.className = 'quick-suggestion-btn chef-suggestion-btn';
+            button.textContent = suggestion.text;
+            button.addEventListener('click', suggestion.action);
+            suggestionsContainer.appendChild(button);
+        });
+        
+        // Insert before the message input
+        const chatContainer = document.querySelector('.ai-chef-container');
+        if (chatContainer) {
+            const inputContainer = document.querySelector('.ai-chef-input-container');
+            chatContainer.insertBefore(suggestionsContainer, inputContainer);
+        }
+    }
+    
+    // Send message on button click
+    aiChefSendBtn.addEventListener('click', () => sendChefMessage());
+    
+    // Send message on Enter key
+    aiChefMessageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            sendChefMessage();
+        }
+    });
+    
+    // Add voice input button if supported by browser
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        addVoiceInputButton(aiChefMessageInput, sendChefMessage, 'aiChefVoiceBtn');
+    }
+    
+    // Add AI Chef specific styles
+    addAIChefStyles();
+}
+
+/**
+ * Initialize AI Trainer - Fitness Coach
+ * Focuses on workout planning, exercise guidance, and fitness progress
+ */
+function initializeAITrainer() {
+    // Create AI Trainer modal if it doesn't exist
+    if (!document.getElementById('aiTrainerModal')) {
+        createAITrainerModal();
+    }
+    
+    // Get the updated elements
+    const aiTrainerModal = document.getElementById('aiTrainerModal');
+    const aiTrainerClose = document.getElementById('aiTrainerClose');
+    const aiTrainerMessageInput = document.getElementById('aiTrainerMessageInput');
+    const aiTrainerSendBtn = document.getElementById('aiTrainerSendBtn');
+    const aiTrainerChatMessages = document.getElementById('aiTrainerChatMessages');
+    
+    // If key elements still missing after creation, exit
+    if (!aiTrainerModal || !aiTrainerMessageInput || !aiTrainerSendBtn) return;
+    
+    // Close AI Trainer modal
+    aiTrainerClose.addEventListener('click', function() {
+        aiTrainerModal.classList.remove('show');
+    });
+    
+    // Close when clicking outside the modal content
+    aiTrainerModal.addEventListener('click', function(e) {
+        if (e.target === aiTrainerModal) {
+            aiTrainerModal.classList.remove('show');
+        }
+    });
+    
+    // Add quick suggestion buttons tailored for fitness
+    if (aiTrainerChatMessages && !document.getElementById('trainerQuickSuggestions')) {
+        const suggestionsContainer = document.createElement('div');
+        suggestionsContainer.id = 'trainerQuickSuggestions';
+        suggestionsContainer.className = 'quick-suggestions';
+        
+        // Create suggestion buttons specific to fitness coaching
+        const suggestions = [
+            { text: "Quick workout", action: () => handleTrainerQuickSuggestion("Give me a quick 15-minute workout") },
+            { text: "Weekly plan", action: () => handleTrainerQuickSuggestion("Create a weekly workout plan for me") },
+            { text: "No equipment", action: () => handleTrainerQuickSuggestion("Suggest exercises I can do without equipment") },
+            { text: "Track progress", action: () => handleTrainerQuickSuggestion("How should I track my fitness progress?") }
+        ];
+        
+        suggestions.forEach(suggestion => {
+            const button = document.createElement('button');
+            button.className = 'quick-suggestion-btn trainer-suggestion-btn';
+            button.textContent = suggestion.text;
+            button.addEventListener('click', suggestion.action);
+            suggestionsContainer.appendChild(button);
+        });
+        
+        // Insert before the message input
+        const chatContainer = document.querySelector('.ai-trainer-container');
+        if (chatContainer) {
+            const inputContainer = document.querySelector('.ai-trainer-input-container');
+            chatContainer.insertBefore(suggestionsContainer, inputContainer);
+        }
+    }
+    
+    // Send message on button click
+    aiTrainerSendBtn.addEventListener('click', () => sendTrainerMessage());
+    
+    // Send message on Enter key
+    aiTrainerMessageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            sendTrainerMessage();
+        }
+    });
+    
+    // Add voice input button if supported by browser
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        addVoiceInputButton(aiTrainerMessageInput, sendTrainerMessage, 'aiTrainerVoiceBtn');
+    }
+    
+    // Add AI Trainer specific styles
+    addAITrainerStyles();
+}
+
+/**
+ * Create AI Buddy Modal (Mindset & Motivation Coach)
+ */
+function createAIBuddyModal() {
+    // Check if modal already exists
+    if (document.getElementById('aiBuddyModal')) return;
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'aiBuddyModal';
+    modal.className = 'modal ai-buddy-modal';
+    
+    // Create modal content with updated header
+    modal.innerHTML = `
+        <div class="modal-content ai-chat-content buddy-theme">
+            <div class="modal-header buddy-header">
+                <h2><i class="fas fa-heart"></i> AI Buddy - Motivation Coach</h2>
+                <div class="coach-subtitle">Mindset advice & emotional support</div>
+                <a href="ai-assistants.html" class="ai-assistants-link">View All AI Assistants</a>
+                <button id="aiBuddyClose" class="close-btn">&times;</button>
+            </div>
+            <div class="ai-chat-container">
+                <div id="aiChatMessages" class="ai-chat-messages"></div>
+                <div id="aiTyping" class="ai-typing">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+                <div class="ai-input-container">
+                    <input type="text" id="aiMessageInput" class="ai-message-input" 
+                        placeholder="Ask about motivation, mindset, or emotional support...">
+                    <button id="aiSendBtn" class="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.appendChild(modal);
+}
+
+/**
+ * Create AI Chef Modal (Nutrition & Meal Coach)
+ */
+function createAIChefModal() {
+    // Check if modal already exists
+    if (document.getElementById('aiChefModal')) return;
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'aiChefModal';
+    modal.className = 'modal ai-chef-modal';
+    
+    // Create modal content
+    modal.innerHTML = `
+        <div class="modal-content ai-chat-content chef-theme">
+            <div class="modal-header chef-header">
+                <h2><i class="fas fa-utensils"></i> AI Chef - Nutrition Coach</h2>
+                <div class="coach-subtitle">Meal plans, recipes & nutrition advice</div>
+                <button id="aiChefClose" class="close-btn">&times;</button>
+            </div>
+            <div class="ai-chat-container ai-chef-container">
+                <div id="aiChefChatMessages" class="ai-chat-messages"></div>
+                <div id="aiChefTyping" class="ai-typing">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+                <div class="ai-input-container ai-chef-input-container">
+                    <input type="text" id="aiChefMessageInput" class="ai-message-input" 
+                        placeholder="Ask about recipes, meal plans, or nutrition...">
+                    <button id="aiChefSendBtn" class="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.appendChild(modal);
+}
+
+/**
+ * Create AI Trainer Modal (Fitness & Exercise Coach)
+ */
+function createAITrainerModal() {
+    // Check if modal already exists
+    if (document.getElementById('aiTrainerModal')) return;
+    
+    // Create modal container
+    const modal = document.createElement('div');
+    modal.id = 'aiTrainerModal';
+    modal.className = 'modal ai-trainer-modal';
+    
+    // Create modal content
+    modal.innerHTML = `
+        <div class="modal-content ai-chat-content trainer-theme">
+            <div class="modal-header trainer-header">
+                <h2><i class="fas fa-dumbbell"></i> AI Trainer - Fitness Coach</h2>
+                <div class="coach-subtitle">Workout plans & exercise guidance</div>
+                <button id="aiTrainerClose" class="close-btn">&times;</button>
+            </div>
+            <div class="ai-chat-container ai-trainer-container">
+                <div id="aiTrainerChatMessages" class="ai-chat-messages"></div>
+                <div id="aiTrainerTyping" class="ai-typing">
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                    <span class="typing-dot"></span>
+                </div>
+                <div class="ai-input-container ai-trainer-input-container">
+                    <input type="text" id="aiTrainerMessageInput" class="ai-message-input" 
+                        placeholder="Ask about workouts, exercises, or fitness plans...">
+                    <button id="aiTrainerSendBtn" class="ai-send-btn"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to body
+    document.body.appendChild(modal);
+}
+
+/**
+ * Handle quick suggestion button click for AI Buddy
  * @param {string} text - Suggestion text
  */
-function handleQuickSuggestion(text) {
+function handleBuddyQuickSuggestion(text) {
     const aiMessageInput = document.getElementById('aiMessageInput');
     if (aiMessageInput) {
         aiMessageInput.value = text;
-        sendAIMessage();
+        sendBuddyMessage();
+    }
+}
+
+/**
+ * Handle quick suggestion button click for AI Chef
+ * @param {string} text - Suggestion text
+ */
+function handleChefQuickSuggestion(text) {
+    const aiChefMessageInput = document.getElementById('aiChefMessageInput');
+    if (aiChefMessageInput) {
+        aiChefMessageInput.value = text;
+        sendChefMessage();
+    }
+}
+
+/**
+ * Handle quick suggestion button click for AI Trainer
+ * @param {string} text - Suggestion text
+ */
+function handleTrainerQuickSuggestion(text) {
+    const aiTrainerMessageInput = document.getElementById('aiTrainerMessageInput');
+    if (aiTrainerMessageInput) {
+        aiTrainerMessageInput.value = text;
+        sendTrainerMessage();
     }
 }
 
@@ -2601,6 +3441,1044 @@ function generatePersonalizedGreeting() {
     return personalizedGreeting;
 }
 
+/**
+ * Generate AI Buddy (Motivation Coach) response
+ * @param {string} message - User message
+ * @returns {string} AI Buddy response focused on motivation and mindset
+ */
+function generateBuddyResponse(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Extract user's current emotional/motivational state from message
+    if (lowerMessage.includes('motivat') || lowerMessage.includes('inspire')) {
+        buddyContext.lastTopic = 'motivation';
+        return generateMotivationMessage();
+    }
+    
+    if (lowerMessage.includes('stuck') || lowerMessage.includes('plateau') || 
+        lowerMessage.includes('not working') || lowerMessage.includes('giving up')) {
+        buddyContext.lastTopic = 'plateau';
+        
+        // Customized response for plateaus and feeling stuck
+        return "It's completely normal to hit plateaus in your wellness journey. Remember that progress isn't always linear, and your body is constantly adapting. Here are a few strategies that might help:\n\n" +
+               "1. Revisit your 'why' - reconnect with your deeper motivation\n" +
+               "2. Change one variable in your routine to create a new stimulus\n" +
+               "3. Celebrate non-scale victories like improved energy or better sleep\n" +
+               "4. Consider a short maintenance break to reset mentally\n\n" +
+               "Remember, consistency over time is what creates lasting change. You've already shown tremendous strength by getting this far!";
+    }
+    
+    if (lowerMessage.includes('craving') || lowerMessage.includes('temptation') ||
+        lowerMessage.includes('cheat') || lowerMessage.includes('slip up')) {
+        buddyContext.lastTopic = 'cravings';
+        
+        // Customized response for dealing with cravings
+        return "Cravings can be challenging, but they're also a normal part of changing your habits. Here are some effective strategies to handle them:\n\n" +
+               "1. The 10-minute rule: Wait 10 minutes before giving in - cravings often pass\n" +
+               "2. Distraction: Engage in a quick activity that shifts your focus\n" +
+               "3. Substitution: Find healthier alternatives that satisfy similar tastes\n" +
+               "4. Mindfulness: Notice the craving without judgment, then let it pass\n\n" +
+               "Remember, occasional indulgences can be part of a sustainable approach. The key is finding balance that works for you long-term.";
+    }
+    
+    if (lowerMessage.includes('celebrate') || lowerMessage.includes('proud') ||
+        lowerMessage.includes('achievement') || lowerMessage.includes('milestone')) {
+        buddyContext.lastTopic = 'celebration';
+        
+        // Customized response for celebrating achievements
+        return "Celebrating your wins - both big and small - is so important! Taking time to acknowledge your progress reinforces positive behaviors and boosts motivation.\n\n" +
+               "Some meaningful ways to celebrate include:\n" +
+               "• Journal about your progress and how far you've come\n" +
+               "• Share your achievement with a supportive friend\n" +
+               "• Treat yourself to something special (non-food related)\n" +
+               "• Take a moment for simple gratitude\n\n" +
+               "What specific achievement are you proud of right now? I'd love to celebrate with you!";
+    }
+    
+    // Default motivation if no specific trigger found
+    return generateMotivationMessage();
+}
+
+/**
+ * Generate AI Chef (Nutrition Coach) response
+ * @param {string} message - User message
+ * @returns {string} AI Chef response focused on meals and nutrition
+ */
+function generateChefResponse(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Handle meal type specific requests
+    if (lowerMessage.includes('breakfast') || 
+        (lowerMessage.includes('morning') && lowerMessage.includes('meal'))) {
+        chefContext.lastMealType = 'breakfast';
+        
+        // Get calorie info
+        const caloriesInfo = getCurrentCaloriesInfo();
+        // Estimate breakfast calories (typically 25-30% of daily calories)
+        const breakfastCalories = Math.round(caloriesInfo.goal * 0.25);
+        
+        return generateMealSuggestion('breakfast', breakfastCalories);
+    }
+    
+    if (lowerMessage.includes('lunch') || 
+        (lowerMessage.includes('midday') && lowerMessage.includes('meal'))) {
+        chefContext.lastMealType = 'lunch';
+        
+        // Get calorie info
+        const caloriesInfo = getCurrentCaloriesInfo();
+        // Estimate lunch calories (typically 30-35% of daily calories)
+        const lunchCalories = Math.round(caloriesInfo.goal * 0.3);
+        
+        return generateMealSuggestion('lunch', lunchCalories);
+    }
+    
+    if (lowerMessage.includes('dinner') || lowerMessage.includes('supper') ||
+        (lowerMessage.includes('evening') && lowerMessage.includes('meal'))) {
+        chefContext.lastMealType = 'dinner';
+        
+        // Get calorie info
+        const caloriesInfo = getCurrentCaloriesInfo();
+        // Estimate dinner calories (typically 30-35% of daily calories)
+        const dinnerCalories = Math.round(caloriesInfo.goal * 0.3);
+        
+        return generateMealSuggestion('dinner', dinnerCalories);
+    }
+    
+    if (lowerMessage.includes('snack')) {
+        chefContext.lastMealType = 'snacks';
+        
+        // Get calorie info
+        const caloriesInfo = getCurrentCaloriesInfo();
+        // Estimate snack calories (typically 10-15% of daily calories)
+        const snackCalories = Math.round(caloriesInfo.goal * 0.1);
+        
+        return generateMealSuggestion('snacks', snackCalories);
+    }
+    
+    // Handle meal plan requests
+    if (lowerMessage.includes('meal plan') || 
+        (lowerMessage.includes('plan') && lowerMessage.includes('week'))) {
+        
+        return "I'd be happy to create a personalized weekly meal plan for you! I'll customize it based on your calorie targets, preferences, and nutritional needs.\n\n" +
+               "To create the most effective plan, I should consider:\n" +
+               "• Your daily calorie target\n" +
+               "• Any dietary preferences or restrictions\n" +
+               "• How much time you have for meal prep\n" +
+               "• Any specific cuisines you enjoy\n\n" +
+               "Would you like me to generate a complete 7-day meal plan with breakfast, lunch, dinner and snacks?";
+    }
+    
+    // Handle high protein meal requests
+    if (lowerMessage.includes('protein') || lowerMessage.includes('muscle')) {
+        let mealType = 'dinner'; // Default to dinner for protein-focused meals
+        
+        // Detect if specific meal type mentioned
+        if (lowerMessage.includes('breakfast')) mealType = 'breakfast';
+        if (lowerMessage.includes('lunch')) mealType = 'lunch';
+        
+        // Get high-protein options
+        const highProteinMeals = mealDatabase[mealType].filter(meal => meal.protein > 20);
+        
+        if (highProteinMeals.length > 0) {
+            const meal = highProteinMeals[Math.floor(Math.random() * highProteinMeals.length)];
+            
+            let response = `${meal.name}: ${meal.ingredients.join(', ')}. (~${meal.calories} calories)\n\n`;
+            response += `Nutrition info: ${meal.protein}g protein, ${meal.carbs}g carbs, ${meal.fat}g fat, ${meal.fiber}g fiber\n\n`;
+            response += `This high-protein option provides ${meal.protein}g of protein to support muscle maintenance and recovery. Protein-rich meals can help with satiety and stabilizing blood sugar levels.`;
+            
+            return response;
+        }
+    }
+    
+    // Default to current meal time suggestion if no specific request
+    const hourOfDay = new Date().getHours();
+    let mealTypeByTime = 'snacks';
+    
+    if (hourOfDay >= 5 && hourOfDay < 10) {
+        mealTypeByTime = 'breakfast';
+    } else if (hourOfDay >= 10 && hourOfDay < 14) {
+        mealTypeByTime = 'lunch';
+    } else if (hourOfDay >= 16 && hourOfDay < 20) {
+        mealTypeByTime = 'dinner';
+    }
+    
+    const caloriesInfo = getCurrentCaloriesInfo();
+    const caloriesPerMeal = {
+        breakfast: Math.round(caloriesInfo.goal * 0.25),
+        lunch: Math.round(caloriesInfo.goal * 0.3),
+        dinner: Math.round(caloriesInfo.goal * 0.3),
+        snacks: Math.round(caloriesInfo.goal * 0.15)
+    };
+    
+    return generateMealSuggestion(mealTypeByTime, caloriesPerMeal[mealTypeByTime]);
+}
+
+/**
+ * Generate AI Trainer (Fitness Coach) response
+ * @param {string} message - User message
+ * @returns {string} AI Trainer response focused on exercise and fitness
+ */
+function generateTrainerResponse(message) {
+    const lowerMessage = message.toLowerCase();
+    
+    // Handle quick workout requests
+    if ((lowerMessage.includes('quick') || lowerMessage.includes('short')) && 
+        (lowerMessage.includes('workout') || lowerMessage.includes('exercise'))) {
+        
+        trainerContext.lastExerciseFocus = 'quick';
+        
+        const quickWorkout = `Here's a quick and effective 15-minute workout you can do with minimal equipment:\n\n` +
+            `**Warm-up (2 minutes)**\n` +
+            `• Arm circles: 30 seconds\n` +
+            `• High knees: 30 seconds\n` +
+            `• Bodyweight squats: 30 seconds\n` +
+            `• Torso twists: 30 seconds\n\n` +
+            
+            `**Circuit (repeat 3 times, 4 minutes per round)**\n` +
+            `• Push-ups (or modified knee push-ups): 40 seconds, 20 seconds rest\n` +
+            `• Reverse lunges: 40 seconds, 20 seconds rest\n` +
+            `• Mountain climbers: 40 seconds, 20 seconds rest\n` +
+            `• Plank hold: 40 seconds, 20 seconds rest\n\n` +
+            
+            `**Cooldown (1 minute)**\n` +
+            `• Gentle stretching for major muscle groups\n\n` +
+            
+            `This workout provides a good balance of cardio and strength training, targeting all major muscle groups. You can adjust the intensity by modifying the exercises or changing the work/rest intervals.`;
+        
+        return quickWorkout;
+    }
+    
+    // Handle weekly plan requests
+    if (lowerMessage.includes('weekly') || lowerMessage.includes('week plan') || 
+        lowerMessage.includes('workout plan')) {
+        
+        trainerContext.lastExerciseFocus = 'weekly plan';
+        
+        const fitnessLevel = trainerContext.workoutPreferences.fitnessLevel || 'beginner';
+        let weeklyPlan = '';
+        
+        if (fitnessLevel === 'beginner') {
+            weeklyPlan = `Here's a balanced weekly workout plan for beginners:\n\n` +
+                `**Monday: Cardio Focus**\n` +
+                `• 20-30 minutes walking/jogging or cycling\n` +
+                `• 10 minutes of bodyweight exercises (squats, push-ups, lunges)\n` +
+                `• 5 minutes stretching\n\n` +
+                
+                `**Tuesday: Upper Body Strength**\n` +
+                `• Push-ups: 3 sets of 5-10 reps\n` +
+                `• Dumbbell rows: 3 sets of 10 reps\n` +
+                `• Shoulder press: 3 sets of 10 reps\n` +
+                `• Tricep dips: 3 sets of 8 reps\n\n` +
+                
+                `**Wednesday: Rest or Light Activity**\n` +
+                `• Gentle walking or yoga\n\n` +
+                
+                `**Thursday: Lower Body Strength**\n` +
+                `• Bodyweight squats: 3 sets of 12 reps\n` +
+                `• Lunges: 3 sets of 10 reps per leg\n` +
+                `• Glute bridges: 3 sets of 12 reps\n` +
+                `• Calf raises: 3 sets of 15 reps\n\n` +
+                
+                `**Friday: Cardio & Core**\n` +
+                `• 20 minutes of interval walking/jogging\n` +
+                `• Planks: 3 sets of 20-30 seconds\n` +
+                `• Bicycle crunches: 3 sets of 10 reps per side\n` +
+                `• Russian twists: 3 sets of 10 reps per side\n\n` +
+                
+                `**Saturday: Full Body**\n` +
+                `• Circuit training: 3 rounds of:\n` +
+                `  - Squats: 12 reps\n` +
+                `  - Push-ups: 8 reps\n` +
+                `  - Walking lunges: 10 steps\n` +
+                `  - Plank: 30 seconds\n` +
+                `  - Rest 1-2 minutes between rounds\n\n` +
+                
+                `**Sunday: Active Recovery**\n` +
+                `• Gentle stretching or yoga\n` +
+                `• Light walking\n\n` +
+                
+                `Remember to start with proper warm-ups and end with stretching. Adjust weights and reps based on your comfort level, and gradually increase intensity as you progress.`;
+        } else if (fitnessLevel === 'intermediate') {
+            weeklyPlan = `Here's a balanced weekly workout plan for intermediate fitness levels:\n\n` +
+                `**Monday: Push (Chest, Shoulders, Triceps)**\n` +
+                `• Bench press or push-ups: 3 sets of 10-12 reps\n` +
+                `• Shoulder press: 3 sets of 10-12 reps\n` +
+                `• Incline dumbbell press: 3 sets of 10-12 reps\n` +
+                `• Tricep dips: 3 sets of 12 reps\n` +
+                `• Lateral raises: 3 sets of 12-15 reps\n\n` +
+                
+                `**Tuesday: HIIT Cardio**\n` +
+                `• 5 minute warm-up\n` +
+                `• 20 minutes HIIT (30 seconds work, 30 seconds rest)\n` +
+                `• 5 minute cool-down\n\n` +
+                
+                `**Wednesday: Pull (Back, Biceps)**\n` +
+                `• Pull-ups or assisted pull-ups: 3 sets of 8-10 reps\n` +
+                `• Bent-over rows: 3 sets of 10-12 reps\n` +
+                `• Face pulls: 3 sets of 12-15 reps\n` +
+                `• Bicep curls: 3 sets of 12 reps\n` +
+                `• Reverse flyes: 3 sets of 15 reps\n\n` +
+                
+                `**Thursday: Core & Mobility**\n` +
+                `• Plank variations: 3 sets of 45-60 seconds\n` +
+                `• Russian twists: 3 sets of 20 reps\n` +
+                `• Mountain climbers: 3 sets of 30 seconds\n` +
+                `• Hanging leg raises: 3 sets of 12 reps\n` +
+                `• 15 minutes of mobility work\n\n` +
+                
+                `**Friday: Legs**\n` +
+                `• Squats: 4 sets of 10-12 reps\n` +
+                `• Romanian deadlifts: 3 sets of 10-12 reps\n` +
+                `• Walking lunges: 3 sets of 12 steps per leg\n` +
+                `• Leg press: 3 sets of 12 reps\n` +
+                `• Calf raises: 4 sets of 15 reps\n\n` +
+                
+                `**Saturday: Steady State Cardio + Core**\n` +
+                `• 30-40 minutes moderate intensity cardio\n` +
+                `• 15 minutes core circuit\n\n` +
+                
+                `**Sunday: Active Recovery**\n` +
+                `• Yoga or mobility work\n` +
+                `• Light walking or swimming\n\n` +
+                
+                `Adjust weights to challenge yourself while maintaining proper form. Aim to progressively increase weight or reps over time.`;
+        } else {
+            weeklyPlan = `Here's an advanced weekly workout plan for experienced fitness enthusiasts:\n\n` +
+                `**Monday: Upper Body Power**\n` +
+                `• Bench press: 5 sets of 5 reps\n` +
+                `• Weighted pull-ups: 4 sets of 6-8 reps\n` +
+                `• Overhead press: 4 sets of 6-8 reps\n` +
+                `• Bent-over rows: 4 sets of 8 reps\n` +
+                `• Weighted dips: 3 sets of 8 reps\n\n` +
+                
+                `**Tuesday: Lower Body Power**\n` +
+                `• Barbell squats: 5 sets of 5 reps\n` +
+                `• Deadlifts: 4 sets of 5 reps\n` +
+                `• Walking lunges with weights: 3 sets of 12 per leg\n` +
+                `• Box jumps: 4 sets of 8 reps\n` +
+                `• Weighted hip thrusts: 3 sets of 10 reps\n\n` +
+                
+                `**Wednesday: HIIT & Core**\n` +
+                `• 5 minute warm-up\n` +
+                `• 25-30 minute HIIT session (work:rest ratio 1:1 or 2:1)\n` +
+                `• Complex core circuit: 4 rounds\n` +
+                `• 5 minute cool-down\n\n` +
+                
+                `**Thursday: Upper Body Hypertrophy**\n` +
+                `• Incline dumbbell press: 4 sets of 8-10 reps\n` +
+                `• Cable rows: 4 sets of 10-12 reps\n` +
+                `• Lateral raises: 3 sets of 12-15 reps\n` +
+                `• Face pulls: 3 sets of 15-20 reps\n` +
+                `• Tricep extensions: 3 sets of 12 reps\n` +
+                `• Bicep curls: 3 sets of 12 reps\n\n` +
+                
+                `**Friday: Lower Body Hypertrophy**\n` +
+                `• Front squats: 4 sets of 8-10 reps\n` +
+                `• Romanian deadlifts: 4 sets of 10 reps\n` +
+                `• Bulgarian split squats: 3 sets of 10 per leg\n` +
+                `• Leg press: 3 sets of 12 reps\n` +
+                `• Seated calf raises: 4 sets of 15 reps\n\n` +
+                
+                `**Saturday: Conditioning**\n` +
+                `• Circuit training: 5 rounds of 5 exercises\n` +
+                `• 30 seconds work / 15 seconds rest\n` +
+                `• Include compound movements\n` +
+                `• Finish with 20 minutes steady-state cardio\n\n` +
+                
+                `**Sunday: Active Recovery/Mobility**\n` +
+                `• Foam rolling\n` +
+                `• Dynamic stretching\n` +
+                `• Yoga or mobility work\n\n` +
+                
+                `This plan incorporates periodization with both strength and hypertrophy work. Adjust weights to ensure the last 1-2 reps of each set are challenging.`;
+        }
+        
+        return weeklyPlan;
+    }
+    
+    // Handle no-equipment workout requests
+    if ((lowerMessage.includes('no equipment') || lowerMessage.includes('bodyweight') || 
+         lowerMessage.includes('at home')) && 
+        (lowerMessage.includes('workout') || lowerMessage.includes('exercise'))) {
+        
+        trainerContext.lastExerciseFocus = 'no equipment';
+        
+        return `Here's an effective full-body workout you can do without any equipment:\n\n` +
+            `**Warm-up (5 minutes)**\n` +
+            `• Jumping jacks: 30 seconds\n` +
+            `• Arm circles: 30 seconds\n` +
+            `• High knees: 30 seconds\n` +
+            `• Bodyweight squats: 30 seconds\n` +
+            `• Torso twists: 30 seconds\n` +
+            `• Repeat once\n\n` +
+            
+            `**Main Workout (20-30 minutes)**\n` +
+            `Complete 3-4 rounds of:\n` +
+            `• Push-ups: 10-15 reps (modify on knees if needed)\n` +
+            `• Bodyweight squats: 15-20 reps\n` +
+            `• Mountain climbers: 30 seconds\n` +
+            `• Reverse lunges: 10 reps per leg\n` +
+            `• Plank: 30-60 seconds\n` +
+            `• Glute bridges: 15-20 reps\n` +
+            `• Bicycle crunches: 20 total reps\n` +
+            `• Rest 60-90 seconds between rounds\n\n` +
+            
+            `**Finisher (optional, 5 minutes)**\n` +
+            `• 30 seconds jumping jacks\n` +
+            `• 30 seconds high knees\n` +
+            `• 30 seconds bodyweight squats\n` +
+            `• 30 seconds push-ups\n` +
+            `• 30 seconds plank\n` +
+            `• Repeat once\n\n` +
+            
+            `**Cool-down (5 minutes)**\n` +
+            `• Static stretching for major muscle groups\n` +
+            `• Hold each stretch for 20-30 seconds\n\n` +
+            
+            `To progress this workout over time:\n` +
+            `• Increase the number of rounds\n` +
+            `• Increase reps of each exercise\n` +
+            `• Decrease rest periods\n` +
+            `• Try more challenging variations (e.g., decline push-ups, pistol squats)`;
+    }
+    
+    // Handle progress tracking requests
+    if (lowerMessage.includes('track') || lowerMessage.includes('measure') || 
+        lowerMessage.includes('progress')) {
+        
+        trainerContext.lastExerciseFocus = 'progress tracking';
+        
+        return `Tracking your fitness progress is essential for staying motivated and making informed adjustments to your routine. Here are the most effective metrics to track:\n\n` +
+            `**Performance Metrics:**\n` +
+            `• Strength: Record weights, reps, and sets for key exercises\n` +
+            `• Endurance: Track distance, time, or pace for cardio activities\n` +
+            `• Workout volume: Total weight lifted or time under tension\n` +
+            `• Recovery: Resting heart rate and perceived exertion\n\n` +
+            
+            `**Body Composition Metrics:**\n` +
+            `• Weight: Weekly measurements, same time of day\n` +
+            `• Measurements: Monthly check of waist, hips, chest, arms, thighs\n` +
+            `• Photos: Monthly progress pictures in consistent lighting/poses\n` +
+            `• Body fat percentage (if available): Every 1-2 months\n\n` +
+            
+            `**Habit & Wellness Metrics:**\n` +
+            `• Workout consistency: Number of completed workouts/week\n` +
+            `• Sleep quality and duration\n` +
+            `• Energy levels and mood\n` +
+            `• Recovery quality\n\n` +
+            
+            `**Practical Tracking Methods:**\n` +
+            `• Use the SlimEasy app to log workouts and measurements\n` +
+            `• Keep a dedicated fitness journal\n` +
+            `• Take progress photos in the same lighting/position/clothing\n` +
+            `• Set specific, measurable goals to track against\n\n` +
+            
+            `Remember that progress isn't always linear - focus on trends over time rather than day-to-day fluctuations.`;
+    }
+    
+    // Default to general exercise suggestion based on fitness level
+    const profile = getUserProfile();
+    return generateExerciseSuggestion(profile);
+}
+
+/**
+ * Generate personalized greeting for AI Buddy
+ * @returns {string} Personalized motivational greeting
+ */
+function generateBuddyGreeting() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return "Hello! I'm your SlimEasy AI Buddy, here to provide motivation and mindset support. How can I help you today?";
+    
+    const name = currentUser.name ? currentUser.name.split(' ')[0] : '';
+    
+    // Get time of day for contextual greeting
+    const hour = new Date().getHours();
+    let greeting = '';
+    
+    if (hour >= 5 && hour < 12) {
+        greeting = `Good morning${name ? ', ' + name : ''}! `;
+    } else if (hour >= 12 && hour < 18) {
+        greeting = `Good afternoon${name ? ', ' + name : ''}! `;
+    } else {
+        greeting = `Good evening${name ? ', ' + name : ''}! `;
+    }
+    
+    greeting += "I'm your SlimEasy AI Buddy, here to support your mindset and motivation. ";
+    
+    // Check for recent progress
+    const weightDataKey = `weight_history_${currentUser.email}`;
+    const weightData = getFromStorage(weightDataKey, []);
+    
+    if (Array.isArray(weightData) && weightData.length > 1) {
+        // Sort by date (newest first)
+        const sortedData = [...weightData].sort((a, b) => {
+            return new Date(b.date) - new Date(a.date);
+        });
+        
+        const latestEntry = sortedData[0];
+        const previousEntry = sortedData[1];
+        
+        if (latestEntry && previousEntry) {
+            const weightChange = latestEntry.weight - previousEntry.weight;
+            
+            if (weightChange < 0) {
+                greeting += `I see you're making great progress with your weight loss journey. How's your mindset today?`;
+            } else if (weightChange > 0) {
+                greeting += `I'm here to support you through all the ups and downs of your wellness journey. How can I help you today?`;
+            } else {
+                greeting += `Maintaining consistency is a significant achievement. How can I support your motivation today?`;
+            }
+        } else {
+            greeting += `How can I help support your wellness journey today?`;
+        }
+    } else {
+        greeting += `How can I support you with motivation or mindset advice today?`;
+    }
+    
+    return greeting;
+}
+
+/**
+ * Generate personalized greeting for AI Chef
+ * @returns {string} Personalized meal-focused greeting
+ */
+function generateChefGreeting() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return "Hello! I'm your SlimEasy AI Chef, here to help with nutrition, recipes, and meal planning. What would you like to eat today?";
+    
+    const name = currentUser.name ? currentUser.name.split(' ')[0] : '';
+    
+    // Get time of day for contextual meal greeting
+    const hour = new Date().getHours();
+    let greeting = '';
+    
+    if (hour >= 5 && hour < 10) {
+        greeting = `Good morning${name ? ', ' + name : ''}! Ready for a nutritious breakfast to start your day? `;
+    } else if (hour >= 10 && hour < 14) {
+        greeting = `Hello${name ? ', ' + name : ''}! Thinking about lunch options? `;
+    } else if (hour >= 14 && hour < 17) {
+        greeting = `Good afternoon${name ? ', ' + name : ''}! Need some healthy snack ideas? `;
+    } else if (hour >= 17 && hour < 21) {
+        greeting = `Good evening${name ? ', ' + name : ''}! Let's plan a satisfying dinner that fits your goals. `;
+    } else {
+        greeting = `Hello${name ? ', ' + name : ''}! `;
+    }
+    
+    greeting += "I'm your SlimEasy AI Chef, here to help with personalized meal suggestions, recipes, and nutrition advice. ";
+    
+    // Get calorie info for context
+    const caloriesInfo = getCurrentCaloriesInfo();
+    if (caloriesInfo && caloriesInfo.remaining) {
+        greeting += `You have about ${caloriesInfo.remaining} calories remaining for today. What kind of meal are you in the mood for?`;
+    } else {
+        greeting += `What kind of meal would you like help with today?`;
+    }
+    
+    return greeting;
+}
+
+/**
+ * Generate personalized greeting for AI Trainer
+ * @returns {string} Personalized fitness-focused greeting
+ */
+function generateTrainerGreeting() {
+    const currentUser = getFromStorage('currentUser');
+    if (!currentUser) return "Hello! I'm your SlimEasy AI Trainer, ready to help with workouts and fitness plans. How would you like to move today?";
+    
+    const name = currentUser.name ? currentUser.name.split(' ')[0] : '';
+    
+    // Get day of week and time for contextual workout greeting
+    const dayOfWeek = new Date().getDay(); // 0 = Sunday, 6 = Saturday
+    const hour = new Date().getHours();
+    let greeting = '';
+    
+    if (hour >= 5 && hour < 10) {
+        greeting = `Good morning${name ? ', ' + name : ''}! A morning workout is a great way to start the day. `;
+    } else if (hour >= 10 && hour < 15) {
+        greeting = `Hello${name ? ', ' + name : ''}! Looking for some midday movement? `;
+    } else if (hour >= 15 && hour < 21) {
+        greeting = `Good evening${name ? ', ' + name : ''}! Ready for an afternoon or evening workout? `;
+    } else {
+        greeting = `Hello${name ? ', ' + name : ''}! `;
+    }
+    
+    greeting += "I'm your SlimEasy AI Trainer, here to help with personalized workout plans and fitness advice. ";
+    
+    // Weekend vs weekday context
+    if (dayOfWeek === 0 || dayOfWeek === 6) {
+        greeting += `It's the weekend - a perfect time for a longer workout or trying something new! What type of exercise are you interested in today?`;
+    } else {
+        greeting += `What type of workout are you looking for today? I can help with quick routines, targeted exercises, or comprehensive plans.`;
+    }
+    
+    return greeting;
+}
+
+/**
+ * Update AI Buddy context based on conversation
+ * @param {string} userMessage - User's message
+ * @param {string} aiResponse - AI's response
+ */
+function updateBuddyContext(userMessage, aiResponse) {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Add to recent queries for context
+    sharedContext.recentQueries.unshift(lowerMessage);
+    if (sharedContext.recentQueries.length > 5) {
+        sharedContext.recentQueries.pop();
+    }
+    
+    // Detect mood from message
+    const moodKeywords = {
+        positive: ['happy', 'excited', 'motivated', 'proud', 'accomplished'],
+        negative: ['sad', 'depressed', 'unmotivated', 'stuck', 'struggling'],
+        neutral: ['okay', 'alright', 'fine', 'stable']
+    };
+    
+    let detectedMood = 'neutral';
+    
+    for (const [mood, keywords] of Object.entries(moodKeywords)) {
+        if (keywords.some(keyword => lowerMessage.includes(keyword))) {
+            detectedMood = mood;
+            break;
+        }
+    }
+    
+    // Add to mood history
+    buddyContext.moodHistory.unshift({
+        mood: detectedMood,
+        timestamp: new Date().toISOString()
+    });
+    
+    if (buddyContext.moodHistory.length > 10) {
+        buddyContext.moodHistory.pop();
+    }
+    
+    // Detect challenges mentioned
+    const challengeKeywords = ['hard', 'difficult', 'challenge', 'struggle', 'problem', 'obstacle', 'can\'t'];
+    
+    for (const keyword of challengeKeywords) {
+        if (lowerMessage.includes(keyword)) {
+            // Basic sentence extraction around the challenge keyword
+            const sentences = lowerMessage.split(/[.!?]+/);
+            for (const sentence of sentences) {
+                if (sentence.toLowerCase().includes(keyword)) {
+                    const challenge = sentence.trim();
+                    if (challenge && !buddyContext.challenges.includes(challenge)) {
+                        buddyContext.challenges.push(challenge);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Limit challenges list size
+    if (buddyContext.challenges.length > 5) {
+        buddyContext.challenges = buddyContext.challenges.slice(0, 5);
+    }
+    
+    // If motivation provided, track it
+    if (aiResponse.includes('motivation') || buddyContext.lastTopic === 'motivation') {
+        buddyContext.lastMotivationMessage = aiResponse;
+    }
+    
+    // Save user preferences
+    saveUserPreferences();
+}
+
+/**
+ * Update AI Chef context based on conversation
+ * @param {string} userMessage - User's message
+ * @param {string} aiResponse - AI's response
+ */
+function updateChefContext(userMessage, aiResponse) {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Add to recent queries for context
+    sharedContext.recentQueries.unshift(lowerMessage);
+    if (sharedContext.recentQueries.length > 5) {
+        sharedContext.recentQueries.pop();
+    }
+    
+    // Extract meal name if a meal was suggested
+    const mealNameMatch = aiResponse.match(/^([^:]+):/);
+    if (mealNameMatch && mealNameMatch[1]) {
+        chefContext.lastMealSuggested = mealNameMatch[1].trim();
+    }
+    
+    // Detect cuisine preferences
+    const cuisines = [
+        'italian', 'mexican', 'chinese', 'japanese', 'thai', 'indian', 
+        'mediterranean', 'greek', 'french', 'spanish', 'middle eastern',
+        'american', 'korean', 'vietnamese'
+    ];
+    
+    for (const cuisine of cuisines) {
+        if (lowerMessage.includes(cuisine)) {
+            if (!chefContext.cuisinePreferences.includes(cuisine)) {
+                chefContext.cuisinePreferences.push(cuisine);
+            }
+            break;
+        }
+    }
+    
+    // Detect cooking time preferences
+    if (lowerMessage.includes('quick') || lowerMessage.includes('fast') || 
+        lowerMessage.includes('hurry') || lowerMessage.includes('minutes')) {
+        chefContext.cookingTime = 15;  // Quick meals under 15 minutes
+    } else if (lowerMessage.includes('meal prep') || lowerMessage.includes('batch') || 
+               lowerMessage.includes('prepare ahead')) {
+        chefContext.mealPrepMode = 'batch';
+    }
+    
+    // Detect dietary preferences
+    const dietaryTerms = {
+        'vegetarian': ['vegetarian', 'no meat'],
+        'vegan': ['vegan', 'plant based', 'no animal products'],
+        'gluten-free': ['gluten free', 'gluten-free', 'no gluten', 'celiac'],
+        'keto': ['keto', 'ketogenic', 'low carb', 'low-carb'],
+        'dairy-free': ['dairy free', 'dairy-free', 'no dairy', 'lactose'],
+        'high-protein': ['high protein', 'protein rich', 'more protein'],
+        'low-fat': ['low fat', 'low-fat', 'less fat'],
+        'paleo': ['paleo', 'caveman diet']
+    };
+    
+    // Check for dietary preferences in message
+    Object.entries(dietaryTerms).forEach(([preference, terms]) => {
+        if (terms.some(term => lowerMessage.includes(term)) && 
+            !sharedContext.dietaryPreferences.includes(preference)) {
+            sharedContext.dietaryPreferences.push(preference);
+        }
+    });
+    
+    // Track meal ingredients discussed
+    const ingredients = [
+        'chicken', 'beef', 'pork', 'fish', 'salmon', 'tuna', 'tofu', 'tempeh',
+        'beans', 'lentils', 'rice', 'quinoa', 'pasta', 'potatoes', 'sweet potatoes',
+        'broccoli', 'spinach', 'kale', 'avocado', 'tomatoes', 'bell peppers',
+        'eggs', 'yogurt', 'cheese', 'milk', 'bread', 'oats', 'nuts', 'seeds'
+    ];
+    
+    for (const ingredient of ingredients) {
+        if (lowerMessage.includes(ingredient)) {
+            if (!chefContext.lastIngredientDiscussed.includes(ingredient)) {
+                chefContext.lastIngredientDiscussed.unshift(ingredient);
+                if (chefContext.lastIngredientDiscussed.length > 5) {
+                    chefContext.lastIngredientDiscussed.pop();
+                }
+            }
+        }
+    }
+    
+    // Save user preferences
+    saveUserPreferences();
+}
+
+/**
+ * Update AI Trainer context based on conversation
+ * @param {string} userMessage - User's message
+ * @param {string} aiResponse - AI's response
+ */
+function updateTrainerContext(userMessage, aiResponse) {
+    const lowerMessage = userMessage.toLowerCase();
+    
+    // Add to recent queries for context
+    sharedContext.recentQueries.unshift(lowerMessage);
+    if (sharedContext.recentQueries.length > 5) {
+        sharedContext.recentQueries.pop();
+    }
+    
+    // Detect workout preferences
+    if (lowerMessage.includes('beginner') || lowerMessage.includes('start') || 
+        lowerMessage.includes('new to') || lowerMessage.includes('just beginning')) {
+        trainerContext.workoutPreferences.fitnessLevel = 'beginner';
+    } else if (lowerMessage.includes('advanced') || lowerMessage.includes('experienced') || 
+               lowerMessage.includes('athlete') || lowerMessage.includes('competitive')) {
+        trainerContext.workoutPreferences.fitnessLevel = 'advanced';
+    } else if (lowerMessage.includes('intermediate') || lowerMessage.includes('somewhat fit') || 
+               lowerMessage.includes('moderately')) {
+        trainerContext.workoutPreferences.fitnessLevel = 'intermediate';
+    }
+    
+    // Detect equipment availability
+    if (lowerMessage.includes('no equipment') || lowerMessage.includes('bodyweight') || 
+        lowerMessage.includes('without equipment') || lowerMessage.includes('at home')) {
+        trainerContext.workoutPreferences.equipmentAvailable = false;
+    } else if (lowerMessage.includes('gym') || lowerMessage.includes('equipment') || 
+               lowerMessage.includes('weights') || lowerMessage.includes('dumbbell') || 
+               lowerMessage.includes('barbell')) {
+        trainerContext.workoutPreferences.equipmentAvailable = true;
+    }
+    
+    // Detect workout duration preference
+    const durationMatches = lowerMessage.match(/(\d+)[\s-]*(minute|min)/);
+    if (durationMatches && durationMatches[1]) {
+        const minutes = parseInt(durationMatches[1]);
+        if (minutes > 0 && minutes < 180) {  // Reasonable range check
+            trainerContext.workoutPreferences.workoutDuration = minutes;
+        }
+    }
+    
+    // Detect focus areas
+    const bodyAreas = [
+        'arms', 'biceps', 'triceps', 'shoulders', 'chest', 'back', 'core', 
+        'abs', 'legs', 'quads', 'hamstrings', 'glutes', 'calves', 'cardio',
+        'upper body', 'lower body', 'full body'
+    ];
+    
+    for (const area of bodyAreas) {
+        if (lowerMessage.includes(area)) {
+            if (!trainerContext.workoutPreferences.focusAreas.includes(area)) {
+                trainerContext.workoutPreferences.focusAreas.push(area);
+            }
+        }
+    }
+    
+    // Keep focus areas list manageable
+    if (trainerContext.workoutPreferences.focusAreas.length > 3) {
+        trainerContext.workoutPreferences.focusAreas = trainerContext.workoutPreferences.focusAreas.slice(0, 3);
+    }
+    
+    // Detect injuries or limitations
+    const injuryKeywords = [
+        'injury', 'hurt', 'pain', 'sore', 'sprain', 'strain', 'bad', 'issue',
+        'knee', 'back', 'shoulder', 'ankle', 'wrist', 'neck', 'hip', 'elbow'
+    ];
+    
+    for (const keyword of injuryKeywords) {
+        if (lowerMessage.includes(keyword)) {
+            // Basic sentence extraction around the injury keyword
+            const sentences = lowerMessage.split(/[.!?]+/);
+            for (const sentence of sentences) {
+                if (sentence.toLowerCase().includes(keyword)) {
+                    const injury = sentence.trim();
+                    if (injury && !trainerContext.workoutPreferences.injuryConsiderations.includes(injury)) {
+                        trainerContext.workoutPreferences.injuryConsiderations.push(injury);
+                    }
+                }
+            }
+        }
+    }
+    
+    // Save user preferences
+    saveUserPreferences();
+}
+
+/**
+ * Add message to AI Chef chat
+ * @param {string} role - Message role (user or chef)
+ * @param {string} message - Message text
+ */
+function addMessageToChefChat(role, message) {
+    const aiChefChatMessages = document.getElementById('aiChefChatMessages');
+    if (!aiChefChatMessages) return;
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = `ai-message ${role}`;
+    
+    // Process message text (handle line breaks, links, etc.)
+    const processedMessage = message.replace(/\n/g, '<br>');
+    messageEl.innerHTML = processedMessage;
+    
+    aiChefChatMessages.appendChild(messageEl);
+    
+    // Scroll to bottom
+    aiChefChatMessages.scrollTop = aiChefChatMessages.scrollHeight;
+}
+
+/**
+ * Add message to AI Trainer chat
+ * @param {string} role - Message role (user or trainer)
+ * @param {string} message - Message text
+ */
+function addMessageToTrainerChat(role, message) {
+    const aiTrainerChatMessages = document.getElementById('aiTrainerChatMessages');
+    if (!aiTrainerChatMessages) return;
+    
+    const messageEl = document.createElement('div');
+    messageEl.className = `ai-message ${role}`;
+    
+    // Process message text (handle line breaks, links, etc.)
+    const processedMessage = message.replace(/\n/g, '<br>');
+    messageEl.innerHTML = processedMessage;
+    
+    aiTrainerChatMessages.appendChild(messageEl);
+    
+    // Scroll to bottom
+    aiTrainerChatMessages.scrollTop = aiTrainerChatMessages.scrollHeight;
+}
+
+/**
+ * Add coach-specific styles for AI Chef and AI Trainer 
+ */
+function addAIChefStyles() {
+    // Create style element if it doesn't exist
+    let styleEl = document.getElementById('ai-chef-styles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'ai-chef-styles';
+        document.head.appendChild(styleEl);
+    }
+    
+    // Add chef-specific CSS
+    styleEl.textContent = `
+        /* Chef Theme Colors */
+        .chef-theme {
+            --chef-primary: #2196F3;
+            --chef-primary-light: #BBDEFB;
+            --chef-primary-dark: #1976D2;
+        }
+        
+        .chef-header {
+            background-color: var(--chef-primary) !important;
+        }
+        
+        /* Chef Message Styling */
+        .ai-message.chef {
+            background-color: var(--chef-primary-light);
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+        
+        .ai-message.chef::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--chef-primary-light);
+            clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+        }
+        
+        /* Chef Quick Suggestion Buttons */
+        .chef-suggestion-btn {
+            background-color: var(--chef-primary-light);
+            border-color: var(--chef-primary);
+        }
+        
+        .chef-suggestion-btn:hover {
+            background-color: var(--chef-primary);
+            color: white;
+        }
+        
+        /* Nutritional Information Highlighting */
+        .nutrition-highlight {
+            background-color: rgba(33, 150, 243, 0.1);
+            border-left: 3px solid var(--chef-primary);
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        /* Recipe Formatting */
+        .recipe-title {
+            font-weight: bold;
+            color: var(--chef-primary);
+            margin-bottom: 5px;
+        }
+        
+        .recipe-ingredients {
+            margin-bottom: 10px;
+        }
+        
+        .recipe-instructions {
+            line-height: 1.5;
+        }
+    `;
+}
+
+function addAITrainerStyles() {
+    // Create style element if it doesn't exist
+    let styleEl = document.getElementById('ai-trainer-styles');
+    if (!styleEl) {
+        styleEl = document.createElement('style');
+        styleEl.id = 'ai-trainer-styles';
+        document.head.appendChild(styleEl);
+    }
+    
+    // Add trainer-specific CSS
+    styleEl.textContent = `
+        /* Trainer Theme Colors */
+        .trainer-theme {
+            --trainer-primary: #9C27B0;
+            --trainer-primary-light: #E1BEE7;
+            --trainer-primary-dark: #7B1FA2;
+        }
+        
+        .trainer-header {
+            background-color: var(--trainer-primary) !important;
+        }
+        
+        /* Trainer Message Styling */
+        .ai-message.trainer {
+            background-color: var(--trainer-primary-light);
+            color: #333;
+            margin-right: auto;
+            border-bottom-left-radius: 2px;
+        }
+        
+        .ai-message.trainer::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: -10px;
+            width: 10px;
+            height: 10px;
+            background-color: var(--trainer-primary-light);
+            clip-path: polygon(100% 0, 0% 100%, 100% 100%);
+        }
+        
+        /* Trainer Quick Suggestion Buttons */
+        .trainer-suggestion-btn {
+            background-color: var(--trainer-primary-light);
+            border-color: var(--trainer-primary);
+        }
+        
+        .trainer-suggestion-btn:hover {
+            background-color: var(--trainer-primary);
+            color: white;
+        }
+        
+        /* Workout Formatting */
+        .workout-section {
+            margin: 10px 0;
+        }
+        
+        .workout-title {
+            font-weight: bold;
+            color: var(--trainer-primary);
+            margin-bottom: 5px;
+        }
+        
+        .exercise-item {
+            margin-bottom: 5px;
+            padding-left: 15px;
+            position: relative;
+        }
+        
+        .exercise-item:before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            color: var(--trainer-primary);
+        }
+        
+        .workout-note {
+            font-style: italic;
+            margin-top: 5px;
+            color: #666;
+        }
+    `;
+}
+
 // Export functions to global scope
+window.initializeAICoaches = initializeAICoaches;
 window.initializeAIBuddy = initializeAIBuddy;
+window.initializeAIChef = initializeAIChef;
+window.initializeAITrainer = initializeAITrainer;
+window.generateBuddyResponse = generateBuddyResponse;
+window.generateChefResponse = generateChefResponse;
+window.generateTrainerResponse = generateTrainerResponse;
 window.generateSmartMealSuggestion = generateSmartMealSuggestion;
