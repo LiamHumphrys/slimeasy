@@ -982,3 +982,7 @@ window.getMealPlanData = getMealPlanData;
 window.exportAsPDF = exportAsPDF;
 window.exportAsCSV = exportAsCSV;
 window.exportAsText = exportAsText;
+window.formatMealPlanAsText = formatMealPlanAsText;
+window.copyToClipboard = copyToClipboard;
+window.shareViaEmail = shareViaEmail;
+window.handlePrint = handlePrint;
