@@ -118,18 +118,26 @@ function setupShareButtons() {
     // Close modal when close button is clicked
     closeButton.addEventListener('click', function() {
         shareModal.classList.remove('show');
+        // Reset form when closing
+        shareForm.reset();
     });
     
     // Close modal when clicking outside content
     shareModal.addEventListener('click', function(e) {
         if (e.target === shareModal) {
             shareModal.classList.remove('show');
+            // Reset form when closing
+            shareForm.reset();
         }
     });
     
     // Set up form submission
     const shareForm = document.getElementById('shareForm');
-    shareForm.addEventListener('submit', handlePostSubmission);
+    if (shareForm) {
+        shareForm.addEventListener('submit', handlePostSubmission);
+    } else {
+        console.error('Share form not found');
+    }
 }
 
 /**
