@@ -1,5 +1,5 @@
 // Cache version - increment when updating resources
-const CACHE_NAME = 'slimeasy-cache-v3';
+const CACHE_NAME = 'slimeasy-cache-v6';
 // Files to cache for offline functionality
 const urlsToCache = [
   '/',
@@ -8,12 +8,26 @@ const urlsToCache = [
   '/dashboard.html',
   '/tracker.html',
   '/exercise.html',
+  '/calendar.html',
+  '/wearable-settings.html',
+  '/community.html',
+  '/scanner.html',
+  '/contact.html',
+  '/privacy-policy.html',
+  '/terms.html',
   '/styles.css',
+  '/footer.css',
   '/script.js',
   '/tracker.js',
   '/exercise.js',
   '/theme.js',
   '/utils.js',
+  '/charts.js',
+  '/gamification.js',
+  '/export-utils.js',
+  '/wearable-integration.js',
+  '/community.js',
+  '/scanner.js',
   '/slimeasylogo.jpg',
   '/manifest.json',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css',
