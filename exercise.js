@@ -794,7 +794,7 @@ function loadExerciseHistory() {
     }
 }
 
-// Initialize based on URL parameters if available
+// Initialize the page
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize common page elements first (menu, theme, etc.)
     if (typeof initializePage === 'function') {
