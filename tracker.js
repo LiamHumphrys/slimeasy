@@ -1,11 +1,27 @@
-// Parse URL parameters with fallback to avoid NaN
-const urlParams = new URLSearchParams(window.location.search);
-const bmr = parseFloat(urlParams.get('bmr')) || 0;
-const tdee = parseFloat(urlParams.get('tdee')) || 0;
-const currentWeight = parseFloat(urlParams.get('weight')) || 0;
-const goalWeight = parseFloat(urlParams.get('goal')) || 0;
-const timeWeeks = parseFloat(urlParams.get('time')) || 0;
-const goalCalories = parseFloat(urlParams.get('goalCalories')) || 0;
+// Get metrics from localStorage with fallback to URL parameters
+// Get the current user
+const currentUser = JSON.parse(localStorage.getItem('currentUser')) || { email: 'guest' };
+const profileKey = `profile_${currentUser.email}`;
+const profile = JSON.parse(localStorage.getItem(profileKey)) || {};
+
+// First try to get values from profile in localStorage
+let bmr = profile.bmr || 0;
+let tdee = profile.tdee || 0;
+let currentWeight = profile.weight || 0;
+let goalWeight = profile.goal || 0;
+let timeWeeks = profile.time || 0;
+let goalCalories = profile.goalCalories || 0;
+
+// Fallback to URL parameters if needed (for backward compatibility)
+if (bmr === 0 || tdee === 0) {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (parseFloat(urlParams.get('bmr')) > 0) bmr = parseFloat(urlParams.get('bmr'));
+    if (parseFloat(urlParams.get('tdee')) > 0) tdee = parseFloat(urlParams.get('tdee'));
+    if (parseFloat(urlParams.get('weight')) > 0) currentWeight = parseFloat(urlParams.get('weight'));
+    if (parseFloat(urlParams.get('goal')) > 0) goalWeight = parseFloat(urlParams.get('goal'));
+    if (parseFloat(urlParams.get('time')) > 0) timeWeeks = parseFloat(urlParams.get('time'));
+    if (parseFloat(urlParams.get('goalCalories')) > 0) goalCalories = parseFloat(urlParams.get('goalCalories'));
+}
 
 // Constants for unit conversions
 const kcalToKj = 4.184;
