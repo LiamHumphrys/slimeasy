@@ -930,6 +930,13 @@ function addToPlanner(dateOrDayIndex, itemText, calories, isFood = true, mealTyp
 document.addEventListener('DOMContentLoaded', function() {
     console.log("DOM loaded, initializing tracker...");
     
+    // Initialize common page elements first (menu, theme, etc.)
+    if (typeof initializePage === 'function') {
+        initializePage();
+    } else {
+        console.warn("initializePage function not found, make sure utils.js is loaded first");
+    }
+    
     // Set up food tab navigation
     const foodTabs = document.querySelectorAll('.food-tab');
     foodTabs.forEach(tab => {
