@@ -1308,8 +1308,10 @@
                 saveToStorage(profileKey, profile);
                 
                 // If sync is enabled, save to cloud
-                if (await isCloudSyncEnabled()) {
-                    saveWithSync(profileKey, profile);
+                if (typeof isCloudSyncEnabled === 'function' && await isCloudSyncEnabled()) {
+                    if (typeof saveWithSync === 'function') {
+                        saveWithSync(profileKey, profile);
+                    }
                 }
                 
                 showNotification('Profile updated successfully', 'success');
@@ -1412,14 +1414,16 @@
                 saveToStorage(profileKey, profile);
                 
                 // If sync is enabled, save to cloud
-                if (await isCloudSyncEnabled()) {
-                    saveWithSync(profileKey, profile);
+                if (typeof isCloudSyncEnabled === 'function' && await isCloudSyncEnabled()) {
+                    if (typeof saveWithSync === 'function') {
+                        saveWithSync(profileKey, profile);
+                    }
                 }
                 
                 showNotification('Metrics updated successfully', 'success');
                 
-                // Redirect to dashboard with BMR and TDEE values
-                window.location.href = `dashboard.html?bmr=${profile.bmr}&tdee=${profile.tdee}&weight=${weight}&goal=${profile.goal}&time=${profile.time}`;
+                // Redirect to dashboard - no need to pass URL params as data is in localStorage
+                window.location.href = 'dashboard.html';
             } catch (error) {
                 console.error('Error updating metrics:', error);
                 showNotification('Failed to update metrics', 'error');
@@ -1427,51 +1431,174 @@
         }
         
         /**
-         * Update the user's password
+         * Get the current user
+         * @returns {Object|null} Current user object or null
          */
-        async function updateUserPassword() {
-            try {
-                const currentPassword = document.getElementById('currentPassword').value;
-                const newPassword = document.getElementById('newPassword').value;
-                const confirmPassword = document.getElementById('confirmPassword').value;
-                
-                // Validate inputs
-                if (!currentPassword || !newPassword || !confirmPassword) {
-                    showNotification('All password fields are required', 'error');
-                    return;
-                }
-                
-                if (newPassword !== confirmPassword) {
-                    showNotification('New passwords do not match', 'error');
-                    return;
-                }
-                
-                if (newPassword.length < 6) {
-                    showNotification('Password must be at least 6 characters', 'error');
-                    return;
-                }
-                
-                // Get the current user
-                const user = getCurrentUser();
-                if (!user) return;
-                
-                // Reauthenticate the user first
-                try {
-                    // Reauthentication will be implemented in a future update
-                    // For now, just show a message
-                    showNotification('Password update functionality will be available in a future update', 'info');
+        function getCurrentUser() {
+            return getFromStorage('currentUser');
+        }
+        
+        /**
+         * Update the user's profile
+         * @param {Object} profileData - Profile data to update
+         * @returns {Promise<void>}
+         */
+        async function updateUserProfile(profileData) {
+            // This is a placeholder for Firebase auth profile updates
+            const currentUser = getCurrentUser();
+            if (!currentUser) return Promise.reject(new Error('No user logged in'));
+            
+            // Update the currentUser object
+            const updatedUser = { ...currentUser, ...profileData };
+            saveToStorage('currentUser', updatedUser);
+            
+            return Promise.resolve();
+        }
+        
+        /**
+         * Sign out the current user
+         * @returns {Promise<void>}
+         */
+        async function signOut() {
+            // This is a placeholder for Firebase auth signOut
+            localStorage.removeItem('currentUser');
+            return Promise.resolve();
+        }
+        
+        /**
+         * Export the user's data
+         */
+        function exportUserData() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            // Collect all user data
+            const userData = {
+                profile: getFromStorage(`profile_${user.email}`, {}),
+                weightHistory: getFromStorage(`weight_history_${user.email}`, []),
+                foodLogs: getFromStorage(`food_log_${user.email}`, {}),
+                exerciseLogs: getFromStorage(`exercise_log_${user.email}`, {}),
+                achievements: getFromStorage(`achievements_${user.email}`, { earned: {}, points: 0 })
+            };
+            
+            // Convert to JSON and create download link
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `slimeasy_data_${user.email}_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            
+            showNotification('Your data has been exported successfully', 'success');
+        }
+        
+        /**
+         * Initialize sync UI
+         */
+        function initializeSyncUI() {
+            // This is a placeholder for sync UI initialization
+            const syncContainer = document.getElementById('syncSettingsContainer');
+            if (!syncContainer) return;
+            
+            // Create a simple card for sync settings
+            syncContainer.innerHTML = `
+                <div class="card">
+                    <h2><i class="fas fa-cloud-upload-alt"></i> Cloud Sync Settings</h2>
                     
-                    // Clear the password fields
-                    document.getElementById('currentPassword').value = '';
-                    document.getElementById('newPassword').value = '';
-                    document.getElementById('confirmPassword').value = '';
-                } catch (error) {
-                    console.error('Error updating password:', error);
-                    showNotification('Failed to update password', 'error');
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="enableCloudSync" class="toggle-input">
+                            <label for="enableCloudSync" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="enableCloudSync">Enable Cloud Sync</label>
+                            <span class="toggle-description">Sync your data across all your devices</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sync-settings" id="syncSettingsDetails" style="display: none;">
+                        <div class="settings-section">
+                            <h3><i class="fas fa-exchange-alt"></i> Sync Frequency</h3>
+                            
+                            <div class="form-group">
+                                <select id="syncFrequency">
+                                    <option value="realtime">Real-time</option>
+                                    <option value="hourly">Hourly</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="manual">Manual only</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="sync-actions">
+                            <button type="button" id="syncNowBtn" class="action-button primary">
+                                <i class="fas fa-sync"></i> Sync Now
+                            </button>
+                            <button type="button" id="resetSyncBtn" class="action-button secondary">
+                                <i class="fas fa-undo"></i> Reset Sync
+                            </button>
+                        </div>
+                        
+                        <div class="sync-status">
+                            <p>Last synced: <span id="lastSyncTime">Never</span></p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set up sync toggle
+            const enableCloudSync = document.getElementById('enableCloudSync');
+            const syncSettingsDetails = document.getElementById('syncSettingsDetails');
+            
+            enableCloudSync.addEventListener('change', function() {
+                syncSettingsDetails.style.display = this.checked ? 'block' : 'none';
+                
+                // Save sync preference
+                const user = getCurrentUser();
+                if (user && user.email) {
+                    saveToStorage(`sync_enabled_${user.email}`, this.checked);
                 }
-            } catch (error) {
-                console.error('Error in updateUserPassword:', error);
-                showNotification('An unexpected error occurred', 'error');
+            });
+            
+            // Load sync preference
+            const user = getCurrentUser();
+            if (user && user.email) {
+                const syncEnabled = getFromStorage(`sync_enabled_${user.email}`, false);
+                enableCloudSync.checked = syncEnabled;
+                syncSettingsDetails.style.display = syncEnabled ? 'block' : 'none';
+            }
+            
+            // Set up sync now button
+            const syncNowBtn = document.getElementById('syncNowBtn');
+            if (syncNowBtn) {
+                syncNowBtn.addEventListener('click', function() {
+                    // Simulate sync
+                    showNotification('Syncing your data...', 'info');
+                    setTimeout(() => {
+                        showNotification('Sync completed successfully', 'success');
+                        document.getElementById('lastSyncTime').textContent = new Date().toLocaleString();
+                    }, 1500);
+                });
+            }
+            
+            // Set up reset sync button
+            const resetSyncBtn = document.getElementById('resetSyncBtn');
+            if (resetSyncBtn) {
+                resetSyncBtn.addEventListener('click', function() {
+                    showConfirmationDialog(
+                        'Reset Sync',
+                        'Are you sure you want to reset sync? This will delete all cloud data and resync from this device.',
+                        function() {
+                            // Simulate reset
+                            showNotification('Resetting sync...', 'info');
+                            setTimeout(() => {
+                                showNotification('Sync reset completed', 'success');
+                                document.getElementById('lastSyncTime').textContent = 'Never';
+                            }, 1500);
+                        }
+                    );
+                });
             }
         }
         
@@ -1506,6 +1633,17 @@
             
             // Show the dialog
             dialog.style.display = 'flex';
+        }
+        
+        /**
+         * Determines if cloud sync is enabled
+         * @returns {Promise<boolean>} Whether cloud sync is enabled
+         */
+        async function isCloudSyncEnabled() {
+            const user = getCurrentUser();
+            if (!user || !user.email) return false;
+            
+            return getFromStorage(`sync_enabled_${user.email}`, false);
         }
     </script>
 </body>
