@@ -1417,6 +1417,9 @@
                 }
                 
                 showNotification('Metrics updated successfully', 'success');
+                
+                // Redirect to dashboard with BMR and TDEE values
+                window.location.href = `dashboard.html?bmr=${profile.bmr}&tdee=${profile.tdee}&weight=${weight}&goal=${profile.goal}&time=${profile.time}`;
             } catch (error) {
                 console.error('Error updating metrics:', error);
                 showNotification('Failed to update metrics', 'error');
