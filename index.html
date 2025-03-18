@@ -248,6 +248,7 @@
             } else {
                 console.error('initializePage function not found. Make sure utils.js is loaded properly.');
             }
+        });
         
         /**
          * Initialize account settings functionality
@@ -419,6 +420,7 @@
                 document.getElementById('timeUnit').value = savedProfile.timeUnit || 'weeks';
             }
         }
+        
         /**
          * Initialize profile form event handlers
          */
@@ -546,7 +548,12 @@
          */
         function saveProfileData(formData, metrics) {
             try {
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+                const currentUser = getFromStorage('currentUser');
+                if (!currentUser || !currentUser.email) {
+                    showNotification('No user account found. Please log in first.', 'error');
+                    return;
+                }
+                
                 const profileKey = `profile_${currentUser.email}`;
                 
                 // Combine form data with calculated metrics
@@ -561,9 +568,13 @@
                     dailyGoal: metrics.dailyGoal
                 };
                 
-                localStorage.setItem(profileKey, JSON.stringify(profile));
+                // Save to local storage with utility function
+                saveToStorage(profileKey, profile);
+                
+                showNotification('Profile saved successfully!', 'success');
             } catch (error) {
                 console.error('Error saving profile:', error);
+                showNotification('Error saving profile data', 'error');
             }
         }
         
