@@ -9,7 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="SlimEasy - A modern weight management application to track nutrition and exercise">
     <meta name="theme-color" content="#4CAF50">
-    <title>SlimEasy - Profile</title>
+    <title>SlimEasy - Home</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
@@ -36,7 +36,7 @@
             </button>
             <div class="main-nav-links" id="mainNavLinks">
                 <a href="index.html" class="nav-link active">
-                    <i class="fas fa-user"></i> Profile
+                    <i class="fas fa-home"></i> Home
                 </a>
                 <a href="dashboard.html" class="nav-link">
                     <i class="fas fa-chart-line"></i> Dashboard
@@ -56,6 +56,9 @@
                 <a href="community.html" class="nav-link">
                     <i class="fas fa-users"></i> Community
                 </a>
+                <a href="profile.html" class="nav-link">
+                    <i class="fas fa-user-cog"></i> Profile Settings
+                </a>
                 <a href="contact.html" class="nav-link">
                     <i class="fas fa-envelope"></i> Contact Us
                 </a>
@@ -64,7 +67,7 @@
     </nav>
 
     <div class="container">
-        <h1>Your Profile</h1>
+        <h1>Welcome to SlimEasy</h1>
         <p id="welcomeMessage"></p>
         
         <section id="profile">
@@ -228,20 +231,23 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize page (theme, menu, login check)
-            if (initializePage()) {
-                // Load profile data if available
-                loadSavedProfile();
-                
-                // Initialize form handlers
-                initializeProfileForm();
-                
-                // Register service worker
-                registerServiceWorker();
-                
-                // Initialize account settings
-                initializeAccountSettings();
+            if (typeof initializePage === 'function') {
+                if (initializePage()) {
+                    // Load profile data if available
+                    loadSavedProfile();
+                    
+                    // Initialize form handlers
+                    initializeProfileForm();
+                    
+                    // Register service worker
+                    registerServiceWorker();
+                    
+                    // Initialize account settings
+                    initializeAccountSettings();
+                }
+            } else {
+                console.error('initializePage function not found. Make sure utils.js is loaded properly.');
             }
-        });
         
         /**
          * Initialize account settings functionality
@@ -413,10 +419,10 @@
                 document.getElementById('timeUnit').value = savedProfile.timeUnit || 'weeks';
             }
         }
-        // This duplicate event listener and the duplicate functions below it have been removed
-        // as they were causing issues with button functionality.
-        
-        // Duplicate functions removed to fix button functionality issues
+        /**
+         * Initialize profile form event handlers
+         */
+        function initializeProfileForm() {
             // Form submission handler
             document.getElementById('profileForm').addEventListener('submit', function(e) {
                 e.preventDefault();
@@ -453,20 +459,17 @@
             
             // Proceed to planner button handler
             document.getElementById('proceedToPlanner').addEventListener('click', function() {
-                const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-                const profile = JSON.parse(localStorage.getItem(`profile_${currentUser.email}`));
+                const currentUser = getFromStorage('currentUser');
+                if (!currentUser || !currentUser.email) {
+                    alert('No user account found. Please log in first.');
+                    return;
+                }
+                
+                const profile = getFromStorage(`profile_${currentUser.email}`);
                 
                 if (profile) {
-                    const { bmr, tdee, weight, weightUnit, height, heightUnit, goalWeight, 
-                            goalWeightUnit, dailyDeficit, dailyGoal, timeToGoal, timeUnit } = profile;
-                    
-                    const params = new URLSearchParams({
-                        bmr, tdee, weight, weightUnit, height, heightUnit, 
-                        goal: goalWeight, goalWeightUnit, dailyDeficit,
-                        goalCalories: dailyGoal, timeToGoal, timeUnit
-                    });
-                    
-                    window.location.href = `tracker.html?${params.toString()}`;
+                    // Redirect to tracker - no need to pass URL params as data is in localStorage
+                    window.location.href = 'tracker.html';
                 } else {
                     alert('No profile data found. Please save your profile first.');
                 }
