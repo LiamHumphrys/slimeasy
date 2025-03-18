@@ -796,6 +796,13 @@ function loadExerciseHistory() {
 
 // Initialize based on URL parameters if available
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize common page elements first (menu, theme, etc.)
+    if (typeof initializePage === 'function') {
+        initializePage();
+    } else {
+        console.warn("initializePage function not found, make sure utils.js is loaded first");
+    }
+    
     // Check URL for parameters from tracker page
     const urlParams = new URLSearchParams(window.location.search);
     const today = new Date().getDay(); // 0 is Sunday in JS
