@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="dark-mode-fix.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SlimEasy - AI Assistants to help with your weight loss journey">
+    <meta name="theme-color" content="#4CAF50">
+    <title>SlimEasy - AI Assistants</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/brands.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
+    <!-- Preload critical assets -->
+    <link rel="preload" href="theme.js" as="script">
+    <link rel="preload" href="utils.js" as="script">
+    <link rel="preload" href="ai-buddy.js" as="script">
+    <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <link rel="stylesheet" href="footer.css">
+    <style>
+        .ai-assistants-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .ai-card {
+            background-color: var(--card-bg, white);
+            border-radius: var(--border-radius, 10px);
+            box-shadow: var(--card-shadow, 0 2px 6px rgba(0,0,0,0.1));
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            height: 100%;
+        }
+        
+        .ai-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        
+        .ai-card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .ai-icon {
+            font-size: 24px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin-right: 15px;
+            color: white;
+        }
+        
+        .buddy-icon {
+            background-color: var(--primary-color, #4CAF50);
+        }
+        
+        .chef-icon {
+            background-color: var(--accent-color, #FFA000);
+        }
+        
+        .trainer-icon {
+            background-color: var(--info-color, #2979FF);
+        }
+        
+        .ai-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+            color: var(--text-primary, #212121);
+        }
+        
+        .ai-description {
+            font-size: 14px;
+            color: var(--text-secondary, #757575);
+            margin-bottom: 20px;
+            flex-grow: 1;
+        }
+        
+        .ai-button {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .ai-button:hover {
+            background-color: var(--primary-dark, #388E3C);
+        }
+        
+        .page-header {
+            margin-bottom: 20px;
+        }
+        
+        .page-title {
+            font-size: 24px;
+            margin-bottom: 5px;
+            color: var(--text-primary, #212121);
+        }
+        
+        .page-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary, #757575);
+        }
+
+        /* AI Chat Styles */
+        .ai-chat-container {
+            display: none;
+            height: calc(100vh - 180px);
+            flex-direction: column;
+            margin-top: 20px;
+        }
+        
+        .ai-chat-container.active {
+            display: flex;
+        }
+        
+        .ai-chat-header {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .ai-chat-header.chef {
+            background-color: var(--accent-color, #FFA000);
+        }
+        
+        .ai-chat-header.trainer {
+            background-color: var(--info-color, #2979FF);
+        }
+        
+        .ai-chat-header .ai-icon {
+            width: 36px;
+            height: 36px;
+            margin-right: 10px;
+            background-color: white;
+            color: var(--primary-color, #4CAF50);
+        }
+        
+        .ai-chat-header.chef .ai-icon {
+            color: var(--accent-color, #FFA000);
+        }
+        
+        .ai-chat-header.trainer .ai-icon {
+            color: var(--info-color, #2979FF);
+        }
+        
+        .ai-chat-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .ai-chat-header .ai-close-btn {
+            margin-left: auto;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        
+        .ai-chat-messages {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            background-color: var(--card-bg, white);
+        }
+        
+        .ai-message {
+            display: flex;
+            margin-bottom: 15px;
+        }
+        
+        .ai-message.user {
+            flex-direction: row-reverse;
+        }
+        
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+        }
+        
+        .ai-message.chef .ai-avatar {
+            background-color: var(--accent-color, #FFA000);
+        }
+        
+        .ai-message.trainer .ai-avatar {
+            background-color: var(--info-color, #2979FF);
+        }
+        
+        .ai-message.user .ai-avatar {
+            background-color: var(--text-secondary, #757575);
+        }
+        
+        .ai-message-content {
+            max-width: 70%;
+            padding: 10px 15px;
+            border-radius: 15px;
+            background-color: var(--background-main, #F5F7FA);
+            color: var(--text-primary, #212121);
+        }
+        
+        .ai-message.user .ai-message-content {
+            background-color: var(--primary-light, #B2DFDB);
+            color: var(--text-primary, #212121);
+        }
+        
+        /* Dark mode specific overrides */
+        [data-theme="dark"] .ai-message-content {
+            background-color: var(--card-bg, #1E1E1E);
+            border: 1px solid var(--divider-color, #424242);
+        }
+        
+        [data-theme="dark"] .ai-message.user .ai-message-content {
+            background-color: var(--primary-dark, #00897B);
+            color: white;
+            border: none;
+        }
+        
+        .ai-chat-input {
+            display: flex;
+            padding: 10px;
+            background-color: var(--card-bg, white);
+            border-top: 1px solid var(--divider-color, #EEEEEE);
+            border-radius: 0 0 10px 10px;
+        }
+        
+        .ai-chat-input input {
+            flex-grow: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--divider-color, #EEEEEE);
+            border-radius: 25px;
+            margin-right: 10px;
+            background-color: var(--card-bg, white);
+            color: var(--text-primary, #212121);
+        }
+        
+        .ai-chat-input button {
+            background-color: var(--primary-color, #4CAF50);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        
+        .ai-chat-input.chef button {
+            background-color: var(--accent-color, #FFA000);
+        }
+        
+        .ai-chat-input.trainer button {
+            background-color: var(--info-color, #2979FF);
+        }
+        
+        .ai-typing {
+            display: none;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .ai-typing .typing-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--text-secondary, #757575);
+            border-radius: 50%;
+            margin-right: 5px;
+            animation: typing 1.4s infinite;
+        }
+        
+        .ai-typing .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .ai-typing .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+        
+        .back-to-assistants {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 15px;
+            color: var(--primary-color, #4CAF50);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .ai-assistants-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .ai-message-content {
+                max-width: 85%;
+            }
+        }
+        
+        /* Hide any unwanted content that might be added after the footer */
+        .app-footer ~ * {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="main-nav-container">
+            <a href="index.html" class="main-nav-logo">
+                <img src="slimeasylogo.jpg" alt="SlimEasy">
+                <span>SlimEasy</span>
+            </a>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="main-nav-links" id="mainNavLinks">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+                <a href="tracker.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Weight Tracker
+                </a>
+                <a href="exercise.html" class="nav-link">
+                    <i class="fas fa-running"></i> Exercise
+                </a>
+                <a href="scanner.html" class="nav-link">
+                    <i class="fas fa-barcode"></i> Food Scanner
+                </a>
+                <a href="wearable-settings.html" class="nav-link">
+                    <i class="fas fa-sync"></i> Wearables
+                </a>
+                <a href="community.html" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+                <a href="contact.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contact Us
+                </a>
+                <a href="ai-assistants.html" class="nav-link active">
+                    <i class="fas fa-robot"></i> AI Assistants
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="content-container">
+        <!-- AI Selection View -->
+        <div id="ai-selection-view">
+            <div class="page-header">
+                <h1 class="page-title">AI Assistants</h1>
+                <p class="page-subtitle">Choose an AI assistant to help with your weight loss journey</p>
+            </div>
+            
+            <div class="ai-assistants-container">
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon buddy-icon">
+                            <i class="fas fa-robot"></i>
+                        </div>
+                        <h3 class="ai-title">AI Buddy</h3>
+                    </div>
+                    <p class="ai-description">Your personal motivator and guide. Get customized advice, track progress, and receive encouragement throughout your weight loss journey.</p>
+                    <button class="ai-button" id="openBuddyChat">
+                        <i class="fas fa-comments"></i>
+                        Chat Now
+                    </button>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon chef-icon">
+                            <i class="fas fa-utensils"></i>
+                        </div>
+                        <h3 class="ai-title">AI Chef</h3>
+                    </div>
+                    <p class="ai-description">Your nutritional advisor. Get healthy recipes, meal plans, and dietary advice tailored to your weight loss goals and dietary preferences.</p>
+                    <button class="ai-button" id="openChefChat">
+                        <i class="fas fa-comments"></i>
+                        Chat Now
+                    </button>
+                </div>
+                
+                <div class="ai-card">
+                    <div class="ai-card-header">
+                        <div class="ai-icon trainer-icon">
+                            <i class="fas fa-dumbbell"></i>
+                        </div>
+                        <h3 class="ai-title">AI Trainer</h3>
+                    </div>
+                    <p class="ai-description">Your fitness coach. Get personalized workout plans, exercise tips, and activity recommendations based on your fitness level and goals.</p>
+                    <button class="ai-button" id="openTrainerChat">
+                        <i class="fas fa-comments"></i>
+                        Chat Now
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- AI Buddy Chat View -->
+        <div id="buddy-chat-view" class="ai-chat-container">
+            <a href="#" class="back-to-assistants" id="backFromBuddy">
+                <i class="fas fa-arrow-left"></i> Back to AI Assistants
+            </a>
+            <div class="ai-chat-header">
+                <div class="ai-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI Buddy - Motivation Coach</h3>
+                <button class="ai-close-btn" id="closeBuddyChat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-chat-messages" id="buddyChatMessages"></div>
+            <div class="ai-typing" id="buddyTyping">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <div class="ai-chat-input">
+                <input type="text" id="buddyMessageInput" placeholder="Ask for motivation, advice, or track your progress...">
+                <button id="buddySendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- AI Chef Chat View -->
+        <div id="chef-chat-view" class="ai-chat-container">
+            <a href="#" class="back-to-assistants" id="backFromChef">
+                <i class="fas fa-arrow-left"></i> Back to AI Assistants
+            </a>
+            <div class="ai-chat-header chef">
+                <div class="ai-icon">
+                    <i class="fas fa-utensils"></i>
+                </div>
+                <h3>AI Chef - Nutrition Coach</h3>
+                <button class="ai-close-btn" id="closeChefChat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-chat-messages" id="chefChatMessages"></div>
+            <div class="ai-typing" id="chefTyping">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <div class="ai-chat-input chef">
+                <input type="text" id="chefMessageInput" placeholder="Ask for recipes, meal plans, or nutrition advice...">
+                <button id="chefSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- AI Trainer Chat View -->
+        <div id="trainer-chat-view" class="ai-chat-container">
+            <a href="#" class="back-to-assistants" id="backFromTrainer">
+                <i class="fas fa-arrow-left"></i> Back to AI Assistants
+            </a>
+            <div class="ai-chat-header trainer">
+                <div class="ai-icon">
+                    <i class="fas fa-dumbbell"></i>
+                </div>
+                <h3>AI Trainer - Fitness Coach</h3>
+                <button class="ai-close-btn" id="closeTrainerChat">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="ai-chat-messages" id="trainerChatMessages"></div>
+            <div class="ai-typing" id="trainerTyping">
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+                <div class="typing-dot"></div>
+            </div>
+            <div class="ai-chat-input trainer">
+                <input type="text" id="trainerMessageInput" placeholder="Ask for workout plans, exercise tips, or fitness advice...">
+                <button id="trainerSendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer with Privacy Policy -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 SlimEasy | <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
+        </div>
+    </footer>
+    
+    <script src="theme.js"></script>
+    <script src="utils.js"></script>
+    <script src="ai-buddy.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize page
+            initializePage();
+            
+            // Initialize views
+            const selectionView = document.getElementById('ai-selection-view');
+            const buddyChatView = document.getElementById('buddy-chat-view');
+            const chefChatView = document.getElementById('chef-chat-view');
+            const trainerChatView = document.getElementById('trainer-chat-view');
+            
+            // AI Buddy Chat
+            const openBuddyChat = document.getElementById('openBuddyChat');
+            const closeBuddyChat = document.getElementById('closeBuddyChat');
+            const backFromBuddy = document.getElementById('backFromBuddy');
+            const buddyMessageInput = document.getElementById('buddyMessageInput');
+            const buddySendBtn = document.getElementById('buddySendBtn');
+            const buddyChatMessages = document.getElementById('buddyChatMessages');
+            
+            // AI Chef Chat
+            const openChefChat = document.getElementById('openChefChat');
+            const closeChefChat = document.getElementById('closeChefChat');
+            const backFromChef = document.getElementById('backFromChef');
+            const chefMessageInput = document.getElementById('chefMessageInput');
+            const chefSendBtn = document.getElementById('chefSendBtn');
+            const chefChatMessages = document.getElementById('chefChatMessages');
+            
+            // AI Trainer Chat
+            const openTrainerChat = document.getElementById('openTrainerChat');
+            const closeTrainerChat = document.getElementById('closeTrainerChat');
+            const backFromTrainer = document.getElementById('backFromTrainer');
+            const trainerMessageInput = document.getElementById('trainerMessageInput');
+            const trainerSendBtn = document.getElementById('trainerSendBtn');
+            const trainerChatMessages = document.getElementById('trainerChatMessages');
+            
+            // Event handlers for opening chat views
+            openBuddyChat.addEventListener('click', function() {
+                selectionView.style.display = 'none';
+                buddyChatView.classList.add('active');
+                
+                // Initialize buddy chat if it's empty
+                if (buddyChatMessages.children.length === 0) {
+                    addBuddyMessage("Hi there! I'm your SlimEasy AI Buddy. I'm here to provide motivation, support, and guidance on your weight loss journey. How can I help you today?");
+                }
+                
+                buddyMessageInput.focus();
+            });
+            
+            openChefChat.addEventListener('click', function() {
+                selectionView.style.display = 'none';
+                chefChatView.classList.add('active');
+                
+                // Initialize chef chat if it's empty
+                if (chefChatMessages.children.length === 0) {
+                    addChefMessage("Hello! I'm your SlimEasy AI Chef. I can help you with healthy recipes, meal planning, and nutritional advice tailored to your dietary preferences and weight loss goals. What would you like help with today?");
+                }
+                
+                chefMessageInput.focus();
+            });
+            
+            openTrainerChat.addEventListener('click', function() {
+                selectionView.style.display = 'none';
+                trainerChatView.classList.add('active');
+                
+                // Initialize trainer chat if it's empty
+                if (trainerChatMessages.children.length === 0) {
+                    addTrainerMessage("Hi there! I'm your SlimEasy AI Trainer. I can help you with personalized workout plans, exercise recommendations, and fitness tips based on your goals and fitness level. How can I assist you today?");
+                }
+                
+                trainerMessageInput.focus();
+            });
+            
+            // Event handlers for closing chat views
+            function closeAllChats() {
+                selectionView.style.display = 'block';
+                buddyChatView.classList.remove('active');
+                chefChatView.classList.remove('active');
+                trainerChatView.classList.remove('active');
+            }
+            
+            closeBuddyChat.addEventListener('click', closeAllChats);
+            closeChefChat.addEventListener('click', closeAllChats);
+            closeTrainerChat.addEventListener('click', closeAllChats);
+            backFromBuddy.addEventListener('click', closeAllChats);
+            backFromChef.addEventListener('click', closeAllChats);
+            backFromTrainer.addEventListener('click', closeAllChats);
+            
+            // Send message functions
+            buddySendBtn.addEventListener('click', function() {
+                sendBuddyMessage();
+            });
+            
+            buddyMessageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendBuddyMessage();
+                }
+            });
+            
+            chefSendBtn.addEventListener('click', function() {
+                sendChefMessage();
+            });
+            
+            chefMessageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendChefMessage();
+                }
+            });
+            
+            trainerSendBtn.addEventListener('click', function() {
+                sendTrainerMessage();
+            });
+            
+            trainerMessageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    sendTrainerMessage();
+                }
+            });
+            
+            // Message handling functions
+            function sendBuddyMessage() {
+                if (!buddyMessageInput.value.trim()) return;
+                
+                // Add user message
+                addUserMessage(buddyMessageInput.value, buddyChatMessages);
+                
+                // Store message and clear input
+                const messageText = buddyMessageInput.value;
+                buddyMessageInput.value = '';
+                
+                // Show typing indicator
+                document.getElementById('buddyTyping').style.display = 'flex';
+                
+                // Get AI response (using existing function if available, or simulating)
+                setTimeout(() => {
+                    document.getElementById('buddyTyping').style.display = 'none';
+                    
+                    // Use actual AI function if available, otherwise simulate response
+                    if (typeof generateBuddyResponse === 'function') {
+                        const response = generateBuddyResponse(messageText);
+                        addBuddyMessage(response);
+                    } else {
+                        // Simulated response
+                        let response = "I understand. I'm here to support you on your weight loss journey.";
+                        
+                        if (messageText.toLowerCase().includes('motivation') || messageText.toLowerCase().includes('motivate')) {
+                            response = "Remember why you started this journey. Every small step counts, and consistency is key. I believe in you!";
+                        } else if (messageText.toLowerCase().includes('goal') || messageText.toLowerCase().includes('target')) {
+                            response = "Setting realistic goals is important. Let's break down your main goal into smaller, achievable milestones that will keep you motivated.";
+                        } else if (messageText.toLowerCase().includes('stuck') || messageText.toLowerCase().includes('plateau')) {
+                            response = "Weight loss plateaus are normal. We could try switching up your routine, adjusting your calorie intake slightly, or focusing on non-scale victories for a while.";
+                        }
+                        
+                        addBuddyMessage(response);
+                    }
+                }, 1500);
+            }
+            
+            function sendChefMessage() {
+                if (!chefMessageInput.value.trim()) return;
+                
+                // Add user message
+                addUserMessage(chefMessageInput.value, chefChatMessages);
+                
+                // Store message and clear input
+                const messageText = chefMessageInput.value;
+                chefMessageInput.value = '';
+                
+                // Show typing indicator
+                document.getElementById('chefTyping').style.display = 'flex';
+                
+                // Get AI response
+                setTimeout(() => {
+                    document.getElementById('chefTyping').style.display = 'none';
+                    
+                    // Use actual AI function if available, otherwise simulate response
+                    if (typeof generateChefResponse === 'function') {
+                        const response = generateChefResponse(messageText);
+                        addChefMessage(response);
+                    } else {
+                        // Simulated response
+                        let response = "I'd be happy to help with that. For detailed nutritional advice and personalized recipes, I'll need some information about your dietary preferences and goals.";
+                        
+                        if (messageText.toLowerCase().includes('recipe') || messageText.toLowerCase().includes('food')) {
+                            response = "I can suggest some healthy recipes based on your preferences. What ingredients do you have available or what type of cuisine do you enjoy?";
+                        } else if (messageText.toLowerCase().includes('meal plan') || messageText.toLowerCase().includes('plan')) {
+                            response = "Creating a personalized meal plan is a great idea! To get started, I'll need to know your calorie goals, dietary restrictions, and food preferences.";
+                        } else if (messageText.toLowerCase().includes('calorie') || messageText.toLowerCase().includes('calories')) {
+                            response = "Calorie management is important for weight loss. Based on your profile, I can help you determine an appropriate calorie target and suggest meals that fit within that range.";
+                        }
+                        
+                        addChefMessage(response);
+                    }
+                }, 1500);
+            }
+            
+            function sendTrainerMessage() {
+                if (!trainerMessageInput.value.trim()) return;
+                
+                // Add user message
+                addUserMessage(trainerMessageInput.value, trainerChatMessages);
+                
+                // Store message and clear input
+                const messageText = trainerMessageInput.value;
+                trainerMessageInput.value = '';
+                
+                // Show typing indicator
+                document.getElementById('trainerTyping').style.display = 'flex';
+                
+                // Get AI response
+                setTimeout(() => {
+                    document.getElementById('trainerTyping').style.display = 'none';
+                    
+                    // Use actual AI function if available, otherwise simulate response
+                    if (typeof generateTrainerResponse === 'function') {
+                        const response = generateTrainerResponse(messageText);
+                        addTrainerMessage(response);
+                    } else {
+                        // Simulated response
+                        let response = "I'm here to help with your fitness journey. For personalized workout recommendations, I'll need to know your fitness level, goals, and any equipment you have access to.";
+                        
+                        if (messageText.toLowerCase().includes('workout') || messageText.toLowerCase().includes('exercise')) {
+                            response = "I can suggest some effective workouts for weight loss. Do you prefer home workouts or gym exercises? And what's your current fitness level?";
+                        } else if (messageText.toLowerCase().includes('cardio') || messageText.toLowerCase().includes('running')) {
+                            response = "Cardio exercises are great for burning calories. Based on your profile, I can recommend a suitable cardio routine that will help with your weight loss goals.";
+                        } else if (messageText.toLowerCase().includes('strength') || messageText.toLowerCase().includes('weights')) {
+                            response = "Strength training is important for building muscle, which can boost your metabolism. I can suggest a balanced strength routine that fits your fitness level.";
+                        }
+                        
+                        addTrainerMessage(response);
+                    }
+                }, 1500);
+            }
+            
+            // Helper functions for adding messages
+            function addUserMessage(messageText, chatContainer) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'ai-message user';
+                messageDiv.innerHTML = `
+                    <div class="ai-message-content">${messageText}</div>
+                    <div class="ai-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                `;
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+            
+            function addBuddyMessage(messageText) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'ai-message buddy';
+                messageDiv.innerHTML = `
+                    <div class="ai-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="ai-message-content">${messageText}</div>
+                `;
+                buddyChatMessages.appendChild(messageDiv);
+                buddyChatMessages.scrollTop = buddyChatMessages.scrollHeight;
+            }
+            
+            function addChefMessage(messageText) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'ai-message chef';
+                messageDiv.innerHTML = `
+                    <div class="ai-avatar">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="ai-message-content">${messageText}</div>
+                `;
+                chefChatMessages.appendChild(messageDiv);
+                chefChatMessages.scrollTop = chefChatMessages.scrollHeight;
+            }
+            
+            function addTrainerMessage(messageText) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'ai-message trainer';
+                messageDiv.innerHTML = `
+                    <div class="ai-avatar">
+                        <i class="fas fa-dumbbell"></i>
+                    </div>
+                    <div class="ai-message-content">${messageText}</div>
+                `;
+                trainerChatMessages.appendChild(messageDiv);
+                trainerChatMessages.scrollTop = trainerChatMessages.scrollHeight;
+            }
+        });
+    </script>
+</body>
+</html>

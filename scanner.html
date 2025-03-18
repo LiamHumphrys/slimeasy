@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="dark-mode-fix.js"></script>
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SlimEasy - Scan food barcodes for quick and easy food tracking">
+    <meta name="theme-color" content="#4CAF50">
+    <title>SlimEasy - Barcode Scanner</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- QuaggaJS for barcode scanning -->
+    <script src="https://cdn.jsdelivr.net/npm/@ericblade/quagga2/dist/quagga.min.js"></script>
+    <!-- Preload critical assets -->
+    <link rel="preload" href="theme.js" as="script">
+    <link rel="preload" href="utils.js" as="script">
+    <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <link rel="stylesheet" href="footer.css">
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="main-nav-container">
+            <a href="index.html" class="main-nav-logo">
+                <img src="slimeasylogo.jpg" alt="SlimEasy">
+                <span>SlimEasy</span>
+            </a>
+            <button class="menu-toggle" id="menuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="main-nav-links" id="mainNavLinks">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-user"></i> Profile
+                </a>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="tracker.html" class="nav-link">
+                    <i class="fas fa-utensils"></i> Food Tracker
+                </a>
+                <a href="exercise.html" class="nav-link">
+                    <i class="fas fa-running"></i> Exercise
+                </a>
+                <a href="calendar.html" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="community.html" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1><i class="fas fa-barcode"></i> Barcode Scanner</h1>
+        <p id="welcomeMessage"></p>
+        
+        <div class="scanner-section">
+            <div class="scanner-modes">
+                <button id="cameraBtn" class="scanner-mode-btn active">
+                    <i class="fas fa-camera"></i> Camera Scanner
+                </button>
+                <button id="manualBtn" class="scanner-mode-btn">
+                    <i class="fas fa-keyboard"></i> Manual Entry
+                </button>
+            </div>
+            
+            <!-- Camera Scanner -->
+            <div id="scannerContainer" class="scanner-container">
+                <div id="scanner" class="viewport"></div>
+                <div class="scanner-overlay">
+                    <div class="scanning-area">
+                        <div class="corner top-left"></div>
+                        <div class="corner top-right"></div>
+                        <div class="corner bottom-left"></div>
+                        <div class="corner bottom-right"></div>
+                        <div class="scan-line"></div>
+                    </div>
+                </div>
+                <div class="scanner-controls">
+                    <button id="switchCamera" class="control-btn">
+                        <i class="fas fa-sync-alt"></i> Switch Camera
+                    </button>
+                    <button id="toggleFlash" class="control-btn">
+                        <i class="fas fa-bolt"></i> Toggle Flash
+                    </button>
+                </div>
+                <div class="scanner-instructions">
+                    <p>Position barcode within the scanning area</p>
+                </div>
+            </div>
+            
+            <!-- Manual Entry -->
+            <div id="manualEntry" class="manual-entry" style="display: none;">
+                <div class="form-group">
+                    <label for="barcodeInput">Enter Barcode Number</label>
+                    <div class="barcode-input-container">
+                        <input type="number" id="barcodeInput" placeholder="e.g. 737628064502" pattern="[0-9]*" inputmode="numeric">
+                        <button id="lookupBtn" class="lookup-btn">
+                            <i class="fas fa-search"></i> Lookup
+                        </button>
+                    </div>
+                    <small>Enter EAN, UPC or other product barcode</small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="scanResults" class="scan-results" style="display: none;">
+            <div class="results-header">
+                <h2>Scan Results</h2>
+                <button id="newScanBtn" class="new-scan-btn">
+                    <i class="fas fa-redo"></i> New Scan
+                </button>
+            </div>
+            
+            <div class="product-card">
+                <div class="product-header">
+                    <div class="product-barcode">
+                        <span id="barcodeValue">Barcode: </span>
+                    </div>
+                </div>
+                
+                <div id="productInfo" class="product-info">
+                    <div id="productDetails" class="product-details">
+                        <h3 id="productName">Product Name</h3>
+                        <div class="nutritional-info">
+                            <div class="nutrient-row">
+                                <span class="nutrient-label">Calories:</span>
+                                <span id="productCalories" class="nutrient-value">0</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label">Protein:</span>
+                                <span id="productProtein" class="nutrient-value">0g</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label">Carbs:</span>
+                                <span id="productCarbs" class="nutrient-value">0g</span>
+                            </div>
+                            <div class="nutrient-row">
+                                <span class="nutrient-label">Fat:</span>
+                                <span id="productFat" class="nutrient-value">0g</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="productNotFound" class="product-not-found" style="display: none;">
+                        <p>Product not found in database</p>
+                        <button id="addManuallyBtn" class="secondary-button">
+                            <i class="fas fa-plus"></i> Add Manually
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="product-actions">
+                    <div class="form-group">
+                        <label for="mealType">Add to:</label>
+                        <select id="mealType">
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                            <option value="snack">Snack</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="servingSize">Serving Size:</label>
+                        <div class="serving-input">
+                            <input type="number" id="servingSize" value="1" min="0.25" step="0.25">
+                            <span id="servingUnit">serving</span>
+                        </div>
+                    </div>
+                    
+                    <button id="addToLogBtn" class="primary-button">
+                        <i class="fas fa-plus-circle"></i> Add to Food Log
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Recent Scans -->
+        <div class="recent-scans">
+            <h2>Recent Scans</h2>
+            <div id="recentScansList" class="recent-scans-list">
+                <!-- Will be populated by JavaScript -->
+                <div class="empty-list">
+                    <p>No recent scans</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add Manual Product Modal -->
+    <div id="addProductModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Product Details</h2>
+                <button id="closeProductModal" class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addProductForm">
+                    <input type="hidden" id="productBarcode" name="barcode">
+                    
+                    <div class="form-group">
+                        <label for="manualProductName">Product Name:</label>
+                        <input type="text" id="manualProductName" name="name" required placeholder="e.g. Greek Yogurt">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="manualBrand">Brand (optional):</label>
+                        <input type="text" id="manualBrand" name="brand" placeholder="e.g. Chobani">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="manualCalories">Calories:</label>
+                            <input type="number" id="manualCalories" name="calories" required min="0" placeholder="per serving">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manualServingSize">Serving Size:</label>
+                            <input type="text" id="manualServingSize" name="servingSize" placeholder="e.g. 100g">
+                        </div>
+                    </div>
+                    
+                    <h3>Nutrition Facts</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="manualProtein">Protein (g):</label>
+                            <input type="number" id="manualProtein" name="protein" min="0" step="0.1" placeholder="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manualCarbs">Carbs (g):</label>
+                            <input type="number" id="manualCarbs" name="carbs" min="0" step="0.1" placeholder="0">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="manualFat">Fat (g):</label>
+                            <input type="number" id="manualFat" name="fat" min="0" step="0.1" placeholder="0">
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="primary-button">
+                            <i class="fas fa-save"></i> Save Product
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer with Privacy Policy -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 SlimEasy | <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
+        </div>
+    </footer>
+    
+    <script src="theme.js"></script>
+    <script src="utils.js"></script>
+    <script src="scanner.js"></script>
+    <script>
+        // Initialize when document is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize page (theme, menu, login check)
+            if (initializePage()) {
+                // Initialize scanner
+                initScanner();
+                
+                // Load recent scans
+                loadRecentScans();
+                
+                // Register service worker
+                registerServiceWorker();
+            }
+        });
+    </script>
+    
+    <style>
+        /* Scanner Page Styles */
+        .scanner-section {
+            margin-bottom: 30px;
+        }
+        
+        .scanner-modes {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .scanner-mode-btn {
+            flex: 1;
+            padding: 12px;
+            background-color: var(--background-main);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            color: var(--text-primary);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .scanner-mode-btn.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        
+        .scanner-container {
+            position: relative;
+            margin-bottom: 20px;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .viewport {
+            width: 100%;
+            height: 0;
+            padding-bottom: 75%; /* 4:3 aspect ratio */
+            position: relative;
+            background-color: #000;
+            overflow: hidden;
+        }
+        
+        .viewport video, .viewport canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .scanner-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        .scanning-area {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70%;
+            height: 40%;
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+        }
+        
+        .corner {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            border-color: var(--primary-color);
+            border-style: solid;
+            border-width: 0;
+        }
+        
+        .top-left {
+            top: -2px;
+            left: -2px;
+            border-top-width: 4px;
+            border-left-width: 4px;
+        }
+        
+        .top-right {
+            top: -2px;
+            right: -2px;
+            border-top-width: 4px;
+            border-right-width: 4px;
+        }
+        
+        .bottom-left {
+            bottom: -2px;
+            left: -2px;
+            border-bottom-width: 4px;
+            border-left-width: 4px;
+        }
+        
+        .bottom-right {
+            bottom: -2px;
+            right: -2px;
+            border-bottom-width: 4px;
+            border-right-width: 4px;
+        }
+        
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: var(--primary-color);
+            top: 0;
+            box-shadow: 0 0 8px 2px var(--primary-color);
+            animation: scan 2s linear infinite;
+        }
+        
+        @keyframes scan {
+            0% {
+                top: 0;
+            }
+            100% {
+                top: 100%;
+            }
+        }
+        
+        .scanner-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+        
+        .control-btn {
+            padding: 8px 12px;
+            background-color: var(--background-main);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+        
+        .control-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        
+        .scanner-instructions {
+            text-align: center;
+            margin-top: 15px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        .manual-entry {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .barcode-input-container {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .barcode-input-container input {
+            flex-grow: 1;
+        }
+        
+        .lookup-btn {
+            padding: 8px 15px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--input-border-radius);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+        
+        .lookup-btn:hover {
+            background-color: var(--primary-dark);
+        }
+        
+        /* Results Section */
+        .scan-results {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .new-scan-btn {
+            padding: 8px 15px;
+            background-color: var(--background-main);
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            color: var(--text-primary);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s;
+        }
+        
+        .new-scan-btn:hover {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        
+        .product-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 20px;
+        }
+        
+        .product-header {
+            padding: 15px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+        
+        .product-barcode {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .product-info {
+            padding: 20px;
+        }
+        
+        .product-details h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+            color: var(--text-primary);
+        }
+        
+        .nutritional-info {
+            background-color: var(--background-main);
+            border-radius: var(--input-border-radius);
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .nutrient-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        
+        .nutrient-row:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        
+        .product-not-found {
+            text-align: center;
+            padding: 30px 20px;
+            color: var(--text-secondary);
+        }
+        
+        .product-not-found p {
+            margin-bottom: 15px;
+        }
+        
+        .product-actions {
+            padding: 20px;
+            border-top: 1px solid var(--divider-color);
+            background-color: var(--background-main);
+        }
+        
+        .serving-input {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* Recent Scans */
+        .recent-scans {
+            margin-bottom: 30px;
+        }
+        
+        .recent-scans h2 {
+            margin-bottom: 15px;
+        }
+        
+        .recent-scans-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+        
+        .recent-scan-card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .recent-scan-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .recent-scan-header {
+            padding: 10px 15px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            font-size: 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .recent-scan-info {
+            padding: 15px;
+        }
+        
+        .recent-scan-name {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 500;
+        }
+        
+        .recent-scan-details {
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .recent-scan-detail {
+            padding: 3px 8px;
+            background-color: var(--background-main);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .empty-list {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 30px 20px;
+            background-color: var(--background-main);
+            border-radius: var(--border-radius);
+            color: var(--text-secondary);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            max-width: 500px;
+            margin: 30px auto;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            animation: modalFadeIn 0.3s;
+        }
+        
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--divider-color);
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 18px;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .close-modal:hover {
+            color: var(--primary-color);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .viewport {
+                padding-bottom: 100%; /* Make more square on mobile */
+            }
+            
+            .form-row {
+                flex-direction: column;
+            }
+            
+            .recent-scans-list {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</body>
+</html>
