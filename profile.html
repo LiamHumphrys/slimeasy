@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="dark-mode-fix.js"></script>
+    <!-- Google AdSense verification -->
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6511293796177424"
+     crossorigin="anonymous"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="SlimEasy - Manage your user profile and sync settings">
+    <meta name="theme-color" content="#4CAF50">
+    <title>SlimEasy - Profile Settings</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="./manifest.json">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Favicon -->
+    <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="slimeasylogo.jpg">
+    <!-- Preload critical assets -->
+    <link rel="preload" href="theme.js" as="script">
+    <link rel="preload" href="utils.js" as="script">
+    <link rel="preload" href="crypto-utils.js" as="script">
+    <link rel="preload" href="sync-ui.js" as="script">
+    <link rel="preload" href="slimeasylogo.jpg" as="image">
+    <link rel="stylesheet" href="footer.css">
+</head>
+<body>
+    <!-- Main Navigation -->
+    <nav class="main-nav">
+        <div class="main-nav-container">
+            <a href="index.html" class="main-nav-logo">
+                <img src="slimeasylogo.jpg" alt="SlimEasy">
+                <span>SlimEasy</span>
+            </a>
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation menu" onclick="toggleMainMobileMenu(); return false;">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="main-nav-links" id="mainNavLinks">
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i> Home
+                </a>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-chart-line"></i> Dashboard
+                </a>
+                <a href="tracker.html" class="nav-link">
+                    <i class="fas fa-utensils"></i> Food Tracker
+                </a>
+                <a href="exercise.html" class="nav-link">
+                    <i class="fas fa-running"></i> Exercise
+                </a>
+                <a href="calendar.html" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> Calendar
+                </a>
+                <a href="wearable-settings.html" class="nav-link">
+                    <i class="fas fa-sync"></i> Wearables
+                </a>
+                <a href="community.html" class="nav-link">
+                    <i class="fas fa-users"></i> Community
+                </a>
+                <a href="profile.html" class="nav-link active">
+                    <i class="fas fa-user-cog"></i> Profile
+                </a>
+                <a href="contact.html" class="nav-link">
+                    <i class="fas fa-envelope"></i> Contact Us
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <h1>Profile Settings</h1>
+        <p id="welcomeMessage"></p>
+        
+        <!-- Tab Navigation -->
+        <div class="tab-bar main-tabs">
+            <button type="button" class="tab-button active" data-tab="profile-info">
+                <i class="fas fa-user"></i> Profile
+            </button>
+            <button type="button" class="tab-button" data-tab="account-settings">
+                <i class="fas fa-cog"></i> Account
+            </button>
+            <button type="button" class="tab-button" data-tab="local-backup">
+                <i class="fas fa-save"></i> Data Backup
+            </button>
+            <button type="button" class="tab-button" data-tab="privacy">
+                <i class="fas fa-shield-alt"></i> Privacy
+            </button>
+        </div>
+        
+        <!-- Profile Info Tab -->
+        <section id="profile-info" class="tab-content">
+            <div class="card">
+                <h2><i class="fas fa-user-circle"></i> Your Profile</h2>
+                
+                <form id="profileForm" class="settings-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="displayName">
+                                <i class="fas fa-user"></i> Display Name
+                            </label>
+                            <input type="text" id="displayName" placeholder="Your name">
+                        </div>
+                        <div class="form-group photo-upload">
+                            <label>
+                                <i class="fas fa-camera"></i> Profile Photo
+                            </label>
+                            <div class="profile-photo-container">
+                                <img id="profilePhoto" src="slimeasylogo.jpg" alt="Profile photo">
+                                <button type="button" id="uploadPhotoBtn" class="photo-upload-btn">
+                                    <i class="fas fa-upload"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">
+                            <i class="fas fa-envelope"></i> Email Address
+                        </label>
+                        <input type="email" id="email" readonly>
+                        <span class="form-note">Email cannot be changed</span>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="heightUnit">
+                                <i class="fas fa-ruler-vertical"></i> Height Units
+                            </label>
+                            <select id="heightUnit">
+                                <option value="cm">Centimeters (cm)</option>
+                                <option value="ft">Feet/Inches (ft/in)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="weightUnit">
+                                <i class="fas fa-weight"></i> Weight Units
+                            </label>
+                            <select id="weightUnit">
+                                <option value="kg">Kilograms (kg)</option>
+                                <option value="lb">Pounds (lb)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="action-button primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </form>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-weight"></i> Body Metrics</h2>
+                
+                <form id="metricsForm" class="settings-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="age">
+                                <i class="fas fa-birthday-cake"></i> Age
+                            </label>
+                            <input type="number" id="age" min="1" max="120">
+                        </div>
+                        <div class="form-group">
+                            <label for="gender">
+                                <i class="fas fa-venus-mars"></i> Gender
+                            </label>
+                            <select id="gender">
+                                <option value="male">Male</option>
+                                <option value="female">Female</option>
+                                <option value="other">Other/Prefer not to say</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="currentWeight">
+                                <i class="fas fa-weight"></i> Current Weight
+                            </label>
+                            <div class="input-with-unit">
+                                <input type="number" id="currentWeight" step="0.1" min="1">
+                                <span class="unit" id="weightUnitDisplay">kg</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="heightValue">
+                                <i class="fas fa-ruler-vertical"></i> Height
+                            </label>
+                            <div class="height-inputs">
+                                <div class="input-with-unit">
+                                    <input type="number" id="heightValue" step="0.1" min="1">
+                                    <span class="unit" id="heightUnitDisplay">cm</span>
+                                </div>
+                                <div class="input-with-unit" id="heightInchesContainer" style="display:none;">
+                                    <input type="number" id="heightInches" step="0.1" min="0" max="11">
+                                    <span class="unit">in</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="activityLevel">
+                            <i class="fas fa-walking"></i> Activity Level
+                        </label>
+                        <select id="activityLevel">
+                            <option value="1.2">Sedentary (little or no exercise)</option>
+                            <option value="1.375">Lightly active (light exercise 1-3 days/week)</option>
+                            <option value="1.55">Moderately active (moderate exercise 3-5 days/week)</option>
+                            <option value="1.725">Very active (hard exercise 6-7 days/week)</option>
+                            <option value="1.9">Extremely active (very hard exercise & physical job)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="goalWeight">
+                                <i class="fas fa-bullseye"></i> Goal Weight
+                            </label>
+                            <div class="input-with-unit">
+                                <input type="number" id="goalWeight" step="0.1" min="1">
+                                <span class="unit" id="goalWeightUnitDisplay">kg</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="goalDate">
+                                <i class="fas fa-calendar-day"></i> Target Date
+                            </label>
+                            <input type="date" id="goalDate">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="action-button primary">
+                        <i class="fas fa-save"></i> Update Metrics
+                    </button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Account Settings Tab -->
+        <section id="account-settings" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2><i class="fas fa-cog"></i> Account Settings</h2>
+                
+                <form id="passwordForm" class="settings-form">
+                    <div class="form-group">
+                        <label for="currentPassword">
+                            <i class="fas fa-lock"></i> Current Password
+                        </label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="newPassword">
+                                <i class="fas fa-key"></i> New Password
+                            </label>
+                            <input type="password" id="newPassword" placeholder="Enter new password">
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">
+                                <i class="fas fa-check-double"></i> Confirm Password
+                            </label>
+                            <input type="password" id="confirmPassword" placeholder="Confirm new password">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="action-button primary">
+                        <i class="fas fa-save"></i> Change Password
+                    </button>
+                </form>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-bell"></i> Notification Settings</h3>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="emailNotifications" class="toggle-input">
+                            <label for="emailNotifications" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="emailNotifications">Email Notifications</label>
+                            <span class="toggle-description">Receive updates and weekly summaries via email</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="pushNotifications" class="toggle-input">
+                            <label for="pushNotifications" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="pushNotifications">Push Notifications</label>
+                            <span class="toggle-description">Receive reminders and alerts on your device</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="reminderNotifications" class="toggle-input">
+                            <label for="reminderNotifications" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="reminderNotifications">Daily Reminders</label>
+                            <span class="toggle-description">Get reminded to log your meals and activities</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-sign-out-alt"></i> Account Actions</h3>
+                    
+                    <div class="account-actions">
+                        <button type="button" id="logoutButton" class="action-button secondary">
+                            <i class="fas fa-sign-out-alt"></i> Log Out
+                        </button>
+                        <button type="button" id="deleteAccountButton" class="action-button danger">
+                            <i class="fas fa-user-times"></i> Delete Account
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Local Backup Tab -->
+        <section id="local-backup" class="tab-content" style="display: none;">
+            <div id="syncSettingsContainer">
+                <!-- Local backup UI will be inserted here by JavaScript -->
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-question-circle"></i> About Local Storage</h2>
+                
+                <div class="about-sync">
+                    <div class="about-sync-item">
+                        <div class="about-sync-icon">
+                            <i class="fas fa-save"></i>
+                        </div>
+                        <div class="about-sync-content">
+                            <h3>Device Storage</h3>
+                            <p>All your data is stored locally on this device. To use on multiple devices, use the export function to save your data.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="about-sync-item">
+                        <div class="about-sync-icon">
+                            <i class="fas fa-file-export"></i>
+                        </div>
+                        <div class="about-sync-content">
+                            <h3>Data Export</h3>
+                            <p>You can export your data at any time to create a backup or transfer to another device.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="about-sync-item">
+                        <div class="about-sync-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                        <div class="about-sync-content">
+                            <h3>Privacy First</h3>
+                            <p>Your data stays on your device only. We don't collect or store your personal information on any servers.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="about-sync-item">
+                        <div class="about-sync-icon">
+                            <i class="fas fa-file-import"></i>
+                        </div>
+                        <div class="about-sync-content">
+                            <h3>Data Import</h3>
+                            <p>You can import your data on other devices by exporting it from this device first.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Privacy Tab -->
+        <section id="privacy" class="tab-content" style="display: none;">
+            <div class="card">
+                <h2><i class="fas fa-shield-alt"></i> Privacy Settings</h2>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-cookie-bite"></i> Cookie Preferences</h3>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="essentialCookies" class="toggle-input" checked disabled>
+                            <label for="essentialCookies" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="essentialCookies">Essential Cookies</label>
+                            <span class="toggle-description">Required for the app to function properly (cannot be disabled)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="analyticsCookies" class="toggle-input">
+                            <label for="analyticsCookies" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="analyticsCookies">Analytics Cookies</label>
+                            <span class="toggle-description">Help us understand how you use the app so we can improve it</span>
+                        </div>
+                    </div>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="marketingCookies" class="toggle-input">
+                            <label for="marketingCookies" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="marketingCookies">Marketing Cookies</label>
+                            <span class="toggle-description">Used to show you relevant ads and offers</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-heartbeat"></i> Data Usage</h3>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="anonymousUsage" class="toggle-input">
+                            <label for="anonymousUsage" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="anonymousUsage">Share Anonymous Data</label>
+                            <span class="toggle-description">Allow your anonymous data to be used for research and improving our services</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-file-download"></i> Your Data</h3>
+                    
+                    <div class="data-actions">
+                        <button type="button" id="downloadDataBtn" class="action-button secondary">
+                            <i class="fas fa-file-download"></i> Download My Data
+                        </button>
+                        <button type="button" id="deleteDataBtn" class="action-button danger">
+                            <i class="fas fa-trash-alt"></i> Delete My Data
+                        </button>
+                    </div>
+                    
+                    <p class="privacy-note">
+                        <i class="fas fa-info-circle"></i> 
+                        For more information about how we handle your data, please read our 
+                        <a href="privacy-policy.html" class="text-link">Privacy Policy</a>.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h2><i class="fas fa-user-shield"></i> Security</h2>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-history"></i> Login History</h3>
+                    
+                    <div class="login-history-list">
+                        <div class="login-history-item">
+                            <div class="login-history-details">
+                                <div class="login-date">Today, 10:45 AM</div>
+                                <div class="login-device">Chrome on Windows</div>
+                            </div>
+                            <div class="login-location">
+                                <i class="fas fa-map-marker-alt"></i> London, UK
+                            </div>
+                        </div>
+                        
+                        <div class="login-history-item">
+                            <div class="login-history-details">
+                                <div class="login-date">Yesterday, 8:30 PM</div>
+                                <div class="login-device">Safari on iPhone</div>
+                            </div>
+                            <div class="login-location">
+                                <i class="fas fa-map-marker-alt"></i> London, UK
+                            </div>
+                        </div>
+                        
+                        <button type="button" id="viewAllLoginsBtn" class="text-button">
+                            View complete login history
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3><i class="fas fa-key"></i> Two-Factor Authentication</h3>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="twoFactorAuth" class="toggle-input">
+                            <label for="twoFactorAuth" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="twoFactorAuth">Enable Two-Factor Authentication</label>
+                            <span class="toggle-description">Add an extra layer of security to your account</span>
+                        </div>
+                    </div>
+                    
+                    <div id="twoFactorSetup" style="display: none;">
+                        <p>To enable two-factor authentication, you'll need to:</p>
+                        <ol>
+                            <li>Install an authenticator app like Google Authenticator or Authy</li>
+                            <li>Scan the QR code that will be provided</li>
+                            <li>Enter the verification code from the app</li>
+                        </ol>
+                        <button type="button" id="setupTwoFactorBtn" class="action-button primary">
+                            <i class="fas fa-qrcode"></i> Set Up Two-Factor Authentication
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    
+    <!-- Confirmation Dialog -->
+    <div id="confirmationDialog" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="dialogTitle">Confirmation</h2>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p id="dialogMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelButton" class="action-button secondary">Cancel</button>
+                <button id="confirmButton" class="action-button danger">Confirm</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer with Privacy Policy -->
+    <footer class="app-footer">
+        <div class="footer-content">
+            <p>&copy; 2025 SlimEasy | <a href="privacy-policy.html" class="privacy-link">Privacy Policy</a></p>
+        </div>
+    </footer>
+    
+    <!-- Firebase stub -->
+    <script>
+        // Stub for Firebase that does nothing
+        window.firebase = {
+            auth: function() {
+                return {
+                    signInWithEmailAndPassword: function() { return Promise.resolve(); },
+                    createUserWithEmailAndPassword: function() { return Promise.resolve(); },
+                    signOut: function() { return Promise.resolve(); }
+                };
+            },
+            firestore: function() {
+                return {
+                    collection: function() { return { doc: function() { return { get: function() { return Promise.resolve(); } }; } }; }
+                };
+            }
+        };
+        
+        // Define firebase functions to prevent errors
+        function initializeFirebase() { 
+            console.log('Local storage is used instead of Firebase');
+            return;
+        }
+    </script>
+    
+    <style>
+        /* Tab Navigation */
+        .tab-bar {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 25px;
+            background-color: var(--background-main);
+            padding: 5px;
+            border-radius: var(--input-border-radius);
+        }
+        
+        .tab-button {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 12px 15px;
+            cursor: pointer;
+            font-weight: 500;
+            border-radius: var(--input-border-radius);
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .tab-button.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .tab-button:hover:not(.active) {
+            background-color: rgba(0,0,0,0.05);
+        }
+        
+        .tab-content {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        /* Form Styling */
+        .settings-form {
+            margin-bottom: 25px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .form-group label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+        }
+        
+        .form-group input[type="text"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group input[type="number"],
+        .form-group input[type="date"],
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--divider-color);
+            border-radius: var(--input-border-radius);
+            background-color: var(--background-main);
+            color: var(--text-primary);
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+        
+        .form-note {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 5px;
+            display: block;
+        }
+        
+        /* Height Input Styling */
+        .height-inputs {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .input-with-unit {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .input-with-unit input {
+            flex: 1;
+        }
+        
+        .input-with-unit .unit {
+            padding-left: 10px;
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+        
+        /* Profile Photo */
+        .photo-upload {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .profile-photo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #profilePhoto {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-color);
+        }
+        
+        .photo-upload-btn {
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .photo-upload-btn:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        /* Settings Sections */
+        .settings-section {
+            border-top: 1px solid var(--divider-color);
+            padding-top: 20px;
+            margin-top: 20px;
+        }
+        
+        .settings-section h3 {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 18px;
+        }
+        
+        /* Toggle Switch */
+        .settings-toggle {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        
+        .toggle-container {
+            position: relative;
+            width: 50px;
+            height: 24px;
+            margin-right: 15px;
+        }
+        
+        .toggle-input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-label {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 24px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .toggle-label:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+        
+        .toggle-input:checked + .toggle-label {
+            background-color: var(--primary-color);
+        }
+        
+        .toggle-input:checked + .toggle-label:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-label-text {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .toggle-label-text label {
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .toggle-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Action Buttons */
+        .account-actions,
+        .data-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .action-button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: var(--input-border-radius);
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .action-button:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+        
+        .action-button.secondary {
+            background-color: var(--background-main);
+            color: var(--text-primary);
+            border: 1px solid var(--divider-color);
+        }
+        
+        .action-button.secondary:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .action-button.danger {
+            background-color: rgba(244, 67, 54, 0.1);
+            color: #F44336;
+            border: 1px solid rgba(244, 67, 54, 0.2);
+        }
+        
+        .action-button.danger:hover {
+            background-color: rgba(244, 67, 54, 0.2);
+        }
+        
+        .text-button {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 14px;
+            padding: 5px 0;
+            text-decoration: underline;
+        }
+        
+        .text-button:hover {
+            color: var(--primary-dark);
+        }
+        
+        /* Privacy Note */
+        .privacy-note {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--background-main);
+            border-radius: var(--input-border-radius);
+            margin-top: 20px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .privacy-note i {
+            color: var(--primary-color);
+        }
+        
+        .text-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .text-link:hover {
+            text-decoration: underline;
+        }
+        
+        /* Login History */
+        .login-history-list {
+            background-color: var(--background-main);
+            border-radius: var(--input-border-radius);
+            overflow: hidden;
+        }
+        
+        .login-history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--divider-color);
+        }
+        
+        .login-history-item:last-child {
+            border-bottom: none;
+        }
+        
+        .login-date {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+        
+        .login-device {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .login-location {
+            font-size: 14px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        /* About Sync Section */
+        .about-sync {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .about-sync-item {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .about-sync-icon {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary-light);
+            color: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .about-sync-content h3 {
+            margin-top: 0;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+        
+        .about-sync-content p {
+            margin: 0;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* Modal Dialog */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            width: 100%;
+            max-width: 500px;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .modal-header {
+            padding: 15px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border-top-left-radius: var(--border-radius);
+            border-top-right-radius: var(--border-radius);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+            font-size: 20px;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            border-top: 1px solid var(--divider-color);
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .account-actions,
+            .data-actions {
+                flex-direction: column;
+            }
+            
+            .about-sync {
+                grid-template-columns: 1fr;
+            }
+            
+            .tab-button {
+                font-size: 14px;
+                padding: 10px;
+            }
+            
+            .tab-button i {
+                margin-right: 0;
+            }
+            
+            .main-tabs {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+    
+    <!-- Scripts -->
+    <script src="theme.js"></script>
+    <script src="utils.js"></script>
+    <script src="crypto-utils.js"></script>
+    
+    <script>
+        // Define firebase function for compatibility
+        function initializeFirebase() {
+            console.log('Using local storage only (Firebase not available)');
+            return;
+        }
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            // Call the firebase initialization function to prevent errors
+            initializeFirebase();
+            // Initialize the app
+            initializePage();
+            
+            // Set up tabs
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            // Check for hash in URL
+            const hash = window.location.hash.substring(1);
+            if (hash) {
+                // Find tab with matching data-tab
+                const matchingTab = document.querySelector(`.tab-button[data-tab="${hash}"]`);
+                if (matchingTab) {
+                    // Activate the matching tab
+                    tabButtons.forEach(tab => tab.classList.remove('active'));
+                    matchingTab.classList.add('active');
+                    
+                    // Show the corresponding content
+                    tabContents.forEach(content => content.style.display = 'none');
+                    const contentId = hash;
+                    document.getElementById(contentId).style.display = 'block';
+                }
+            }
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove active class from all buttons
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    
+                    // Add active class to the clicked button
+                    this.classList.add('active');
+                    
+                    // Hide all tab contents
+                    tabContents.forEach(content => content.style.display = 'none');
+                    
+                    // Show the corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).style.display = 'block';
+                    
+                    // Update URL hash
+                    window.location.hash = tabId;
+                });
+            });
+            
+            // Load user profile data
+            loadUserProfile();
+            
+            // Initialize local storage sync UI
+            initializeLocalStorageSync();
+            
+            // Set up form submissions
+            document.getElementById('profileForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateUserProfileInfo();
+            });
+            
+            document.getElementById('metricsForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateUserMetrics();
+            });
+            
+            document.getElementById('passwordForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                updateUserPassword();
+            });
+            
+            // Set up height unit toggle
+            const heightUnitSelect = document.getElementById('heightUnit');
+            const heightInchesContainer = document.getElementById('heightInchesContainer');
+            
+            heightUnitSelect.addEventListener('change', function() {
+                const heightUnitDisplay = document.getElementById('heightUnitDisplay');
+                
+                if (this.value === 'ft') {
+                    heightInchesContainer.style.display = 'flex';
+                    heightUnitDisplay.textContent = 'ft';
+                } else {
+                    heightInchesContainer.style.display = 'none';
+                    heightUnitDisplay.textContent = 'cm';
+                }
+            });
+            
+            // Set up weight unit toggle
+            const weightUnitSelect = document.getElementById('weightUnit');
+            
+            weightUnitSelect.addEventListener('change', function() {
+                const weightUnitDisplay = document.getElementById('weightUnitDisplay');
+                const goalWeightUnitDisplay = document.getElementById('goalWeightUnitDisplay');
+                
+                weightUnitDisplay.textContent = this.value;
+                goalWeightUnitDisplay.textContent = this.value;
+            });
+            
+            // Set up two-factor auth toggle
+            const twoFactorToggle = document.getElementById('twoFactorAuth');
+            const twoFactorSetup = document.getElementById('twoFactorSetup');
+            
+            twoFactorToggle.addEventListener('change', function() {
+                twoFactorSetup.style.display = this.checked ? 'block' : 'none';
+            });
+            
+            // Set up logout button
+            document.getElementById('logoutButton').addEventListener('click', function() {
+                showConfirmationDialog(
+                    'Log Out',
+                    'Are you sure you want to log out?',
+                    function() {
+                        signOut().then(() => {
+                            window.location.href = 'login.html';
+                        });
+                    }
+                );
+            });
+            
+            // Set up delete account button
+            document.getElementById('deleteAccountButton').addEventListener('click', function() {
+                showConfirmationDialog(
+                    'Delete Account',
+                    'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently deleted.',
+                    function() {
+                        // Call delete account function when implemented
+                        alert('Delete account functionality to be implemented');
+                    }
+                );
+            });
+            
+            // Set up delete data button
+            document.getElementById('deleteDataBtn').addEventListener('click', function() {
+                showConfirmationDialog(
+                    'Delete All Data',
+                    'Are you sure you want to delete all your data? This action cannot be undone.',
+                    function() {
+                        // Call delete data function when implemented
+                        alert('Delete data functionality to be implemented');
+                    }
+                );
+            });
+            
+            // Set up download data button
+            document.getElementById('downloadDataBtn').addEventListener('click', function() {
+                exportUserData();
+            });
+            
+            // Close modal when clicking the X
+            document.querySelector('.close-modal').addEventListener('click', function() {
+                document.getElementById('confirmationDialog').style.display = 'none';
+            });
+            
+            // Close modal when clicking outside
+            window.addEventListener('click', function(event) {
+                const modal = document.getElementById('confirmationDialog');
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+        
+        /**
+         * Load the user's profile data
+         */
+        function loadUserProfile() {
+            // Get the current user
+            const user = getCurrentUser();
+            
+            if (!user) {
+                console.log('No user logged in');
+                // Redirect to login page if no user is logged in
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Get user profile data from storage
+            const profileKey = `profile_${user.email}`;
+            const profile = getFromStorage(profileKey, {});
+            
+            // Populate the forms with user data
+            document.getElementById('displayName').value = user.displayName || '';
+            document.getElementById('email').value = user.email || '';
+            
+            // Load profile photo if available
+            if (user.photoURL) {
+                document.getElementById('profilePhoto').src = user.photoURL;
+            }
+            
+            // Populate metrics form
+            if (profile) {
+                // Height and weight units
+                if (profile.heightUnit) {
+                    document.getElementById('heightUnit').value = profile.heightUnit;
+                    document.getElementById('heightUnitDisplay').textContent = profile.heightUnit === 'ft' ? 'ft' : 'cm';
+                    
+                    // Toggle inches field visibility
+                    if (profile.heightUnit === 'ft') {
+                        document.getElementById('heightInchesContainer').style.display = 'flex';
+                        document.getElementById('heightValue').value = profile.height || '';
+                        document.getElementById('heightInches').value = profile.heightInches || '';
+                    } else {
+                        document.getElementById('heightInchesContainer').style.display = 'none';
+                        document.getElementById('heightValue').value = profile.height || '';
+                    }
+                }
+                
+                if (profile.weightUnit) {
+                    document.getElementById('weightUnit').value = profile.weightUnit;
+                    document.getElementById('weightUnitDisplay').textContent = profile.weightUnit;
+                    document.getElementById('goalWeightUnitDisplay').textContent = profile.weightUnit;
+                }
+                
+                // Age, gender, weights
+                document.getElementById('age').value = profile.age || '';
+                document.getElementById('gender').value = profile.gender || 'male';
+                document.getElementById('currentWeight').value = profile.weight || '';
+                document.getElementById('activityLevel').value = profile.activity || '1.2';
+                document.getElementById('goalWeight').value = profile.goal || '';
+                
+                // Calculate goal date from time and timeUnit
+                if (profile.time && profile.timeUnit) {
+                    const now = new Date();
+                    let daysToAdd = 0;
+                    
+                    if (profile.timeUnit === 'weeks') {
+                        daysToAdd = profile.time * 7;
+                    } else if (profile.timeUnit === 'months') {
+                        daysToAdd = profile.time * 30;
+                    }
+                    
+                    const goalDate = new Date(now.getTime() + (daysToAdd * 24 * 60 * 60 * 1000));
+                    document.getElementById('goalDate').value = goalDate.toISOString().split('T')[0];
+                }
+            }
+        }
+        
+        /**
+         * Update the user's profile information
+         */
+        async function updateUserProfileInfo() {
+            try {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                const displayName = document.getElementById('displayName').value.trim();
+                const heightUnit = document.getElementById('heightUnit').value;
+                const weightUnit = document.getElementById('weightUnit').value;
+                
+                // Update Firebase profile
+                await updateUserProfile({
+                    displayName: displayName
+                });
+                
+                // Get existing profile
+                const profileKey = `profile_${user.email}`;
+                let profile = getFromStorage(profileKey, {});
+                
+                // Update units
+                profile.heightUnit = heightUnit;
+                profile.weightUnit = weightUnit;
+                
+                // Save profile to local storage
+                saveToStorage(profileKey, profile);
+                
+                // If sync is enabled, save to cloud
+                if (typeof isCloudSyncEnabled === 'function' && await isCloudSyncEnabled()) {
+                    if (typeof saveWithSync === 'function') {
+                        saveWithSync(profileKey, profile);
+                    }
+                }
+                
+                showNotification('Profile updated successfully', 'success');
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showNotification('Failed to update profile', 'error');
+            }
+        }
+        
+        /**
+         * Update the user's body metrics
+         */
+        async function updateUserMetrics() {
+            try {
+                const user = getCurrentUser();
+                if (!user) return;
+                
+                // Get all metric values
+                const age = parseInt(document.getElementById('age').value) || 0;
+                const gender = document.getElementById('gender').value;
+                const currentWeight = parseFloat(document.getElementById('currentWeight').value) || 0;
+                const heightValue = parseFloat(document.getElementById('heightValue').value) || 0;
+                const heightInches = parseFloat(document.getElementById('heightInches').value) || 0;
+                const activityLevel = parseFloat(document.getElementById('activityLevel').value) || 1.2;
+                const goalWeight = parseFloat(document.getElementById('goalWeight').value) || 0;
+                const goalDate = document.getElementById('goalDate').value;
+                
+                // Validate inputs
+                if (age <= 0 || currentWeight <= 0 || heightValue <= 0) {
+                    showNotification('Please enter valid values for age, weight, and height', 'error');
+                    return;
+                }
+                
+                // Calculate time to goal
+                const now = new Date();
+                const goal = new Date(goalDate);
+                const diffTime = Math.abs(goal - now);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                
+                // Convert to weeks or months
+                let time, timeUnit;
+                if (diffDays <= 90) { // Less than 3 months
+                    time = Math.ceil(diffDays / 7);
+                    timeUnit = 'weeks';
+                } else {
+                    time = Math.ceil(diffDays / 30);
+                    timeUnit = 'months';
+                }
+                
+                // Get unit values
+                const heightUnit = document.getElementById('heightUnit').value;
+                const weightUnit = document.getElementById('weightUnit').value;
+                
+                // Get existing profile
+                const profileKey = `profile_${user.email}`;
+                let profile = getFromStorage(profileKey, {});
+                
+                // Update profile with new metrics
+                profile = {
+                    ...profile,
+                    age,
+                    gender,
+                    weight: currentWeight,
+                    height: heightValue,
+                    heightInches: heightUnit === 'ft' ? heightInches : 0,
+                    activity: activityLevel,
+                    goal: goalWeight,
+                    time,
+                    timeUnit,
+                    heightUnit,
+                    weightUnit,
+                    goalUnit: weightUnit
+                };
+                
+                // Calculate BMR and TDEE
+                let height = heightValue;
+                let weight = currentWeight;
+                
+                // Convert imperial to metric for calculations
+                if (heightUnit === 'ft') {
+                    height = (heightValue * 30.48) + (heightInches * 2.54);
+                }
+                
+                if (weightUnit === 'lb') {
+                    weight = currentWeight * 0.453592;
+                }
+                
+                // Calculate BMR using Mifflin-St Jeor formula
+                const baseFormula = 10 * weight + 6.25 * height - 5 * age;
+                const bmr = gender === 'male' ? baseFormula + 5 : baseFormula - 161;
+                
+                // Calculate TDEE
+                const tdee = bmr * activityLevel;
+                
+                // Add to profile
+                profile.bmr = Math.round(bmr);
+                profile.tdee = Math.round(tdee);
+                
+                // Save profile to local storage
+                saveToStorage(profileKey, profile);
+                
+                // Ensure we have all required data structures for this user
+                ensureUserDataStructures(user.email);
+                
+                // Add initial weight entry to history
+                const weightHistoryKey = `weight_history_${user.email}`;
+                const weightHistory = getFromStorage(weightHistoryKey, []);
+                
+                // Only add if this is the first entry or if weight changed
+                if (weightHistory.length === 0 || 
+                    (weightHistory.length > 0 && weightHistory[weightHistory.length - 1].weight !== currentWeight)) {
+                    
+                    weightHistory.push({
+                        date: new Date().toISOString(),
+                        weight: currentWeight,
+                        unit: weightUnit
+                    });
+                    
+                    saveToStorage(weightHistoryKey, weightHistory);
+                }
+                
+                // If sync is enabled, save to cloud
+                if (typeof isCloudSyncEnabled === 'function' && await isCloudSyncEnabled()) {
+                    if (typeof saveWithSync === 'function') {
+                        saveWithSync(profileKey, profile);
+                    }
+                }
+                
+                showNotification('Metrics updated successfully', 'success');
+                
+                // Redirect to dashboard - no need to pass URL params as data is in localStorage
+                window.location.href = 'dashboard.html';
+            } catch (error) {
+                console.error('Error updating metrics:', error);
+                showNotification('Failed to update metrics', 'error');
+            }
+        }
+        
+        /**
+         * Get the current user
+         * @returns {Object|null} Current user object or null
+         */
+        function getCurrentUser() {
+            return getFromStorage('currentUser');
+        }
+        
+        /**
+         * Update the user's profile
+         * @param {Object} profileData - Profile data to update
+         * @returns {Promise<void>}
+         */
+        async function updateUserProfile(profileData) {
+            // This is a placeholder for Firebase auth profile updates
+            const currentUser = getCurrentUser();
+            if (!currentUser) return Promise.reject(new Error('No user logged in'));
+            
+            // Update the currentUser object
+            const updatedUser = { ...currentUser, ...profileData };
+            saveToStorage('currentUser', updatedUser);
+            
+            return Promise.resolve();
+        }
+        
+        /**
+         * Sign out the current user
+         * @returns {Promise<void>}
+         */
+        async function signOut() {
+            // This is a placeholder for Firebase auth signOut
+            localStorage.removeItem('currentUser');
+            return Promise.resolve();
+        }
+        
+        /**
+         * Export the user's data
+         */
+        function exportUserData() {
+            const user = getCurrentUser();
+            if (!user) return;
+            
+            // Collect all user data
+            const userData = {
+                profile: getFromStorage(`profile_${user.email}`, {}),
+                weightHistory: getFromStorage(`weight_history_${user.email}`, []),
+                foodLogs: getFromStorage(`food_log_${user.email}`, {}),
+                exerciseLogs: getFromStorage(`exercise_log_${user.email}`, {}),
+                achievements: getFromStorage(`achievements_${user.email}`, { earned: {}, points: 0 })
+            };
+            
+            // Convert to JSON and create download link
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(userData, null, 2));
+            const downloadAnchor = document.createElement('a');
+            downloadAnchor.setAttribute("href", dataStr);
+            downloadAnchor.setAttribute("download", `slimeasy_data_${user.email}_${new Date().toISOString().split('T')[0]}.json`);
+            document.body.appendChild(downloadAnchor);
+            downloadAnchor.click();
+            downloadAnchor.remove();
+            
+            showNotification('Your data has been exported successfully', 'success');
+        }
+        
+        /**
+         * Initialize local storage sync UI
+         */
+        function initializeLocalStorageSync() {
+            // This is a placeholder for sync UI initialization
+            const syncContainer = document.getElementById('syncSettingsContainer');
+            if (!syncContainer) return;
+            
+            // Create a simple card for sync settings
+            syncContainer.innerHTML = `
+                <div class="card">
+                    <h2><i class="fas fa-save"></i> Local Storage Settings</h2>
+                    
+                    <div class="settings-toggle">
+                        <div class="toggle-container">
+                            <input type="checkbox" id="enableLocalBackup" class="toggle-input" checked disabled>
+                            <label for="enableLocalBackup" class="toggle-label"></label>
+                        </div>
+                        <div class="toggle-label-text">
+                            <label for="enableLocalBackup">Local Storage Backup</label>
+                            <span class="toggle-description">All your data is saved automatically on this device</span>
+                        </div>
+                    </div>
+                    
+                    <div class="sync-settings" id="backupSettingsDetails">
+                        <div class="settings-section">
+                            <h3><i class="fas fa-download"></i> Export Options</h3>
+                            
+                            <div class="sync-actions">
+                                <button type="button" id="exportDataBtn" class="action-button primary">
+                                    <i class="fas fa-file-export"></i> Export Data
+                                </button>
+                                <button type="button" id="clearDataBtn" class="action-button secondary">
+                                    <i class="fas fa-trash"></i> Clear All Data
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="sync-status">
+                            <p>Your data is automatically saved to this device's local storage.</p>
+                            <p>To use on multiple devices, export your data and import it on another device.</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Set up export data button
+            const exportDataBtn = document.getElementById('exportDataBtn');
+            if (exportDataBtn) {
+                exportDataBtn.addEventListener('click', function() {
+                    exportUserData();
+                });
+            }
+            
+            // Set up clear data button
+            const clearDataBtn = document.getElementById('clearDataBtn');
+            if (clearDataBtn) {
+                clearDataBtn.addEventListener('click', function() {
+                    showConfirmationDialog(
+                        'Clear All Data',
+                        'Are you sure you want to clear all your data? This action cannot be undone and will remove all your tracking history.',
+                        function() {
+                            // Actually clear the data
+                            clearAllUserData();
+                            
+                            showNotification('All data has been cleared', 'success');
+                            setTimeout(() => {
+                                // Reload the page to show empty fields
+                                window.location.reload();
+                            }, 1500);
+                        }
+                    );
+                });
+            }
+        }
+        
+        /**
+         * Show a confirmation dialog
+         * @param {string} title - Dialog title
+         * @param {string} message - Dialog message
+         * @param {Function} onConfirm - Function to call on confirmation
+         */
+        function showConfirmationDialog(title, message, onConfirm) {
+            const dialog = document.getElementById('confirmationDialog');
+            const titleEl = document.getElementById('dialogTitle');
+            const messageEl = document.getElementById('dialogMessage');
+            const confirmBtn = document.getElementById('confirmButton');
+            const cancelBtn = document.getElementById('cancelButton');
+            
+            // Set content
+            titleEl.textContent = title;
+            messageEl.textContent = message;
+            
+            // Set up buttons
+            confirmBtn.onclick = function() {
+                dialog.style.display = 'none';
+                if (typeof onConfirm === 'function') {
+                    onConfirm();
+                }
+            };
+            
+            cancelBtn.onclick = function() {
+                dialog.style.display = 'none';
+            };
+            
+            // Show the dialog
+            dialog.style.display = 'flex';
+        }
+        
+        /**
+         * Clear all user data from local storage
+         */
+        function clearAllUserData() {
+            const user = getCurrentUser();
+            if (!user || !user.email) return;
+            
+            // List of prefixes for user data keys
+            const prefixes = [
+                `profile_${user.email}`,
+                `weight_history_${user.email}`,
+                `planner_${user.email}`,
+                `achievements_${user.email}`,
+                `favorites_${user.email}`,
+                `hydration_reminders_${user.email}`,
+                `sync_enabled_${user.email}`
+            ];
+            
+            // Get all localStorage keys
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                
+                // Check if the key belongs to this user
+                if (key && prefixes.some(prefix => key.startsWith(prefix))) {
+                    localStorage.removeItem(key);
+                    console.log('Removed:', key);
+                }
+            }
+            
+            // Create fresh data structures
+            ensureUserDataStructures(user.email);
+        }
+        
+        /**
+         * Ensure all necessary data structures exist for a user
+         * @param {string} email - User email
+         */
+        function ensureUserDataStructures(email) {
+            if (!email) return;
+            
+            // Check profile data
+            const profileKey = `profile_${email}`;
+            let profile = getFromStorage(profileKey);
+            if (!profile) {
+                profile = {};
+                saveToStorage(profileKey, profile);
+            }
+            
+            // Check weight history
+            const weightDataKey = `weight_history_${email}`;
+            if (!getFromStorage(weightDataKey)) {
+                saveToStorage(weightDataKey, []);
+            }
+            
+            // Check planner data
+            const userKey = `planner_${email}`;
+            const weeklyCalories = getFromStorage(`${userKey}_calories`);
+            if (!weeklyCalories) {
+                saveToStorage(`${userKey}_calories`, [0, 0, 0, 0, 0, 0, 0]);
+            }
+            
+            const weeklyExercise = getFromStorage(`${userKey}_exercise`);
+            if (!weeklyExercise) {
+                saveToStorage(`${userKey}_exercise`, [0, 0, 0, 0, 0, 0, 0]);
+            }
+            
+            const weeklyFoods = getFromStorage(`${userKey}_foods`);
+            if (!weeklyFoods) {
+                saveToStorage(`${userKey}_foods`, [[], [], [], [], [], [], []]);
+            }
+            
+            // Check achievements
+            const achievementsKey = `achievements_${email}`;
+            if (!getFromStorage(achievementsKey)) {
+                saveToStorage(achievementsKey, { earned: {}, points: 0 });
+            }
+            
+            console.log('User data structures initialized for:', email);
+        }
+    </script>
+</body>
+</html>
