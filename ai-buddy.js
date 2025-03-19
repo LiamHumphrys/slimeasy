@@ -7,6 +7,23 @@
  * All coaches use state-of-the-art AI to provide personalized guidance based on user data
  */
 
+// Conversation context to maintain state across interactions
+const conversationContext = {
+    dietaryPreferences: [],
+    currentMealTime: getCurrentMealType(),
+    userFeedback: {
+        likes: [],
+        dislikes: []
+    },
+    fitnessLevel: 'moderate',
+    goals: ['weight_loss']
+};
+
+// Keep track of conversation history for context awareness
+const buddyConversationHistory = [];
+const chefConversationHistory = [];
+const trainerConversationHistory = [];
+
 // Meal database with nutritional information
 window.mealDatabase = window.mealDatabase || {
     breakfast: [
@@ -4517,6 +4534,454 @@ function addAITrainerStyles() {
             color: #666;
         }
     `;
+}
+
+/**
+ * Generate a response from the AI Chef based on user query
+ * @param {string} message - User message
+ * @returns {string} Chef's response
+ */
+function generateChefResponse(message) {
+    // Extract intent and relevant information from the message
+    const lowerMessage = message.toLowerCase();
+    let response = "";
+    
+    // Learn dietary preferences from message
+    const dietaryPreferences = extractDietaryPreferences(message);
+    conversationContext.dietaryPreferences = [...new Set([...conversationContext.dietaryPreferences, ...dietaryPreferences])];
+    
+    // Learn user food likes
+    learnUserPreferences(message);
+    
+    // Learn user food dislikes
+    learnUserDislikes(message);
+
+    // Handle specific recipe requests
+    if (lowerMessage.includes('recipe') || lowerMessage.includes('how to make') || lowerMessage.includes('how do i make')) {
+        // Try to extract a specific food item
+        const recipeMatches = lowerMessage.match(/recipe for ([a-z\s]+)/i) || 
+                             lowerMessage.match(/how to make ([a-z\s]+)/i) ||
+                             lowerMessage.match(/how do i make ([a-z\s]+)/i);
+        
+        if (recipeMatches && recipeMatches[1]) {
+            const foodItem = recipeMatches[1].trim();
+            response = `Here's a healthy recipe for ${foodItem}:\n\n`;
+            
+            // Check if it's a breakfast item
+            if (foodItem.includes('oatmeal') || foodItem.includes('pancake') || foodItem.includes('smoothie') || 
+                foodItem.includes('toast') || foodItem.includes('egg') || foodItem.includes('breakfast')) {
+                // Provide a breakfast recipe
+                const breakfastOptions = window.mealDatabase.breakfast.filter(meal => 
+                    !conversationContext.userFeedback.dislikes?.some(dislike => 
+                        meal.name.toLowerCase().includes(dislike) || meal.ingredients.some(ing => ing.toLowerCase().includes(dislike))
+                    )
+                );
+                
+                if (breakfastOptions.length > 0) {
+                    const randomMeal = breakfastOptions[Math.floor(Math.random() * breakfastOptions.length)];
+                    response += `**${randomMeal.name}** (${randomMeal.calories} calories)\n\n`;
+                    response += `*Ingredients:*\n${randomMeal.ingredients.map(ing => `- ${ing}`).join('\n')}\n\n`;
+                    response += `*Instructions:*\n1. Prepare all ingredients.\n2. Combine ingredients in a bowl.\n3. Mix well and serve.`;
+                }
+            } else if (foodItem.includes('salad') || foodItem.includes('wrap') || foodItem.includes('sandwich') || 
+                      foodItem.includes('soup') || foodItem.includes('lunch')) {
+                // Provide a lunch recipe
+                const lunchOptions = window.mealDatabase.lunch.filter(meal => 
+                    !conversationContext.userFeedback.dislikes?.some(dislike => 
+                        meal.name.toLowerCase().includes(dislike) || meal.ingredients.some(ing => ing.toLowerCase().includes(dislike))
+                    )
+                );
+                
+                if (lunchOptions.length > 0) {
+                    const randomMeal = lunchOptions[Math.floor(Math.random() * lunchOptions.length)];
+                    response += `**${randomMeal.name}** (${randomMeal.calories} calories)\n\n`;
+                    response += `*Ingredients:*\n${randomMeal.ingredients.map(ing => `- ${ing}`).join('\n')}\n\n`;
+                    response += `*Instructions:*\n1. Prepare all ingredients.\n2. Combine in the order listed.\n3. Serve and enjoy.`;
+                }
+            } else {
+                // Default to dinner recipe
+                const dinnerOptions = window.mealDatabase.dinner.filter(meal => 
+                    !conversationContext.userFeedback.dislikes?.some(dislike => 
+                        meal.name.toLowerCase().includes(dislike) || meal.ingredients.some(ing => ing.toLowerCase().includes(dislike))
+                    )
+                );
+                
+                if (dinnerOptions.length > 0) {
+                    const randomMeal = dinnerOptions[Math.floor(Math.random() * dinnerOptions.length)];
+                    response += `**${randomMeal.name}** (${randomMeal.calories} calories)\n\n`;
+                    response += `*Ingredients:*\n${randomMeal.ingredients.map(ing => `- ${ing}`).join('\n')}\n\n`;
+                    response += `*Instructions:*\n1. Prepare all ingredients.\n2. Follow cooking method indicated.\n3. Combine and serve hot.`;
+                }
+            }
+            
+            // Add nutritional advice
+            response += `\n\nThis recipe is designed to support your weight loss goals while providing essential nutrients. Would you like me to suggest modifications or explain the nutritional benefits?`;
+        } else {
+            // Generic recipe suggestion
+            response = generateSmartMealSuggestion({
+                targetCalories: 500, // Default to a reasonable meal size
+                mealType: getCurrentMealType()
+            }, conversationContext.dietaryPreferences);
+        }
+    }
+    // Handle meal plan requests
+    else if (lowerMessage.includes('meal plan') || lowerMessage.includes('plan for the week') || lowerMessage.includes('weekly plan')) {
+        response = "Here's a simple meal plan to help with your weight loss goals:\n\n";
+        response += "**Monday**\n";
+        response += "- Breakfast: Greek yogurt with berries and honey (240 cal)\n";
+        response += "- Lunch: Mediterranean quinoa salad (380 cal)\n";
+        response += "- Dinner: Baked salmon with roasted vegetables (420 cal)\n";
+        response += "- Snack: Apple with 1 tbsp almond butter (165 cal)\n\n";
+        
+        response += "**Tuesday**\n";
+        response += "- Breakfast: Avocado toast with egg (320 cal)\n";
+        response += "- Lunch: Chicken and vegetable wrap (350 cal)\n";
+        response += "- Dinner: Vegetarian chili with brown rice (410 cal)\n";
+        response += "- Snack: Carrot sticks with hummus (120 cal)\n\n";
+        
+        response += "**Wednesday**\n";
+        response += "- Breakfast: Overnight oats with apples and cinnamon (290 cal)\n";
+        response += "- Lunch: Tuna salad lettuce wraps (310 cal)\n";
+        response += "- Dinner: Stir-fried tofu with vegetables (380 cal)\n";
+        response += "- Snack: Greek yogurt with honey (130 cal)\n\n";
+        
+        response += "Would you like me to customize this plan based on your specific dietary preferences or calorie goals?";
+    }
+    // Handle calorie or nutrition questions
+    else if (lowerMessage.includes('calorie') || lowerMessage.includes('nutrition') || lowerMessage.includes('macro')) {
+        if (lowerMessage.includes('how many') || lowerMessage.includes('count')) {
+            response = "Tracking calories can be an effective tool for weight management. For sustainable weight loss, most people need a moderate calorie deficit of 500-750 calories per day, which typically results in 1-1.5 pounds of weight loss per week.\n\n";
+            response += "Based on your profile information, I can help you determine an appropriate daily calorie target. Would you like me to help you calculate this based on your age, weight, height, and activity level?";
+        } else if (lowerMessage.includes('macro') || lowerMessage.includes('protein') || lowerMessage.includes('carb') || lowerMessage.includes('fat')) {
+            response = "A balanced macronutrient distribution is important for weight loss and overall health. A general guideline for weight loss is:\n\n";
+            response += "- Protein: 25-30% of calories (promotes satiety and preserves muscle)\n";
+            response += "- Carbohydrates: 40-45% of calories (focus on fiber-rich sources)\n";
+            response += "- Fats: 25-30% of calories (prioritize healthy unsaturated fats)\n\n";
+            response += "Would you like me to provide meal examples that fit these macronutrient ratios?";
+        } else {
+            response = "Good nutrition is about more than just calories. Focus on whole, unprocessed foods like vegetables, fruits, lean proteins, whole grains, and healthy fats. These foods provide essential nutrients while keeping you full longer.\n\n";
+            response += "Is there a specific aspect of nutrition you'd like to learn more about?";
+        }
+    }
+    // Default response for other queries
+    else {
+        response = "I'm your SlimEasy AI Chef, specializing in nutrition advice, recipe ideas, and meal planning to support your weight loss journey. I can help with:\n\n";
+        response += "- Healthy recipes tailored to your preferences\n";
+        response += "- Personalized meal plans\n";
+        response += "- Nutrition information and dietary guidance\n";
+        response += "- Calorie-conscious food suggestions\n\n";
+        response += "What specific help would you like with your nutrition today?";
+    }
+    
+    return response;
+}
+
+/**
+ * Generate a response from the AI Trainer based on user query
+ * @param {string} message - User message
+ * @returns {string} Trainer's response
+ */
+function generateTrainerResponse(message) {
+    // Extract intent and relevant information from the message
+    const lowerMessage = message.toLowerCase();
+    let response = "";
+    
+    // Handle workout/exercise plan requests
+    if (lowerMessage.includes('workout') || lowerMessage.includes('exercise plan') || lowerMessage.includes('routine')) {
+        response = "Here's a balanced workout plan to support your weight loss goals:\n\n";
+        
+        // Check if the user specified intensity
+        let intensity = "moderate";
+        if (lowerMessage.includes('beginner') || lowerMessage.includes('easy') || lowerMessage.includes('start')) {
+            intensity = "light";
+        } else if (lowerMessage.includes('advanced') || lowerMessage.includes('intense') || lowerMessage.includes('hard')) {
+            intensity = "intense";
+        }
+        
+        // Check if specific type is requested
+        let workoutType = "balanced";
+        if (lowerMessage.includes('cardio') || lowerMessage.includes('running')) {
+            workoutType = "cardio";
+        } else if (lowerMessage.includes('strength') || lowerMessage.includes('muscle') || lowerMessage.includes('weight')) {
+            workoutType = "strength";
+        } else if (lowerMessage.includes('home') || lowerMessage.includes('no equipment')) {
+            workoutType = "home";
+        }
+        
+        // Generate workout based on type and intensity
+        switch (workoutType) {
+            case "cardio":
+                response += "**Cardio-Focused Workout Plan**\n\n";
+                if (intensity === "light") {
+                    response += "- Monday: 20 min brisk walking\n";
+                    response += "- Tuesday: Rest or gentle stretching\n";
+                    response += "- Wednesday: 20 min stationary bike (low resistance)\n";
+                    response += "- Thursday: Rest or gentle stretching\n";
+                    response += "- Friday: 20 min walk/jog intervals (1 min jog, 2 min walk)\n";
+                    response += "- Saturday: 30 min light swimming or water exercise\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else if (intensity === "intense") {
+                    response += "- Monday: 30 min HIIT (30 sec sprint, 30 sec rest x 15)\n";
+                    response += "- Tuesday: 45 min moderate jog or 20 min hill sprints\n";
+                    response += "- Wednesday: Rest or active recovery (light walking)\n";
+                    response += "- Thursday: 30 min HIIT cycling\n";
+                    response += "- Friday: 5K run or 30 min rowing machine\n";
+                    response += "- Saturday: 45-60 min mixed cardio circuit\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else {
+                    response += "- Monday: 30 min jogging or elliptical\n";
+                    response += "- Tuesday: 20 min interval training (1 min fast, 1 min slow)\n";
+                    response += "- Wednesday: Rest or light activity\n";
+                    response += "- Thursday: 30 min swimming or cycling\n";
+                    response += "- Friday: 25 min cardio circuit\n";
+                    response += "- Saturday: 40 min moderate hike or longer jog\n";
+                    response += "- Sunday: Rest day\n\n";
+                }
+                break;
+                
+            case "strength":
+                response += "**Strength Training Plan**\n\n";
+                if (intensity === "light") {
+                    response += "- Monday: Upper body basics (3x10 modified push-ups, 3x10 seated rows)\n";
+                    response += "- Tuesday: Rest day\n";
+                    response += "- Wednesday: Lower body basics (3x10 assisted squats, 3x10 leg curls)\n";
+                    response += "- Thursday: Rest day\n";
+                    response += "- Friday: Full body light weights (3x10 of 4-5 exercises)\n";
+                    response += "- Saturday: Rest day\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else if (intensity === "intense") {
+                    response += "- Monday: Push day (chest, shoulders, triceps) 4 sets of 5 exercises\n";
+                    response += "- Tuesday: Pull day (back, biceps) 4 sets of 5 exercises\n";
+                    response += "- Wednesday: Rest or light cardio\n";
+                    response += "- Thursday: Leg day (quads, hamstrings, calves) 4 sets of 5 exercises\n";
+                    response += "- Friday: Upper body (supersets or drop sets) 3-4 sets of 4 exercises\n";
+                    response += "- Saturday: Lower body or HIIT combination\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else {
+                    response += "- Monday: Upper body (3x12 of 4 exercises)\n";
+                    response += "- Tuesday: Light cardio or rest\n";
+                    response += "- Wednesday: Lower body (3x12 of 4 exercises)\n";
+                    response += "- Thursday: Light cardio or rest\n";
+                    response += "- Friday: Full body workout (3x12 of 5-6 exercises)\n";
+                    response += "- Saturday: Active recovery\n";
+                    response += "- Sunday: Rest day\n\n";
+                }
+                break;
+                
+            case "home":
+                response += "**Home Workout Plan (No Equipment)**\n\n";
+                if (intensity === "light") {
+                    response += "- Monday: 20 min beginner-friendly routine (modified push-ups, squats, bridges)\n";
+                    response += "- Tuesday: 15 min gentle yoga\n";
+                    response += "- Wednesday: 20 min light circuit (30 sec work, 30 sec rest)\n";
+                    response += "- Thursday: Rest day\n";
+                    response += "- Friday: 20 min beginner-friendly routine (different exercises)\n";
+                    response += "- Saturday: 15 min stretching routine\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else if (intensity === "intense") {
+                    response += "- Monday: 30 min HIIT (40 sec work, 20 sec rest)\n";
+                    response += "- Tuesday: 30 min advanced bodyweight strength (push-ups, dips, lunges)\n";
+                    response += "- Wednesday: Rest or light stretching\n";
+                    response += "- Thursday: 30 min Tabata (20 sec max effort, 10 sec rest)\n";
+                    response += "- Friday: 30 min pyramid circuit (increasing/decreasing reps)\n";
+                    response += "- Saturday: 40 min mixed intensive cardio and strength\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else {
+                    response += "- Monday: 30 min full body circuit (30 sec each exercise)\n";
+                    response += "- Tuesday: 20 min cardio (jumping jacks, high knees, burpees)\n";
+                    response += "- Wednesday: Rest or light stretching\n";
+                    response += "- Thursday: 30 min strength focus (squats, lunges, push-ups)\n";
+                    response += "- Friday: 25 min HIIT session (30 sec on, 30 sec rest)\n";
+                    response += "- Saturday: 25 min mixed workout\n";
+                    response += "- Sunday: Rest day\n\n";
+                }
+                break;
+                
+            default:
+                response += "**Balanced Weight Loss Workout Plan**\n\n";
+                if (intensity === "light") {
+                    response += "- Monday: 20 min brisk walking + basic bodyweight exercises\n";
+                    response += "- Tuesday: 15 min gentle yoga or stretching\n";
+                    response += "- Wednesday: 20 min light cardio (your choice)\n";
+                    response += "- Thursday: Rest day\n";
+                    response += "- Friday: 20 min light full body circuit\n";
+                    response += "- Saturday: 30 min nature walk or light activity you enjoy\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else if (intensity === "intense") {
+                    response += "- Monday: 20 min HIIT + 20 min upper body strength\n";
+                    response += "- Tuesday: 40 min steady-state cardio (running, swimming, etc.)\n";
+                    response += "- Wednesday: Rest or active recovery\n";
+                    response += "- Thursday: 20 min HIIT + 20 min lower body strength\n";
+                    response += "- Friday: 30 min sustained cardio at 70-80% max heart rate\n";
+                    response += "- Saturday: 45 min full body strength workout\n";
+                    response += "- Sunday: Rest day\n\n";
+                } else {
+                    response += "- Monday: 30 min mixed cardio + light strength training\n";
+                    response += "- Tuesday: 30 min moderate cardio of choice\n";
+                    response += "- Wednesday: Rest or light stretching\n";
+                    response += "- Thursday: 30 min strength training circuit\n";
+                    response += "- Friday: 30 min interval cardio (any type)\n";
+                    response += "- Saturday: 40 min longer activity you enjoy\n";
+                    response += "- Sunday: Rest day\n\n";
+                }
+        }
+        
+        response += "Always warm up for 5-10 minutes before exercise and cool down with stretching afterward. Start where you are and gradually increase intensity as you get stronger.\n\n";
+        response += "Would you like me to provide more details about any of these workouts?";
+    }
+    // Handle specific exercise requests
+    else if (lowerMessage.includes('exercise for') || lowerMessage.includes('how to do')) {
+        let bodyPart = "";
+        
+        // Try to extract the body part or exercise
+        const bodyPartMatches = lowerMessage.match(/exercise for ([a-z\s]+)/i) || 
+                               lowerMessage.match(/for my ([a-z\s]+)/i) ||
+                               lowerMessage.match(/how to do ([a-z\s]+)/i);
+        
+        if (bodyPartMatches && bodyPartMatches[1]) {
+            bodyPart = bodyPartMatches[1].trim();
+        }
+        
+        // Generate response based on body part
+        if (bodyPart.includes('abs') || bodyPart.includes('core') || bodyPart.includes('stomach')) {
+            response = "Here are some effective core exercises for strengthening your abs:\n\n";
+            response += "1. **Plank** - Hold for 20-30 seconds, building up to longer durations\n";
+            response += "2. **Bicycle Crunches** - 10-15 repetitions per side\n";
+            response += "3. **Dead Bug** - 10 repetitions per side\n";
+            response += "4. **Russian Twists** - 10-15 repetitions per side\n";
+            response += "5. **Leg Raises** - 10-15 repetitions\n\n";
+            response += "Start with 2-3 sets of each exercise, resting 30-60 seconds between sets. Focus on proper form rather than speed.";
+        } else if (bodyPart.includes('leg') || bodyPart.includes('thigh') || bodyPart.includes('butt') || bodyPart.includes('glute')) {
+            response = "Here are some effective lower body exercises:\n\n";
+            response += "1. **Squats** - 12-15 repetitions\n";
+            response += "2. **Lunges** - 10-12 repetitions per leg\n";
+            response += "3. **Glute Bridges** - 15-20 repetitions\n";
+            response += "4. **Calf Raises** - 15-20 repetitions\n";
+            response += "5. **Step-Ups** - 10-12 repetitions per leg\n\n";
+            response += "Perform 3 sets of each exercise with 60 seconds rest between sets. For added challenge, you can use dumbbells or resistance bands.";
+        } else if (bodyPart.includes('arm') || bodyPart.includes('shoulder') || bodyPart.includes('chest')) {
+            response = "Here are some effective upper body exercises:\n\n";
+            response += "1. **Push-Ups** - Start with 5-10 repetitions (modify on knees if needed)\n";
+            response += "2. **Dumbbell Shoulder Press** - 10-12 repetitions\n";
+            response += "3. **Bicep Curls** - 12-15 repetitions\n";
+            response += "4. **Tricep Dips** - 10-12 repetitions\n";
+            response += "5. **Bent-Over Rows** - 12-15 repetitions\n\n";
+            response += "Complete 3 sets with 45-60 seconds rest between sets. Use weights that challenge you but allow proper form.";
+        } else if (bodyPart.includes('cardio') || bodyPart.includes('heart') || bodyPart.includes('fat burn')) {
+            response = "Here are some effective cardio exercises for fat burning:\n\n";
+            response += "1. **HIIT Intervals** - 30 seconds high intensity, 30 seconds rest for 10-15 minutes\n";
+            response += "2. **Jump Rope** - 1-2 minute intervals with 30 seconds rest\n";
+            response += "3. **Burpees** - 10 repetitions, rest, and repeat 3-5 times\n";
+            response += "4. **Mountain Climbers** - 30 seconds on, 15 seconds rest, repeat 5-8 times\n";
+            response += "5. **Jumping Jacks** - 1 minute on, 30 seconds rest, repeat 5 times\n\n";
+            response += "Start with a 5-minute warm-up and end with a 5-minute cool-down. Adjust timing based on your fitness level.";
+        } else if (bodyPart.includes('stretch') || bodyPart.includes('flexibility')) {
+            response = "Here are some effective stretches to improve flexibility:\n\n";
+            response += "1. **Hamstring Stretch** - Hold for 20-30 seconds per leg\n";
+            response += "2. **Quad Stretch** - Hold for 20-30 seconds per leg\n";
+            response += "3. **Child's Pose** - Hold for 30-60 seconds\n";
+            response += "4. **Cat-Cow Stretch** - 10 repetitions flowing between positions\n";
+            response += "5. **Chest and Shoulder Stretch** - Hold for 20-30 seconds per side\n\n";
+            response += "Perform these stretches when your muscles are warm, like after a workout. Breathe deeply and avoid bouncing.";
+        } else {
+            // Default full body workout
+            response = "Here are some effective full body exercises for weight loss:\n\n";
+            response += "1. **Burpees** - 10 repetitions\n";
+            response += "2. **Squats** - 15 repetitions\n";
+            response += "3. **Push-Ups** - 10 repetitions (modify as needed)\n";
+            response += "4. **Mountain Climbers** - 20 repetitions (10 per leg)\n";
+            response += "5. **Plank** - Hold for 30 seconds\n\n";
+            response += "Complete 3 rounds of this circuit with minimal rest between exercises and 1-2 minutes rest between rounds. This takes about 20-25 minutes total.";
+        }
+    }
+    // Handle questions about weight loss
+    else if (lowerMessage.includes('lose weight') || lowerMessage.includes('fat loss') || lowerMessage.includes('burn fat')) {
+        response = "To maximize weight loss through exercise, I recommend a combination approach:\n\n";
+        response += "1. **Strength Training** (2-3 days/week) - Builds muscle, which increases your metabolic rate\n";
+        response += "2. **Cardio** (3-5 days/week) - Burns calories directly and improves heart health\n";
+        response += "3. **HIIT** (1-2 days/week) - High-intensity interval training burns calories efficiently and produces afterburn effect\n";
+        response += "4. **Active Recovery** (1-2 days/week) - Walking, yoga, or stretching\n\n";
+        response += "Remember that exercise is most effective for weight loss when combined with proper nutrition. Would you like me to create a specific workout plan based on your preferences?";
+    }
+    // Default response for other queries
+    else {
+        response = "I'm your SlimEasy AI Trainer, focused on helping you achieve your fitness and weight loss goals. I can assist with:\n\n";
+        response += "- Personalized workout plans\n";
+        response += "- Exercise technique guidance\n";
+        response += "- Fitness advice for weight loss\n";
+        response += "- Activity recommendations based on your fitness level\n\n";
+        response += "What specific help would you like with your fitness today?";
+    }
+    
+    return response;
+}
+
+/**
+ * Get current meal type based on time of day
+ * @returns {string} Meal type (breakfast, lunch, dinner, snack)
+ */
+function getCurrentMealType() {
+    const currentHour = new Date().getHours();
+    
+    if (currentHour >= 5 && currentHour < 10) {
+        return 'breakfast';
+    } else if (currentHour >= 10 && currentHour < 14) {
+        return 'lunch';
+    } else if (currentHour >= 17 && currentHour < 21) {
+        return 'dinner';
+    } else {
+        return 'snack';
+    }
+}
+
+/**
+ * Generate a smart meal suggestion based on provided criteria
+ * @param {Object} caloriesInfo - Calorie target information
+ * @param {Array} dietaryPreferences - User's dietary preferences
+ * @returns {string} Formatted meal suggestion
+ */
+function generateSmartMealSuggestion(caloriesInfo, dietaryPreferences = []) {
+    // Default response if no specific meal data is available
+    const mealType = caloriesInfo.mealType || getCurrentMealType();
+    const targetCalories = caloriesInfo.targetCalories || 500;
+    
+    // Get appropriate meal options based on time of day
+    const mealOptions = window.mealDatabase[mealType] || window.mealDatabase.dinner;
+    
+    // Filter for dietary preferences if any are specified
+    let filteredOptions = mealOptions;
+    
+    if (dietaryPreferences && dietaryPreferences.length > 0) {
+        filteredOptions = mealOptions.filter(meal => {
+            // Check if meal tags match any of the user's preferences
+            return dietaryPreferences.some(pref => 
+                meal.tags.includes(pref)
+            );
+        });
+        
+        // If no matches, fall back to all options
+        if (filteredOptions.length === 0) {
+            filteredOptions = mealOptions;
+        }
+    }
+    
+    // Select a random meal from filtered options
+    const selectedMeal = filteredOptions[Math.floor(Math.random() * filteredOptions.length)];
+    
+    // Format the response
+    let response = `Here's a healthy ${mealType} suggestion:\n\n`;
+    response += `**${selectedMeal.name}** (${selectedMeal.calories} calories)\n\n`;
+    response += `*Nutrients:* ${selectedMeal.protein}g protein, ${selectedMeal.carbs}g carbs, ${selectedMeal.fat}g fat, ${selectedMeal.fiber}g fiber\n\n`;
+    response += `*Ingredients:*\n${selectedMeal.ingredients.map(ing => `- ${ing}`).join('\n')}\n\n`;
+    response += `*Prep time:* ${selectedMeal.prepTime} minutes\n\n`;
+    
+    if (dietaryPreferences.length > 0) {
+        response += `This meal is suitable for your preference for ${dietaryPreferences.join(', ')} foods.\n\n`;
+    }
+    
+    response += `Would you like me to suggest an alternative, or would you prefer a different type of meal?`;
+    
+    return response;
 }
 
 // Export functions to global scope
