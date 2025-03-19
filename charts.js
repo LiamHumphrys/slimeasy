@@ -1,16 +1,204 @@
 /**
  * SlimEasy Charts Module
- * Charts have been removed as requested
  */
 
-// Initialize all dashboard charts - empty function to maintain API compatibility
+// Initialize all dashboard charts
 function initializeCharts(profile) {
-    console.log('Charts have been removed from the application');
+    try {
+        if (!profile) {
+            console.error('No profile data provided for chart initialization');
+            return;
+        }
+        
+        // Initialize charts
+        initializeWeightChart(profile);
+        initializeCalorieChart(profile);
+        
+        console.log('Charts initialized successfully');
+    } catch (error) {
+        console.error('Error initializing charts:', error);
+    }
 }
 
-// Update charts based on view mode - empty function to maintain API compatibility
+// Update charts based on view mode
 function updateCharts(viewMode) {
-    // Charts have been removed
+    try {
+        // Update weight chart with new view mode
+        if (window.weightChart) {
+            console.log('Updating weight chart for view mode:', viewMode);
+            window.weightChart.update();
+        }
+        
+        // Update calorie chart with new view mode
+        if (window.calorieChart) {
+            console.log('Updating calorie chart for view mode:', viewMode);
+            window.calorieChart.update();
+        }
+    } catch (error) {
+        console.error('Error updating charts:', error);
+    }
+}
+
+// Initialize weight chart
+function initializeWeightChart(profile) {
+    try {
+        const weightChartElement = document.getElementById('weightChart');
+        if (!weightChartElement) {
+            console.warn('Weight chart element not found');
+            return;
+        }
+        
+        // Get weight data
+        const weightData = getWeeklyWeightData();
+        if (!weightData || weightData.length === 0) {
+            console.warn('No weight data available for chart');
+            return;
+        }
+        
+        // Format data for chart
+        const labels = weightData.map(entry => {
+            const date = new Date(entry.date);
+            return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        });
+        
+        const data = weightData.map(entry => entry.weight);
+        
+        // Create chart
+        window.weightChart = new Chart(weightChartElement, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Weight',
+                    data: data,
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' ' + (profile.weightUnit || 'kg');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing weight chart:', error);
+    }
+}
+
+// Initialize calorie chart
+function initializeCalorieChart(profile) {
+    try {
+        const calorieChartElement = document.getElementById('calorieChart');
+        if (!calorieChartElement) {
+            console.warn('Calorie chart element not found');
+            return;
+        }
+        
+        // Get calorie data
+        const calorieData = getWeeklyCalorieData();
+        if (!calorieData || !calorieData.days || calorieData.days.length === 0) {
+            console.warn('No calorie data available for chart');
+            return;
+        }
+        
+        // Create chart
+        window.calorieChart = new Chart(calorieChartElement, {
+            type: 'bar',
+            data: {
+                labels: calorieData.days,
+                datasets: [{
+                    label: 'Calories',
+                    data: calorieData.values,
+                    backgroundColor: 'rgba(76, 175, 80, 0.6)',
+                    borderColor: '#4CAF50',
+                    borderWidth: 1
+                }, {
+                    label: 'Target',
+                    data: Array(calorieData.days.length).fill(parseFloat(profile.dailyGoal) || 2000),
+                    type: 'line',
+                    borderColor: '#FFC107',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' kcal';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } catch (error) {
+        console.error('Error initializing calorie chart:', error);
+    }
+}
+
+// Get weekly calorie data
+function getWeeklyCalorieData() {
+    try {
+        const currentUser = getFromStorage('currentUser');
+        if (!currentUser || !currentUser.email) return { days: [], values: [] };
+        
+        const userKey = `planner_${currentUser.email}`;
+        const weeklyCalories = getFromStorage(`${userKey}_calories`, [0, 0, 0, 0, 0, 0, 0]);
+        
+        if (!Array.isArray(weeklyCalories) || weeklyCalories.length !== 7) {
+            return { days: [], values: [] };
+        }
+        
+        // Get days of the week
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        
+        // Convert to correct format
+        return {
+            days: days,
+            values: weeklyCalories.map(cal => parseFloat(cal) || 0)
+        };
+    } catch (error) {
+        console.error('Error getting weekly calorie data:', error);
+        return { days: [], values: [] };
+    }
 }
 
 // Implement promptWeeklyWeight function to ensure it works properly
