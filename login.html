@@ -64,7 +64,7 @@
                         
                         <div class="form-options">
                             <div class="checkbox-group">
-                                <input type="checkbox" id="rememberMe">
+                                <input type="checkbox" id="rememberMe" style="appearance: checkbox !important; -webkit-appearance: checkbox !important; -moz-appearance: checkbox !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; position: relative !important; z-index: 999 !important;">
                                 <label for="rememberMe">Remember me</label>
                             </div>
                             <a href="#" id="forgotPassword" class="text-link">Forgot Password?</a>
@@ -125,7 +125,7 @@
                         </div>
                         
                         <div class="checkbox-group terms">
-                            <input type="checkbox" id="agreeTerms" required>
+                            <input type="checkbox" id="agreeTerms" required style="appearance: checkbox !important; -webkit-appearance: checkbox !important; -moz-appearance: checkbox !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important; position: relative !important; z-index: 999 !important;">
                             <label for="agreeTerms">
                                 I agree to the <a href="terms.html" class="text-link">Terms of Service</a> and <a href="privacy-policy.html" class="text-link">Privacy Policy</a>
                             </label>
@@ -231,6 +231,27 @@
     </footer>
     
     <style>
+        /* Global fix for checkboxes */
+        input[type="checkbox"] {
+            appearance: checkbox !important;
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 999 !important;
+            cursor: pointer !important;
+        }
+        
+        /* Ensure labels are clickable */
+        label[for] {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 999 !important;
+        }
+        
         :root {
             /* Light theme (default) */
             --primary-color: #4CAF50;
@@ -381,6 +402,8 @@
             backface-visibility: hidden;
             -webkit-transform-style: preserve-3d; /* Fix for iOS rendering */
             transform-style: preserve-3d;
+            z-index: 1; /* Ensure form is on top and interactive */
+            pointer-events: auto; /* Ensure form is interactive */
         }
         
         .auth-form-container[style*="display: block"]:not([style*="opacity: 0"]) {
@@ -393,6 +416,9 @@
         
         .auth-form {
             margin-bottom: 30px;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
         }
         
         .form-group {
@@ -446,23 +472,48 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 20px;
+            position: relative;
+            z-index: 5;
+            pointer-events: auto;
         }
         
         .checkbox-group {
             display: flex;
             align-items: center;
             gap: 8px;
+            position: relative;
+            z-index: 100;
+            pointer-events: auto !important;
+            isolation: isolate;
         }
         
         .checkbox-group input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
+            appearance: auto !important;
+            -webkit-appearance: checkbox !important;
+            -moz-appearance: checkbox !important;
+            width: 18px !important;
+            height: 18px !important;
             accent-color: var(--primary-color);
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+            position: relative !important;
+            z-index: 100 !important;
+            cursor: pointer !important;
+            margin: 0 !important;
+            margin-right: 8px !important;
+            border: 1px solid var(--divider-color) !important;
         }
         
         .checkbox-group label {
             font-size: 14px;
-            cursor: pointer;
+            cursor: pointer !important;
+            position: relative !important;
+            z-index: 100 !important;
+            pointer-events: auto !important;
+            user-select: none;
+            display: inline-flex;
+            align-items: center;
         }
         
         .checkbox-group.terms {
@@ -796,6 +847,8 @@
             overflow: visible; /* Changed from hidden to prevent content cropping */
             width: 100%; /* Ensure full width */
             margin-bottom: 20px; /* Add space for footer */
+            z-index: 10; /* Keep forms above other elements */
+            isolation: isolate; /* Create stacking context */
         }
         
         .auth-form-container {
@@ -807,6 +860,8 @@
             right: 0;
             position: absolute;
             width: 100%;
+            pointer-events: auto !important;
+            contain: layout style;
         }
         
         /* Responsive Design */
@@ -862,6 +917,7 @@
                 opacity: 1 !important; /* Ensure visibility */
                 will-change: auto; /* Reset hardware acceleration hint */
                 animation: none !important; /* Disable animations */
+                z-index: 1; /* Ensure form elements are clickable */
             }
             
             .auth-features {
@@ -884,9 +940,28 @@
                 display: none !important; /* Force display none */
             }
             
+            /* Fix checkbox interaction */
+            input[type="checkbox"] {
+                appearance: checkbox !important;
+                -webkit-appearance: checkbox !important;
+                -moz-appearance: checkbox !important;
+                opacity: 1 !important;
+                visibility: visible !important;
+                pointer-events: auto !important;
+                position: relative !important;
+                z-index: 999 !important;
+            }
+            
             /* Mobile-specific improvements */
             body.mobile-device .auth-form-container {
                 z-index: auto !important; /* Reset z-index to avoid stacking issues */
+            }
+            
+            /* Ensure form interactions work properly on all devices */
+            .auth-form {
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 3;
             }
             
             /* Optimize form spacing on mobile */
@@ -954,6 +1029,28 @@
                 max-height: none;
                 overflow-y: visible;
             }
+            
+            /* Fix checkboxes on mobile */
+            .checkbox-group {
+                position: relative;
+                z-index: 10;
+                touch-action: manipulation;
+            }
+            
+            .checkbox-group input[type="checkbox"] {
+                width: 24px; /* Slightly larger for mobile */
+                height: 24px;
+                margin-right: 8px;
+                -webkit-appearance: checkbox; /* Force native checkbox on iOS */
+                appearance: checkbox;
+            }
+            
+            .checkbox-group label {
+                font-size: 16px; /* Larger font size for mobile */
+                padding: 8px 0;
+                display: inline-flex;
+                align-items: center;
+            }
         }
     </style>
     
@@ -994,6 +1091,24 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Ensure checkboxes are interactive
+            function makeCheckboxesInteractive() {
+                const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+                checkboxes.forEach(checkbox => {
+                    checkbox.style.appearance = 'checkbox';
+                    checkbox.style.webkitAppearance = 'checkbox';
+                    checkbox.style.mozAppearance = 'checkbox';
+                    checkbox.style.opacity = '1';
+                    checkbox.style.visibility = 'visible';
+                    checkbox.style.pointerEvents = 'auto';
+                    checkbox.style.position = 'relative';
+                    checkbox.style.zIndex = '999';
+                });
+            }
+            
+            // Call immediately and after a short delay to ensure checkboxes work
+            makeCheckboxesInteractive();
+            setTimeout(makeCheckboxesInteractive, 500);
             // Initialize only theme, skip menu initialization since login page has no menu
             initializeTheme(); // Only initialize the theme, not the full page
             
@@ -1062,6 +1177,7 @@
                     if (originalDisplay === 'none') {
                         container.style.opacity = '0';
                         container.style.display = 'block';
+                        container.style.pointerEvents = 'none'; // Temporarily disable interaction
                     }
                     
                     // Store height
@@ -1071,6 +1187,7 @@
                     if (originalDisplay === 'none') {
                         container.style.display = 'none';
                         container.style.opacity = '1';
+                        container.style.pointerEvents = 'auto'; // Restore interaction
                     }
                 });
                 
@@ -1110,6 +1227,18 @@
                                     
                                     // Show the target container
                                     container.style.opacity = '1';
+                                    container.style.pointerEvents = 'auto';
+                                    
+                                    // Force checkboxes to be interactive
+                                    setTimeout(() => {
+                                        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+                                        checkboxes.forEach(checkbox => {
+                                            checkbox.style.pointerEvents = 'auto';
+                                            checkbox.style.opacity = '1';
+                                            checkbox.style.visibility = 'visible';
+                                            checkbox.style.zIndex = '999';
+                                        });
+                                    }, 10);
                                 }
                             }, 150); // Short delay for the fade out effect
                         });
