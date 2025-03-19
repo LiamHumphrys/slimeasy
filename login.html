@@ -297,12 +297,12 @@
             padding: 40px;
             width: 100%;
             max-width: 500px;
-            height: 660px; /* Fixed height to prevent layout shift completely */
+            min-height: 660px; /* Changed to min-height to allow content to expand naturally */
             display: flex;
             flex-direction: column;
             transition: background-color var(--transition-speed) ease;
             will-change: transform; /* Optimize for animations */
-            overflow: hidden; /* Ensure no internal content causes jitter */
+            overflow: visible; /* Changed from hidden to prevent content cropping */
             position: relative; /* For absolute positioning of children */
         }
         
@@ -371,11 +371,16 @@
         }
         
         .auth-form-container {
-            min-height: 420px; /* Increased height to accommodate all forms */
+            min-height: 420px; /* Minimum height to accommodate all forms */
             opacity: 1;
             transition: opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
             position: relative;
             width: 100%; /* Ensure consistent width */
+            height: auto; /* Allow natural height based on content */
+            -webkit-backface-visibility: hidden; /* Fix for iOS rendering */
+            backface-visibility: hidden;
+            -webkit-transform-style: preserve-3d; /* Fix for iOS rendering */
+            transform-style: preserve-3d;
         }
         
         .auth-form-container[style*="display: block"]:not([style*="opacity: 0"]) {
@@ -679,6 +684,7 @@
             animation: fadeIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
             will-change: opacity;
             backface-visibility: hidden;
+            -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
         }
         
         .modal-content {
@@ -692,6 +698,9 @@
             transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
             will-change: transform, opacity;
             transform: translateZ(0);
+            -webkit-transform: translateZ(0); /* iOS optimization */
+            overflow: hidden; /* Prevent content from breaking modal */
+            margin: 20px; /* Ensure spacing on small screens */
         }
         
         .modal-header {
@@ -756,7 +765,7 @@
             background-color: var(--primary-color);
         }
         
-        /* Animations */
+        /* Animations - optimized for performance */
         @keyframes fadeIn {
             from { opacity: 0; }
             to { opacity: 1; }
@@ -767,21 +776,24 @@
             to { transform: scale(1); opacity: 1; }
         }
         
-        @keyframes fadeInForm {
-            0% { opacity: 0; transform: translateY(10px); }
-            100% { opacity: 1; transform: translateY(0); }
-        }
-        
-        @keyframes fadeOutForm {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(10px); }
+        @media (min-width: 769px) {
+            /* Only apply these animations on desktop */
+            @keyframes fadeInForm {
+                0% { opacity: 0; transform: translateY(10px); }
+                100% { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes fadeOutForm {
+                0% { opacity: 1; transform: translateY(0); }
+                100% { opacity: 0; transform: translateY(10px); }
+            }
         }
         
         /* Prevent layout shifts */
         .auth-forms-wrapper {
             position: relative;
-            height: 500px;  /* Increased fixed height to prevent layout shifts */
-            overflow: hidden; /* Hide overflow */
+            min-height: 500px;  /* Changed to min-height to allow content to expand */
+            overflow: visible; /* Changed from hidden to prevent content cropping */
             width: 100%; /* Ensure full width */
             margin-bottom: 20px; /* Add space for footer */
         }
@@ -828,6 +840,28 @@
             
             .auth-card {
                 padding: 30px 20px;
+                min-height: auto; /* Remove fixed height constraint on mobile */
+                height: auto; /* Let content determine height */
+                margin-bottom: 30px; /* Add space between card and features */
+            }
+            
+            .auth-forms-wrapper {
+                min-height: auto; /* Remove fixed height constraint */
+                height: auto !important; /* Allow content to define height, override inline styles */
+                position: static; /* Change from relative positioning */
+                overflow: visible !important; /* Ensure content is visible */
+            }
+            
+            .auth-form-container {
+                position: static; /* Change from absolute positioning */
+                min-height: auto; /* Allow natural height */
+                height: auto; /* Let content determine height */
+                transform: none !important; /* Prevent transform animations that cause jitter */
+                transition: none !important; /* Disable transitions completely */
+                display: block; /* Ensure proper display */
+                opacity: 1 !important; /* Ensure visibility */
+                will-change: auto; /* Reset hardware acceleration hint */
+                animation: none !important; /* Disable animations */
             }
             
             .auth-features {
@@ -843,6 +877,82 @@
             .social-buttons {
                 flex-direction: column;
                 width: 100%;
+            }
+            
+            /* Improve transition handling on mobile */
+            .auth-form-container[style*="display: none"] {
+                display: none !important; /* Force display none */
+            }
+            
+            /* Mobile-specific improvements */
+            body.mobile-device .auth-form-container {
+                z-index: auto !important; /* Reset z-index to avoid stacking issues */
+            }
+            
+            /* Optimize form spacing on mobile */
+            .form-group {
+                margin-bottom: 16px; /* Tighter spacing */
+            }
+            
+            input, select {
+                -webkit-appearance: none; /* Fix iOS form styling */
+                appearance: none;
+                font-size: 16px; /* Prevent zoom on iOS */
+            }
+            
+            /* Fix iOS scrolling */
+            body {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+        
+        /* Small mobile screens */
+        @media (max-width: 480px) {
+            .auth-container {
+                margin: 10px auto;
+                padding: 0 10px;
+            }
+            
+            .auth-card {
+                padding: 20px 15px;
+                border-radius: 10px;
+            }
+            
+            .auth-header {
+                margin-bottom: 20px;
+            }
+            
+            .logo h1 {
+                font-size: 24px;
+            }
+            
+            .auth-tab {
+                padding: 12px 5px;
+                font-size: 15px;
+            }
+            
+            /* Improve form element spacing */
+            .form-group {
+                margin-bottom: 14px;
+            }
+            
+            input, select, textarea {
+                padding: 12px;
+            }
+            
+            .social-login {
+                padding-top: 15px;
+            }
+            
+            /* Fix button sizes */
+            .auth-button, .social-button {
+                padding: 12px 15px;
+            }
+            
+            /* Enable proper scrolling if needed */
+            .auth-form-container {
+                max-height: none;
+                overflow-y: visible;
             }
         }
     </style>
@@ -890,6 +1000,23 @@
             // Add a flag to prevent auto initialization of mobile menu from utils.js
             window._skipMobileMenuSetup = true;
             
+            // Store tabs in an accessible variable for all event handlers
+            window.authTabs = document.querySelectorAll('.auth-tab');
+            
+            // Set class on body based on device size for CSS targeting
+            if (window.innerWidth <= 768) {
+                document.body.classList.add('mobile-device');
+            }
+            
+            // Listen for resize events to update mobile class if needed
+            window.addEventListener('resize', function() {
+                if (window.innerWidth <= 768) {
+                    document.body.classList.add('mobile-device');
+                } else {
+                    document.body.classList.remove('mobile-device');
+                }
+            });
+            
             // Check if user is already logged in from local storage
             const currentUser = localStorage.getItem('currentUser');
             if (currentUser) {
@@ -897,14 +1024,34 @@
                 window.location.href = 'dashboard.html';
             }
             
-            // Set up tabs - make this function accessible
+            // Set up tabs - optimized for mobile
             function setupAuthTabs() {
                 const tabs = document.querySelectorAll('.auth-tab');
                 const formContainers = document.querySelectorAll('.auth-form-container');
-                
-                // Cache DOM elements for better performance
                 const formsWrapper = document.querySelector('.auth-forms-wrapper');
+                const isMobile = window.innerWidth <= 768; // Check if mobile viewport
                 
+                // Simple direct tab switching for mobile
+                if (isMobile) {
+                    tabs.forEach(tab => {
+                        tab.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const target = this.getAttribute('data-tab');
+                            
+                            // Update active tab
+                            tabs.forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
+                            
+                            // Direct switch without animations on mobile
+                            formContainers.forEach(container => {
+                                container.style.display = container.id === target ? 'block' : 'none';
+                            });
+                        });
+                    });
+                    return; // Exit early for mobile
+                }
+                
+                // Desktop animation behavior
                 // Get initial heights for forms if needed
                 const formHeights = {};
                 formContainers.forEach(container => {
@@ -1120,11 +1267,22 @@
             document.getElementById('forgotPassword').addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Get elements once
                 const loginForm = document.getElementById('login');
                 const resetForm = document.getElementById('passwordReset');
                 const formsWrapper = document.querySelector('.auth-forms-wrapper');
+                const isMobile = window.innerWidth <= 768; // Check if mobile viewport
                 
+                if (isMobile) {
+                    // Simple direct switch for mobile without animations
+                    loginForm.style.display = 'none';
+                    resetForm.style.display = 'block';
+                    
+                    // Update tabs - deactivate all
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                    return;
+                }
+                
+                // Desktop animation behavior
                 // Adjust wrapper height if needed
                 if (formsWrapper && resetForm.offsetHeight > loginForm.offsetHeight) {
                     formsWrapper.style.height = (resetForm.offsetHeight + 20) + 'px';
@@ -1150,17 +1308,35 @@
                     resetForm.style.opacity = '1';
                     
                     // Update tabs - deactivate all
-                    tabs.forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
                 }, 150);
             });
             
             // Back to login button
             document.getElementById('backToLogin').addEventListener('click', function() {
-                // Get elements once
                 const loginForm = document.getElementById('login');
                 const resetForm = document.getElementById('passwordReset');
                 const formsWrapper = document.querySelector('.auth-forms-wrapper');
+                const isMobile = window.innerWidth <= 768; // Check if mobile viewport
                 
+                if (isMobile) {
+                    // Simple direct switch for mobile without animations
+                    resetForm.style.display = 'none';
+                    loginForm.style.display = 'block';
+                    
+                    // Update tabs
+                    const tabs = document.querySelectorAll('.auth-tab');
+                    tabs.forEach(t => {
+                        if (t.getAttribute('data-tab') === 'login') {
+                            t.classList.add('active');
+                        } else {
+                            t.classList.remove('active');
+                        }
+                    });
+                    return;
+                }
+                
+                // Desktop animation behavior
                 // Restore wrapper height if needed
                 if (formsWrapper) {
                     // Get the current visible tab container height
@@ -1192,6 +1368,7 @@
                     loginForm.style.opacity = '1';
                     
                     // Update tabs
+                    const tabs = document.querySelectorAll('.auth-tab');
                     tabs.forEach(t => {
                         if (t.getAttribute('data-tab') === 'login') {
                             t.classList.add('active');
@@ -1236,8 +1413,8 @@
                 document.getElementById('passwordReset').style.display = 'none';
                 document.getElementById('login').style.display = 'block';
                 
-                // Update tabs
-                tabs.forEach(t => {
+                // Update tabs - using the global window.authTabs to ensure consistency
+                (window.authTabs || document.querySelectorAll('.auth-tab')).forEach(t => {
                     if (t.getAttribute('data-tab') === 'login') {
                         t.classList.add('active');
                     } else {
