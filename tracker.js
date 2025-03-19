@@ -1299,6 +1299,9 @@ document.addEventListener('DOMContentLoaded', function() {
     dateInputs.forEach(input => {
         input.value = today;
     });
+    
+    // Initialize water tracker
+    initializeWaterTracker();
 });
 
 // Display initial stats from URL parameters
@@ -1336,6 +1339,214 @@ function switchTab(tabId) {
     const tabButton = document.querySelector(`.tab-button[data-tab="${tabId}"]`);
     if (tabButton) {
         tabButton.click();
+    }
+}
+
+/**
+ * Initialize water tracker in the tracker page
+ */
+function initializeWaterTracker() {
+    try {
+        // Get current user water info
+        const { count, key } = typeof window.getWaterCount === 'function' 
+            ? window.getWaterCount() 
+            : { count: 0, key: null };
+            
+        // Get DOM elements
+        const addWaterBtn = document.getElementById('addWater');
+        const removeWaterBtn = document.getElementById('removeWater');
+        
+        // Update initial display
+        if (typeof window.updateWaterDisplay === 'function') {
+            window.updateWaterDisplay(count);
+        } else {
+            // Fallback if the global function is not available
+            updateWaterDisplayFallback(count);
+        }
+        
+        // Set up add water button
+        if (addWaterBtn) {
+            addWaterBtn.addEventListener('click', function() {
+                // Get latest count
+                const { count: currentCount, key: waterKey } = typeof window.getWaterCount === 'function' 
+                    ? window.getWaterCount() 
+                    : { count: parseInt(localStorage.getItem(key) || '0'), key };
+                
+                if (currentCount < 8 && waterKey) {
+                    // Increment water count
+                    const newCount = currentCount + 1;
+                    localStorage.setItem(waterKey, newCount);
+                    
+                    // Update display
+                    if (typeof window.updateWaterDisplay === 'function') {
+                        window.updateWaterDisplay(newCount);
+                    } else {
+                        updateWaterDisplayFallback(newCount);
+                    }
+                    
+                    if (typeof window.showNotification === 'function') {
+                        window.showNotification('Water intake updated!', 'success');
+                    }
+                }
+            });
+        }
+        
+        // Set up remove water button
+        if (removeWaterBtn) {
+            removeWaterBtn.addEventListener('click', function() {
+                // Get latest count
+                const { count: currentCount, key: waterKey } = typeof window.getWaterCount === 'function' 
+                    ? window.getWaterCount() 
+                    : { count: parseInt(localStorage.getItem(key) || '0'), key };
+                
+                if (currentCount > 0 && waterKey) {
+                    // Decrement water count
+                    const newCount = currentCount - 1;
+                    localStorage.setItem(waterKey, newCount);
+                    
+                    // Update display
+                    if (typeof window.updateWaterDisplay === 'function') {
+                        window.updateWaterDisplay(newCount);
+                    } else {
+                        updateWaterDisplayFallback(newCount);
+                    }
+                }
+            });
+        }
+        
+        // Set up hydration reminders if enabled
+        const reminderCheckbox = document.getElementById('enableReminders');
+        const reminderInterval = document.getElementById('reminderInterval');
+        
+        if (reminderCheckbox) {
+            // Check user preference
+            const currentUser = typeof getFromStorage === 'function' 
+                ? getFromStorage('currentUser') 
+                : JSON.parse(localStorage.getItem('currentUser'));
+                
+            if (currentUser && currentUser.email) {
+                const reminderPref = typeof getFromStorage === 'function'
+                    ? getFromStorage(`hydration_reminders_${currentUser.email}`)
+                    : JSON.parse(localStorage.getItem(`hydration_reminders_${currentUser.email}`));
+                
+                // Set initial state based on preference
+                if (reminderPref && reminderPref.enabled) {
+                    reminderCheckbox.checked = true;
+                    
+                    // Set interval if exists
+                    if (reminderInterval && reminderPref.interval) {
+                        reminderInterval.value = reminderPref.interval;
+                    }
+                    
+                    // Initialize reminders
+                    if (typeof window.initializeHydrationReminders === 'function') {
+                        window.initializeHydrationReminders(parseInt(reminderInterval?.value || '120'));
+                    }
+                }
+            }
+            
+            // Add event listener for checkbox
+            reminderCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    // Enable reminders
+                    if (typeof window.initializeHydrationReminders === 'function') {
+                        window.initializeHydrationReminders(parseInt(reminderInterval?.value || '120'));
+                    }
+                } else {
+                    // Disable reminders
+                    if (window.hydrationReminderInterval) {
+                        clearInterval(window.hydrationReminderInterval);
+                    }
+                    
+                    // Update preference
+                    const currentUser = typeof getFromStorage === 'function' 
+                        ? getFromStorage('currentUser') 
+                        : JSON.parse(localStorage.getItem('currentUser'));
+                    
+                    if (currentUser && currentUser.email) {
+                        if (typeof saveToStorage === 'function') {
+                            saveToStorage(`hydration_reminders_${currentUser.email}`, { 
+                                enabled: false, 
+                                interval: parseInt(reminderInterval?.value || '120') 
+                            });
+                        } else {
+                            localStorage.setItem(`hydration_reminders_${currentUser.email}`, JSON.stringify({
+                                enabled: false,
+                                interval: parseInt(reminderInterval?.value || '120')
+                            }));
+                        }
+                    }
+                }
+            });
+            
+            // Add event listener for interval change
+            if (reminderInterval) {
+                reminderInterval.addEventListener('change', function() {
+                    if (reminderCheckbox.checked) {
+                        // Update interval
+                        if (typeof window.initializeHydrationReminders === 'function') {
+                            window.initializeHydrationReminders(parseInt(this.value || '120'));
+                        }
+                    }
+                    
+                    // Update preference
+                    const currentUser = typeof getFromStorage === 'function' 
+                        ? getFromStorage('currentUser') 
+                        : JSON.parse(localStorage.getItem('currentUser'));
+                    
+                    if (currentUser && currentUser.email) {
+                        if (typeof saveToStorage === 'function') {
+                            saveToStorage(`hydration_reminders_${currentUser.email}`, { 
+                                enabled: reminderCheckbox.checked, 
+                                interval: parseInt(this.value || '120') 
+                            });
+                        } else {
+                            localStorage.setItem(`hydration_reminders_${currentUser.email}`, JSON.stringify({
+                                enabled: reminderCheckbox.checked,
+                                interval: parseInt(this.value || '120')
+                            }));
+                        }
+                    }
+                });
+            }
+        }
+    } catch (error) {
+        console.error('Error initializing water tracker:', error);
+    }
+}
+
+/**
+ * Fallback function to update water display if the global function is not available
+ * @param {number} count - Number of water glasses
+ */
+function updateWaterDisplayFallback(count) {
+    // Get UI elements
+    const waterContainer = document.getElementById('waterGlasses');
+    const waterProgress = document.getElementById('waterProgress');
+    const waterStatus = document.getElementById('waterStatus');
+    
+    if (!waterContainer) return;
+    
+    // Clear previous glasses
+    waterContainer.innerHTML = '';
+    
+    // Create glass elements
+    for (let i = 0; i < 8; i++) {
+        const glass = document.createElement('div');
+        glass.className = i < count ? 'water-glass filled' : 'water-glass';
+        glass.innerHTML = '<i class="fas fa-glass-water"></i>';
+        waterContainer.appendChild(glass);
+    }
+    
+    // Update progress bar if exists
+    if (waterProgress) {
+        const percent = Math.min(Math.round((count / 8) * 100), 100);
+        waterProgress.style.width = `${percent}%`;
+    }
+    
+    // Update status text if exists
+    if (waterStatus) {
+        waterStatus.textContent = `${count}/8 glasses`;
     }
 }
 
