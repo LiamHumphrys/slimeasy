@@ -16,6 +16,7 @@
     <!-- Favicon -->
     <link rel="icon" href="slimeasylogo.jpg" type="image/jpeg">
     <link rel="apple-touch-icon" href="slimeasylogo.jpg">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" crossorigin="anonymous"></script>
     <!-- Preload critical assets -->
     <link rel="preload" href="theme.js" as="script">
     <link rel="preload" href="utils.js" as="script">
@@ -713,47 +714,7 @@
             if (fatGramElement) fatGramElement.textContent = `${Math.round(totalFat)}g`;
         }
         
-        // Update water display
-        function updateWaterDisplay(waterCount) {
-            const waterLevelElement = document.getElementById('waterLevelVisual');
-            const waterCountElement = document.getElementById('waterCountDisplay');
-            const waterStatusElement = document.getElementById('waterStatus');
-            const waterProgressElement = document.getElementById('waterProgress');
-            const waterMotivationElement = document.getElementById('waterMotivation');
-            
-            const waterPercentage = Math.min(waterCount / 8 * 100, 100);
-            
-            if (waterLevelElement) {
-                waterLevelElement.style.height = `${waterPercentage}%`;
-            }
-            
-            if (waterCountElement) {
-                waterCountElement.textContent = waterCount;
-            }
-            
-            if (waterStatusElement) {
-                waterStatusElement.textContent = `${waterCount}/8`;
-            }
-            
-            if (waterProgressElement) {
-                waterProgressElement.style.width = `${waterPercentage}%`;
-            }
-            
-            // Update motivation text
-            if (waterMotivationElement) {
-                if (waterCount === 0) {
-                    waterMotivationElement.textContent = 'Start drinking water to stay hydrated!';
-                } else if (waterCount < 3) {
-                    waterMotivationElement.textContent = 'Good start! Keep drinking water throughout the day.';
-                } else if (waterCount < 6) {
-                    waterMotivationElement.textContent = 'Halfway there! Your body will thank you.';
-                } else if (waterCount < 8) {
-                    waterMotivationElement.textContent = 'Almost there! Just a bit more to reach your goal.';
-                } else {
-                    waterMotivationElement.textContent = 'Great job! You have reached your daily water goal!';
-                }
-            }
-        }
+        // This function has been consolidated with the implementation below
     </script>
     <script>
         /**
@@ -1500,55 +1461,70 @@
          * @param {Date} date - Current date
          */
         function initializeWaterTracker(date) {
-            // Get current user
-            const currentUser = getFromStorage('currentUser');
-            if (!currentUser) return;
-            
-            // Validate date object
-            if (!date || typeof date.toISOString !== 'function') {
-                console.error('Invalid date object in initializeWaterTracker');
-                date = new Date(); // Fallback to current date
-            }
-            
-            // Format date for storage key - YYYY-MM-DD
-            let dateStr;
             try {
-                dateStr = date.toISOString().split('T')[0];
-            } catch (e) {
-                console.error('Error formatting date:', e);
-                return;
-            }
-            const waterKey = `water_${currentUser.email}_${dateStr}`;
-            
-            // Get existing water count from storage
-            let waterCount = parseInt(localStorage.getItem(waterKey) || '0');
-            
-            // Update display
-            updateWaterDisplay(waterCount);
-            
-            // Add water glass
-            const addWaterBtn = document.getElementById('addWater');
-            if (addWaterBtn) {
-                addWaterBtn.addEventListener('click', function() {
-                    if (waterCount < 8) {
-                        waterCount++;
-                        localStorage.setItem(waterKey, waterCount);
-                        updateWaterDisplay(waterCount);
-                        showNotification('Water intake updated!', 'success');
+                // Get current user
+                const currentUser = getFromStorage('currentUser');
+                if (!currentUser) return;
+                
+                // Validate date object
+                if (!date || typeof date.toISOString !== 'function') {
+                    console.error('Invalid date object in initializeWaterTracker');
+                    date = new Date(); // Fallback to current date
+                }
+                
+                // Format date for storage key - YYYY-MM-DD
+                let dateStr;
+                try {
+                    dateStr = date.toISOString().split('T')[0];
+                } catch (e) {
+                    console.error('Error formatting date:', e);
+                    return;
+                }
+                const waterKey = `water_${currentUser.email}_${dateStr}`;
+                
+                // Get existing water count from storage
+                let waterCount = parseInt(localStorage.getItem(waterKey) || '0');
+                
+                // Update display
+                updateWaterDisplay(waterCount);
+                
+                // Add water glass
+                const addWaterBtn = document.getElementById('addWater');
+                if (addWaterBtn) {
+                    addWaterBtn.addEventListener('click', function() {
+                        if (waterCount < 8) {
+                            waterCount++;
+                            localStorage.setItem(waterKey, waterCount);
+                            updateWaterDisplay(waterCount);
+                            showNotification('Water intake updated!', 'success');
+                        }
+                    });
+                }
+                
+                // Remove water glass
+                const removeWaterBtn = document.getElementById('removeWater'); 
+                if (removeWaterBtn) {
+                    removeWaterBtn.addEventListener('click', function() {
+                        if (waterCount > 0) {
+                            waterCount--;
+                            localStorage.setItem(waterKey, waterCount);
+                            updateWaterDisplay(waterCount);
+                        }
+                    });
+                }
+                
+                // Create a container for water glasses if needed
+                if (!document.getElementById('waterGlasses')) {
+                    const waterContentElement = document.querySelector('.water-content');
+                    if (waterContentElement) {
+                        const glassesContainer = document.createElement('div');
+                        glassesContainer.id = 'waterGlasses';
+                        glassesContainer.className = 'water-glasses-container';
+                        waterContentElement.appendChild(glassesContainer);
                     }
-                });
-            }
-            
-            // Remove water glass
-            const removeWaterBtn = document.getElementById('removeWater'); 
-            if (removeWaterBtn) {
-                removeWaterBtn.addEventListener('click', function() {
-                    if (waterCount > 0) {
-                        waterCount--;
-                        localStorage.setItem(waterKey, waterCount);
-                        updateWaterDisplay(waterCount);
-                    }
-                });
+                }
+            } catch (error) {
+                console.error('Error in initializeWaterTracker:', error);
             }
         }
         
@@ -1557,62 +1533,91 @@
          * @param {number} count - Number of water glasses
          */
         function updateWaterDisplay(count) {
+            // Update water level visual elements
+            const waterLevelElement = document.getElementById('waterLevelVisual');
+            const waterCountElement = document.getElementById('waterCountDisplay');
+            const waterStatusElement = document.getElementById('waterStatus');
+            const waterProgressElement = document.getElementById('waterProgress');
+            const waterMotivationElement = document.getElementById('waterMotivation');
+            
+            const waterPercentage = Math.min(count / 8 * 100, 100);
+            
+            if (waterLevelElement) {
+                waterLevelElement.style.height = `${waterPercentage}%`;
+            }
+            
+            if (waterCountElement) {
+                waterCountElement.textContent = count;
+            }
+            
+            if (waterStatusElement) {
+                waterStatusElement.textContent = `${count}/8`;
+            }
+            
+            if (waterProgressElement) {
+                waterProgressElement.style.width = `${waterPercentage}%`;
+            }
+            
+            // Update motivation text
+            if (waterMotivationElement) {
+                if (count === 0) {
+                    waterMotivationElement.textContent = 'Start drinking water to stay hydrated!';
+                } else if (count < 3) {
+                    waterMotivationElement.textContent = 'Good start! Keep drinking water throughout the day.';
+                } else if (count < 5) {
+                    waterMotivationElement.textContent = 'Halfway there! Your body thanks you for staying hydrated.';
+                } else if (count < 8) {
+                    waterMotivationElement.textContent = 'Almost there! Just a bit more to reach your goal.';
+                } else {
+                    waterMotivationElement.textContent = 'Great job! You have reached your daily water goal!';
+                }
+            }
+            
+            // Update the glass visualization if it exists
             const container = document.getElementById('waterGlasses');
-            if (!container) return;
-            
-            // Clear container
-            container.innerHTML = '';
-            
-            // Create water glasses
-            for (let i = 0; i < 8; i++) {
-                const glass = document.createElement('div');
-                glass.className = i < count ? 'water-glass filled' : 'water-glass';
-                container.appendChild(glass);
+            if (container) {
+                // Clear container
+                container.innerHTML = '';
                 
-                // Add click handler to each glass
-                glass.addEventListener('click', function() {
-                    // Get current user
-                    const currentUser = getFromStorage('currentUser');
-                    if (!currentUser) return;
+                // Create water glasses
+                for (let i = 0; i < 8; i++) {
+                    const glass = document.createElement('div');
+                    glass.className = i < count ? 'water-glass filled' : 'water-glass';
+                    container.appendChild(glass);
                     
-                    // Get current date
-                    try {
-                        const today = new Date().toISOString().split('T')[0];
-                        const waterKey = `water_${currentUser.email}_${today}`;
-                    } catch (e) {
-                        console.error('Error getting date:', e);
-                        return;
-                    }
-                    
-                    // Toggle glass state
-                    let newCount = 0;
-                    if (i < count) {
-                        // If clicking on filled glass, empty this and all after
-                        newCount = i;
-                    } else {
-                        // If clicking on empty glass, fill this and all before
-                        newCount = i + 1;
-                    }
-                    
-                    // Save to storage
-                    localStorage.setItem(waterKey, newCount);
-                    
-                    // Update display
-                    updateWaterDisplay(newCount);
-                });
-            }
-            
-            // Update progress bar
-            const progressBar = document.getElementById('waterProgress');
-            if (progressBar) {
-                const percent = (count / 8) * 100;
-                progressBar.style.width = `${percent}%`;
-            }
-            
-            // Update status text
-            const statusElement = document.getElementById('waterStatus');
-            if (statusElement) {
-                statusElement.textContent = `${count}/8 glasses`;
+                    // Add click handler to each glass
+                    glass.addEventListener('click', function() {
+                        // Get current user
+                        const currentUser = getFromStorage('currentUser');
+                        if (!currentUser) return;
+                        
+                        // Get current date
+                        let waterKey;
+                        try {
+                            const today = new Date().toISOString().split('T')[0];
+                            waterKey = `water_${currentUser.email}_${today}`;
+                        } catch (e) {
+                            console.error('Error getting date:', e);
+                            return;
+                        }
+                        
+                        // Toggle glass state
+                        let newCount = 0;
+                        if (i < count) {
+                            // If clicking on filled glass, empty this and all after
+                            newCount = i;
+                        } else {
+                            // If clicking on empty glass, fill this and all before
+                            newCount = i + 1;
+                        }
+                        
+                        // Save to storage
+                        localStorage.setItem(waterKey, newCount);
+                        
+                        // Update display
+                        updateWaterDisplay(newCount);
+                    });
+                }
             }
         }
         
