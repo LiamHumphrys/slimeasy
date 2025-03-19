@@ -43,128 +43,130 @@
                 </button>
             </div>
             
-            <!-- Login Form -->
-            <div id="login" class="auth-form-container">
-                <form id="loginForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="loginEmail" placeholder="Your email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="loginPassword"><i class="fas fa-lock"></i> Password</label>
-                        <div class="password-input">
-                            <input type="password" id="loginPassword" placeholder="Your password" required>
-                            <button type="button" class="toggle-password" data-target="loginPassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
+            <div class="auth-forms-wrapper">
+                <!-- Login Form -->
+                <div id="login" class="auth-form-container">
+                    <form id="loginForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="loginEmail"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="loginEmail" placeholder="Your email" required>
                         </div>
-                    </div>
-                    
-                    <div class="form-options">
-                        <div class="checkbox-group">
-                            <input type="checkbox" id="rememberMe">
-                            <label for="rememberMe">Remember me</label>
-                        </div>
-                        <a href="#" id="forgotPassword" class="text-link">Forgot Password?</a>
-                    </div>
-                    
-                    <button type="submit" class="auth-button">
-                        <i class="fas fa-sign-in-alt"></i> Login
-                    </button>
-                </form>
-                
-                <div class="social-login">
-                    <p>Or login with</p>
-                    <div class="social-buttons">
-                        <button type="button" id="googleLogin" class="social-button google">
-                            <i class="fab fa-google"></i> Google
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Sign Up Form -->
-            <div id="signup" class="auth-form-container" style="display: none;">
-                <form id="signupForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="signupName"><i class="fas fa-user"></i> Full Name</label>
-                        <input type="text" id="signupName" placeholder="Your name" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="signupEmail"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="signupEmail" placeholder="Your email" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="signupPassword"><i class="fas fa-lock"></i> Password</label>
-                        <div class="password-input">
-                            <input type="password" id="signupPassword" placeholder="Create a password" required>
-                            <button type="button" class="toggle-password" data-target="signupPassword">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                        <div class="password-strength" id="passwordStrength">
-                            <div class="strength-meter">
-                                <div class="meter-bar" id="strengthBar"></div>
+                        
+                        <div class="form-group">
+                            <label for="loginPassword"><i class="fas fa-lock"></i> Password</label>
+                            <div class="password-input">
+                                <input type="password" id="loginPassword" placeholder="Your password" required>
+                                <button type="button" class="toggle-password" data-target="loginPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
                             </div>
-                            <div class="strength-text" id="strengthText">Password strength</div>
                         </div>
-                    </div>
+                        
+                        <div class="form-options">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="rememberMe">
+                                <label for="rememberMe">Remember me</label>
+                            </div>
+                            <a href="#" id="forgotPassword" class="text-link">Forgot Password?</a>
+                        </div>
+                        
+                        <button type="submit" class="auth-button">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </button>
+                    </form>
                     
-                    <div class="form-group">
-                        <label for="confirmPassword"><i class="fas fa-check-circle"></i> Confirm Password</label>
-                        <div class="password-input">
-                            <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
-                            <button type="button" class="toggle-password" data-target="confirmPassword">
-                                <i class="fas fa-eye"></i>
+                    <div class="social-login">
+                        <p>Or login with</p>
+                        <div class="social-buttons">
+                            <button type="button" id="googleLogin" class="social-button google">
+                                <i class="fab fa-google"></i> Google
                             </button>
                         </div>
                     </div>
-                    
-                    <div class="checkbox-group terms">
-                        <input type="checkbox" id="agreeTerms" required>
-                        <label for="agreeTerms">
-                            I agree to the <a href="terms.html" class="text-link">Terms of Service</a> and <a href="privacy-policy.html" class="text-link">Privacy Policy</a>
-                        </label>
-                    </div>
-                    
-                    <button type="submit" class="auth-button">
-                        <i class="fas fa-user-plus"></i> Create Account
-                    </button>
-                </form>
+                </div>
                 
-                <div class="social-login">
-                    <p>Or sign up with</p>
-                    <div class="social-buttons">
-                        <button type="button" id="googleSignup" class="social-button google">
-                            <i class="fab fa-google"></i> Google
+                <!-- Sign Up Form -->
+                <div id="signup" class="auth-form-container" style="display: none;">
+                    <form id="signupForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="signupName"><i class="fas fa-user"></i> Full Name</label>
+                            <input type="text" id="signupName" placeholder="Your name" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="signupEmail"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="signupEmail" placeholder="Your email" required>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="signupPassword"><i class="fas fa-lock"></i> Password</label>
+                            <div class="password-input">
+                                <input type="password" id="signupPassword" placeholder="Create a password" required>
+                                <button type="button" class="toggle-password" data-target="signupPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                            <div class="password-strength" id="passwordStrength">
+                                <div class="strength-meter">
+                                    <div class="meter-bar" id="strengthBar"></div>
+                                </div>
+                                <div class="strength-text" id="strengthText">Password strength</div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="confirmPassword"><i class="fas fa-check-circle"></i> Confirm Password</label>
+                            <div class="password-input">
+                                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                                <button type="button" class="toggle-password" data-target="confirmPassword">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="checkbox-group terms">
+                            <input type="checkbox" id="agreeTerms" required>
+                            <label for="agreeTerms">
+                                I agree to the <a href="terms.html" class="text-link">Terms of Service</a> and <a href="privacy-policy.html" class="text-link">Privacy Policy</a>
+                            </label>
+                        </div>
+                        
+                        <button type="submit" class="auth-button">
+                            <i class="fas fa-user-plus"></i> Create Account
                         </button>
+                    </form>
+                    
+                    <div class="social-login">
+                        <p>Or sign up with</p>
+                        <div class="social-buttons">
+                            <button type="button" id="googleSignup" class="social-button google">
+                                <i class="fab fa-google"></i> Google
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </div>
-            
-            <!-- Password Reset Form -->
-            <div id="passwordReset" class="auth-form-container" style="display: none;">
-                <div class="auth-form-header">
-                    <button type="button" id="backToLogin" class="back-button">
-                        <i class="fas fa-arrow-left"></i> Back to Login
-                    </button>
-                    <h2>Reset Password</h2>
-                    <p>Enter your email address below to receive a password reset link.</p>
                 </div>
                 
-                <form id="resetForm" class="auth-form">
-                    <div class="form-group">
-                        <label for="resetEmail"><i class="fas fa-envelope"></i> Email</label>
-                        <input type="email" id="resetEmail" placeholder="Your email" required>
+                <!-- Password Reset Form -->
+                <div id="passwordReset" class="auth-form-container" style="display: none;">
+                    <div class="auth-form-header">
+                        <button type="button" id="backToLogin" class="back-button">
+                            <i class="fas fa-arrow-left"></i> Back to Login
+                        </button>
+                        <h2>Reset Password</h2>
+                        <p>Enter your email address below to receive a password reset link.</p>
                     </div>
                     
-                    <button type="submit" class="auth-button">
-                        <i class="fas fa-paper-plane"></i> Send Reset Link
-                    </button>
-                </form>
+                    <form id="resetForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="resetEmail"><i class="fas fa-envelope"></i> Email</label>
+                            <input type="email" id="resetEmail" placeholder="Your email" required>
+                        </div>
+                        
+                        <button type="submit" class="auth-button">
+                            <i class="fas fa-paper-plane"></i> Send Reset Link
+                        </button>
+                    </form>
+                </div>
             </div>
             
             <div class="auth-footer">
@@ -295,7 +297,13 @@
             padding: 40px;
             width: 100%;
             max-width: 500px;
+            height: 660px; /* Fixed height to prevent layout shift completely */
+            display: flex;
+            flex-direction: column;
             transition: background-color var(--transition-speed) ease;
+            will-change: transform; /* Optimize for animations */
+            overflow: hidden; /* Ensure no internal content causes jitter */
+            position: relative; /* For absolute positioning of children */
         }
         
         .auth-header {
@@ -363,7 +371,19 @@
         }
         
         .auth-form-container {
-            animation: fadeIn 0.3s ease;
+            min-height: 420px; /* Increased height to accommodate all forms */
+            opacity: 1;
+            transition: opacity 0.2s cubic-bezier(0.4, 0.0, 0.2, 1), transform 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+            position: relative;
+            width: 100%; /* Ensure consistent width */
+        }
+        
+        .auth-form-container[style*="display: block"]:not([style*="opacity: 0"]) {
+            animation: fadeInForm 0.2s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+        }
+        
+        .auth-form-container[style*="opacity: 0"] {
+            animation: fadeOutForm 0.2s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
         }
         
         .auth-form {
@@ -565,7 +585,10 @@
             text-align: center;
             font-size: 14px;
             color: var(--text-secondary);
-            margin-top: 30px;
+            margin-top: auto; /* Push to bottom of card */
+            padding-top: 20px;
+            position: relative;
+            width: 100%;
         }
         
         /* Password Strength Meter */
@@ -653,7 +676,9 @@
             z-index: 1000;
             justify-content: center;
             align-items: center;
-            animation: fadeIn 0.3s ease;
+            animation: fadeIn 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+            will-change: opacity;
+            backface-visibility: hidden;
         }
         
         .modal-content {
@@ -662,9 +687,11 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
             width: 90%;
             max-width: 500px;
-            animation: scaleIn 0.3s ease;
+            animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
             color: var(--text-primary);
             transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+            will-change: transform, opacity;
+            transform: translateZ(0);
         }
         
         .modal-header {
@@ -700,18 +727,20 @@
             top: 20px;
             right: 20px;
             padding: 15px 20px;
-            border-radius: 5px;
+            border-radius: 8px;
             color: white;
             font-weight: 500;
             z-index: 1100;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
-            transform: translateY(-100px);
+            transform: translateX(100%);
             opacity: 0;
-            transition: transform 0.3s ease, opacity 0.3s ease;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
         }
         
         .notification.show {
-            transform: translateY(0);
+            transform: translateX(0);
             opacity: 1;
         }
         
@@ -734,8 +763,38 @@
         }
         
         @keyframes scaleIn {
-            from { transform: scale(0.9); opacity: 0; }
+            from { transform: scale(0.98); opacity: 0; }
             to { transform: scale(1); opacity: 1; }
+        }
+        
+        @keyframes fadeInForm {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes fadeOutForm {
+            0% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(10px); }
+        }
+        
+        /* Prevent layout shifts */
+        .auth-forms-wrapper {
+            position: relative;
+            height: 500px;  /* Increased fixed height to prevent layout shifts */
+            overflow: hidden; /* Hide overflow */
+            width: 100%; /* Ensure full width */
+            margin-bottom: 20px; /* Add space for footer */
+        }
+        
+        .auth-form-container {
+            will-change: opacity;
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            top: 0;
+            left: 0;
+            right: 0;
+            position: absolute;
+            width: 100%;
         }
         
         /* Responsive Design */
@@ -791,6 +850,13 @@
     <!-- Scripts -->
     <script src="theme.js"></script>
     <script src="utils.js"></script>
+    <script>
+        // Override setupMobileMenu to do nothing on login page
+        window.setupMobileMenu = function() {
+            console.log('Mobile menu setup skipped on login page');
+            return; // Do nothing
+        };
+    </script>
     <script src="crypto-utils.js"></script>
     <!-- Create an empty firebase-config.js to prevent 404 errors -->
     <script>
@@ -818,8 +884,11 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize page (theme, menu, login check)
-            initializePage();
+            // Initialize only theme, skip menu initialization since login page has no menu
+            initializeTheme(); // Only initialize the theme, not the full page
+            
+            // Add a flag to prevent auto initialization of mobile menu from utils.js
+            window._skipMobileMenuSetup = true;
             
             // Check if user is already logged in from local storage
             const currentUser = localStorage.getItem('currentUser');
@@ -831,19 +900,72 @@
             // Set up tabs - make this function accessible
             function setupAuthTabs() {
                 const tabs = document.querySelectorAll('.auth-tab');
+                const formContainers = document.querySelectorAll('.auth-form-container');
+                
+                // Cache DOM elements for better performance
+                const formsWrapper = document.querySelector('.auth-forms-wrapper');
+                
+                // Get initial heights for forms if needed
+                const formHeights = {};
+                formContainers.forEach(container => {
+                    // Store original display value
+                    const originalDisplay = container.style.display;
+                    
+                    // Make it temporarily visible if needed
+                    if (originalDisplay === 'none') {
+                        container.style.opacity = '0';
+                        container.style.display = 'block';
+                    }
+                    
+                    // Store height
+                    formHeights[container.id] = container.offsetHeight;
+                    
+                    // Restore original display
+                    if (originalDisplay === 'none') {
+                        container.style.display = 'none';
+                        container.style.opacity = '1';
+                    }
+                });
+                
+                // Set initial form wrapper height based on visible form
+                const visibleForm = document.querySelector('.auth-form-container:not([style*="display: none"])');
+                if (visibleForm && formsWrapper) {
+                    formsWrapper.style.height = Math.max(440, formHeights[visibleForm.id]) + 'px';
+                }
+                
                 tabs.forEach(tab => {
-                    tab.addEventListener('click', function() {
+                    tab.addEventListener('click', function(e) {
+                        e.preventDefault(); // Prevent any default behavior
                         const target = this.getAttribute('data-tab');
                         
                         // Update active tab
                         tabs.forEach(t => t.classList.remove('active'));
                         this.classList.add('active');
                         
-                        // Show target content, hide others
-                        document.querySelectorAll('.auth-form-container').forEach(container => {
-                            container.style.display = 'none';
+                        // Fade out all containers
+                        formContainers.forEach(container => {
+                            container.style.opacity = '0';
+                            
+                            // Use setTimeout to ensure smooth transition
+                            setTimeout(() => {
+                                // Hide all forms except the target
+                                container.style.display = container.id === target ? 'block' : 'none';
+                                
+                                // If this is the target form, fade it back in
+                                if (container.id === target) {
+                                    // Force layout calculation
+                                    void container.offsetWidth;
+                                    
+                                    // Update wrapper height if needed
+                                    if (formsWrapper && formHeights[target]) {
+                                        formsWrapper.style.height = Math.max(440, formHeights[target]) + 'px';
+                                    }
+                                    
+                                    // Show the target container
+                                    container.style.opacity = '1';
+                                }
+                            }, 150); // Short delay for the fade out effect
                         });
-                        document.getElementById(target).style.display = 'block';
                     });
                 });
             }
@@ -998,28 +1120,86 @@
             document.getElementById('forgotPassword').addEventListener('click', function(e) {
                 e.preventDefault();
                 
-                // Hide login form, show password reset form
-                document.getElementById('login').style.display = 'none';
-                document.getElementById('passwordReset').style.display = 'block';
+                // Get elements once
+                const loginForm = document.getElementById('login');
+                const resetForm = document.getElementById('passwordReset');
+                const formsWrapper = document.querySelector('.auth-forms-wrapper');
                 
-                // Update tabs
-                tabs.forEach(t => t.classList.remove('active'));
+                // Adjust wrapper height if needed
+                if (formsWrapper && resetForm.offsetHeight > loginForm.offsetHeight) {
+                    formsWrapper.style.height = (resetForm.offsetHeight + 20) + 'px';
+                }
+                
+                // Prepare reset form before showing
+                resetForm.style.opacity = '0';
+                resetForm.style.display = 'block';
+                resetForm.style.zIndex = '1'; // Bring it forward
+                
+                // Hide login form with fade out
+                loginForm.style.opacity = '0';
+                loginForm.style.zIndex = '0'; // Send it backward
+                
+                // After short transition, swap displays and fade in
+                setTimeout(() => {
+                    loginForm.style.display = 'none';
+                    
+                    // Force a layout calculation
+                    void resetForm.offsetWidth;
+                    
+                    // Fade in reset form
+                    resetForm.style.opacity = '1';
+                    
+                    // Update tabs - deactivate all
+                    tabs.forEach(t => t.classList.remove('active'));
+                }, 150);
             });
             
             // Back to login button
             document.getElementById('backToLogin').addEventListener('click', function() {
-                // Hide password reset form, show login form
-                document.getElementById('passwordReset').style.display = 'none';
-                document.getElementById('login').style.display = 'block';
+                // Get elements once
+                const loginForm = document.getElementById('login');
+                const resetForm = document.getElementById('passwordReset');
+                const formsWrapper = document.querySelector('.auth-forms-wrapper');
                 
-                // Update tabs
-                tabs.forEach(t => {
-                    if (t.getAttribute('data-tab') === 'login') {
-                        t.classList.add('active');
-                    } else {
-                        t.classList.remove('active');
-                    }
-                });
+                // Restore wrapper height if needed
+                if (formsWrapper) {
+                    // Get the current visible tab container height
+                    const activeTab = document.querySelector('.auth-tab.active');
+                    const activeTabId = activeTab ? activeTab.getAttribute('data-tab') : 'login';
+                    const activeForm = document.getElementById(activeTabId);
+                    
+                    // Set to standard height or active form height, whichever is greater
+                    formsWrapper.style.height = Math.max(440, activeForm ? activeForm.offsetHeight : 0) + 'px';
+                }
+                
+                // Start transition
+                resetForm.style.opacity = '0';
+                resetForm.style.zIndex = '0'; // Send it backward
+                
+                // Prepare login form
+                loginForm.style.display = 'block';
+                loginForm.style.opacity = '0';
+                loginForm.style.zIndex = '1'; // Bring it forward
+                
+                // After short transition, complete the display swap
+                setTimeout(() => {
+                    resetForm.style.display = 'none';
+                    
+                    // Force a layout calculation
+                    void loginForm.offsetWidth;
+                    
+                    // Fade in login form
+                    loginForm.style.opacity = '1';
+                    
+                    // Update tabs
+                    tabs.forEach(t => {
+                        if (t.getAttribute('data-tab') === 'login') {
+                            t.classList.add('active');
+                        } else {
+                            t.classList.remove('active');
+                        }
+                    });
+                }, 150);
             });
             
             // Password reset form submission
@@ -1177,6 +1357,14 @@
                 
                 // Set message and type
                 notification.textContent = message;
+                
+                // Reset notification to ensure animation plays properly
+                notification.className = 'notification';
+                
+                // Force a reflow before adding 'show' class for smoother animation
+                void notification.offsetWidth;
+                
+                // Add classes for showing notification
                 notification.className = 'notification show ' + type;
                 
                 // Hide after 3 seconds
